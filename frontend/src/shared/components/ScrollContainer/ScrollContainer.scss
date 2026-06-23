@@ -1,0 +1,44 @@
+.scroll-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-gutter: stable both-edges;
+
+    scrollbar-width: thin; 
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    &:hover {
+        scrollbar-color: rgba(150, 150, 150, 0.45) transparent;
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(150, 150, 150, 0.45);
+        }
+    }
+
+    &.is-scrolling {
+        scrollbar-color: rgba(150, 150, 150, 0.7) transparent;
+
+        &::-webkit-scrollbar-thumb {
+            background-color: rgba(150, 150, 150, 0.7);
+        }
+    }
+}

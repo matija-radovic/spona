@@ -1,0 +1,2 @@
+echo "Running lint before pushing\n"
+npm run lint

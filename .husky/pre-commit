@@ -1,0 +1,11 @@
+PLAYGROUND="frontend/src/pages/test"
+
+staged=$(git diff --cached --name-only | grep "^$PLAYGROUND/")
+
+if [ -n "$staged" ]; then
+  git restore --staged "$PLAYGROUND"
+  echo ""
+  echo "⚠  Staged changes in $PLAYGROUND were automatically unstaged (playground folder)."
+  echo "   To commit them intentionally, use: git commit --no-verify"
+  echo ""
+fi

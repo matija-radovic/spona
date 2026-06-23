@@ -1,0 +1,189 @@
+@use '../../shared/css/colors' as c;
+@use '../../shared/css/mediaqueries' as mq;
+
+.home {
+  .home-lead {
+    color: c.$rosy-granite;
+    font-size: 1.15rem;
+    max-width: 56ch;
+    margin-top: 0.75rem;
+  }
+
+  // ---- Hero ------------------------------------------------------------
+  .home-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 3rem;
+    padding: 4rem 0 3rem;
+
+    h1 {
+      max-width: 16ch;
+      line-height: 1.1;
+    }
+  }
+
+  .home-hero-copy {
+    .home-lead {
+      font-size: 1.3rem;
+    }
+  }
+
+  .home-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+
+    &--center {
+      justify-content: center;
+    }
+  }
+
+  .home-hero-image,
+  .home-community-image {
+    aspect-ratio: 4 / 3;
+    border-radius: 1rem;
+    background-color: rgba(c.$dim-grey, 0.3);
+    border: 1px dashed rgba(c.$rosy-granite, 0.5);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  // ---- Generic section -------------------------------------------------
+  .home-section {
+    padding: 3.5rem 0;
+    border-top: 1px solid rgba(c.$dim-grey, 0.25);
+
+    h2 {
+      line-height: 1.15;
+    }
+
+    &--split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 3rem;
+    }
+  }
+
+  .home-section-cta {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+
+    &--left {
+      justify-content: flex-start;
+    }
+  }
+
+  // ---- Role chips (functional, flex-left) ------------------------------
+  .home-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  // ---- Employer steps --------------------------------------------------
+  .home-steps {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .home-step {
+    background-color: rgba(c.$dim-grey, 0.18);
+    border: 1px solid rgba(c.$dim-grey, 0.35);
+    border-radius: 0.9rem;
+    padding: 1.75rem;
+
+    h3 {
+      margin: 0.75rem 0 0.5rem;
+    }
+
+    p {
+      color: c.$rosy-granite;
+      font-size: 1rem;
+    }
+  }
+
+  .home-step-num {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background-color: c.$goldenrod;
+    color: c.$black;
+    font-weight: 700;
+  }
+
+  // ---- Community feature list -----------------------------------------
+  .home-feature-list {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    li {
+      position: relative;
+      padding-left: 1.5rem;
+      color: c.$soft-linen;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        background-color: c.$goldenrod;
+      }
+    }
+  }
+
+  // ---- Final CTA -------------------------------------------------------
+  .home-final {
+    text-align: center;
+
+    .home-lead {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  // ---- Responsive ------------------------------------------------------
+  @media #{mq.$tablet} {
+    .home-steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media #{mq.$phone} {
+    .home-hero,
+    .home-section--split {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .home-hero {
+      padding: 2.5rem 0;
+    }
+
+    .home-hero-image {
+      order: -1;
+    }
+  }
+}

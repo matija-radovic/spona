@@ -1,0 +1,60 @@
+@use '../../css/colors' as c;
+@use '../../css/mediaqueries' as mq;
+
+$font-size: .75rem;
+
+.footer {
+  margin-top: 1rem;
+  padding: 1rem 0 1.5rem 0;
+  border-top: 1px solid rgba(c.$dim-grey, 0.4);
+  background-color: c.$black;
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    &>* {
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    list-style: none;
+  }
+
+  .footer-link {
+    color: c.$rosy-granite;
+    text-decoration: none;
+    transition: color 0.18s ease;
+
+    &:hover {
+      color: c.$soft-linen;
+      text-decoration: underline;
+    }
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-copy {
+    color: c.$dim-grey;
+  }
+
+  .footer-copy, .footer-link {
+    font-size: $font-size;
+  }
+
+  @media #{mq.$m-phone} {
+    .footer-links {
+      gap: 1rem;
+    }
+  }
+}

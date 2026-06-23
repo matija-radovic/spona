@@ -1,0 +1,174 @@
+{
+  "brand": {
+    "name": "Spona",
+    "tagline": "Profesionalne veze koje drže."
+  },
+  "common": {
+    "save": "Sačuvaj",
+    "cancel": "Otkaži",
+    "delete": "Obriši",
+    "edit": "Uredi",
+    "submit": "Pošalji",
+    "confirm": "Potvrdi",
+    "close": "Zatvori",
+    "back": "Nazad",
+    "next": "Dalje",
+    "loading": "Učitavanje...",
+    "noResults": "Nema rezultata.",
+    "seeMore": "Vidi više",
+    "seeLess": "Vidi manje",
+    "optional": "Opciono"
+  },
+  "nav": {
+    "home": "Početna",
+    "feed": "Objave",
+    "jobs": "Poslovi",
+    "companies": "Kompanije",
+    "profile": "Profil",
+    "settings": "Podešavanja",
+    "login": "Prijava",
+    "logout": "Odjava",
+    "register": "Registracija",
+    "signIn": "Prijavite se",
+    "registerNow": "Registrujte se"
+  },
+  "auth": {
+    "loginTitle": "Prijavite se",
+    "registerTitle": "Napravite nalog",
+    "email": "Email adresa",
+    "password": "Lozinka",
+    "confirmPassword": "Potvrdi lozinku",
+    "username": "Korisničko ime",
+    "fullName": "Puno ime",
+    "forgotPassword": "Zaboravili ste lozinku?",
+    "alreadyHaveAccount": "Već imate nalog?",
+    "dontHaveAccount": "Nemate nalog?"
+  },
+  "feed": {
+    "newPost": "Nova objava",
+    "placeholder": "Napišite nešto...",
+    "noPosts": "Nema objava.",
+    "replyPlaceholder": "Napišite odgovor...",
+    "reply": "Odgovori",
+    "reactions": "Reakcije"
+  },
+  "post": {
+    "deleteConfirm": "Da li ste sigurni da želite da obrišete ovu objavu?",
+    "editPost": "Uredi objavu",
+    "postedAs": "Objavljeno kao",
+    "postedBy": "Objavio/la"
+  },
+  "jobs": {
+    "title": "Poslovi",
+    "postJob": "Objavi posao",
+    "applyNow": "Prijavite se",
+    "contactEmployer": "Kontaktirajte poslodavca",
+    "applyExternal": "Prijavite se na sajtu kompanije",
+    "noJobs": "Nema dostupnih oglasa.",
+    "status": {
+      "DRAFT": "Nacrt",
+      "OPEN": "Aktivan",
+      "CLOSED": "Zatvoren"
+    },
+    "type": {
+      "FULL_TIME": "Puno radno vreme",
+      "PART_TIME": "Skraćeno radno vreme",
+      "CONTRACT": "Ugovor",
+      "GIG": "Honorarni posao"
+    },
+    "workplace": {
+      "ONSITE": "Kancelarija",
+      "REMOTE": "Rad od kuće",
+      "HYBRID": "Hibrid",
+      "OTHER": "Ostalo"
+    },
+    "application": {
+      "CONTACT_ONLY": "Kontakt",
+      "EXTERNAL_URL": "Eksterni sajt",
+      "CV_DROP": "Pošalji CV"
+    },
+    "fields": {
+      "title": "Naziv pozicije",
+      "location": "Lokacija",
+      "jobType": "Tip posla",
+      "workplaceType": "Tip rada",
+      "contactInformation": "Kontakt informacije",
+      "externalUrl": "Link za prijavu",
+      "cvUpload": "Priložite CV"
+    }
+  },
+  "profile": {
+    "editProfile": "Uredi profil",
+    "followers": "Pratioci",
+    "following": "Praćeni",
+    "follow": "Prati",
+    "unfollow": "Prestani da pratiš",
+    "bio": "O meni",
+    "location": "Lokacija",
+    "website": "Veb sajt",
+    "memberSince": "Član od",
+    "noActivity": "Nema aktivnosti."
+  },
+  "organization": {
+    "title": "Organizacija",
+    "members": "Članovi",
+    "invite": "Pozovi člana",
+    "settings": "Podešavanja organizacije",
+    "createOrg": "Napravite organizaciju",
+    "noOrgs": "Niste član nijedne organizacije.",
+    "roles": {
+      "owner": "Vlasnik",
+      "admin": "Administrator",
+      "editor": "Urednik",
+      "recruiter": "Regruter"
+    }
+  },
+  "home": {
+    "heroTitle": "Dobrodošli u vašu profesionalnu zajednicu",
+    "heroSubtitle": "Spona povezuje ljude, poslove i organizacije na jednom mestu - pronađite priliku, izgradite tim i negujte veze koje traju.",
+    "heroPrimaryCta": "Registrujte se besplatno",
+    "heroSecondaryCta": "Pridružite se kao kompanija",
+    "rolesTitle": "Istražite poslove po oblasti",
+    "rolesSubtitle": "Odaberite oblast i odmah pogledajte aktuelne oglase sa primenjenim filterom.",
+    "rolesAll": "Pogledajte sve poslove",
+    "employersTitle": "Za poslodavce i organizacije",
+    "employersSubtitle": "Objavite oglas, upravljajte timom i dođite do pravih kandidata u tri koraka.",
+    "employersStep1Title": "Napravite organizaciju",
+    "employersStep1Desc": "Registrujte kompaniju, dodajte članove i dodelite uloge - vlasnik, administrator, urednik ili regruter.",
+    "employersStep2Title": "Objavite oglas",
+    "employersStep2Desc": "Postavite poziciju, izaberite tip posla i način rada, i odredite kako kandidati apliciraju.",
+    "employersStep3Title": "Primajte prijave",
+    "employersStep3Desc": "Pratite prijave, komunicirajte sa kandidatima i gradite svoj tim na jednom mestu.",
+    "employersCta": "Otvorite nalog organizacije",
+    "communityTitle": "Više od oglasa za posao",
+    "communitySubtitle": "Pratite ljude i organizacije, delite objave i budite u toku sa svojom strukom.",
+    "communityFeed": "Objave i diskusije",
+    "communityFollow": "Praćenje i mreža",
+    "communityOrgs": "Stranice organizacija",
+    "communityCta": "Istražite kompanije",
+    "finalTitle": "Spremni da napravite sledeći korak?",
+    "finalSubtitle": "Pridružite se Sponi i povežite se sa zajednicom koja gradi karijere.",
+    "finalPrimaryCta": "Napravite nalog",
+    "finalSecondaryCta": "Već imate nalog? Prijavite se"
+  },
+  "footer": {
+    "about": "O nama",
+    "cookiePolicy": "Politika kolačića",
+    "privacyPolicy": "Politika privatnosti",
+    "userAgreement": "Korisnički ugovor",
+    "license": "Licenca (MIT)",
+    "copyright": "© {{year}} Spona. Diplomski rad, kod pod MIT licencom."
+  },
+  "errors": {
+    "required": "Ovo polje je obavezno.",
+    "invalidEmail": "Nevažeća email adresa.",
+    "passwordMismatch": "Lozinke se ne poklapaju.",
+    "minLength": "Unesite najmanje {{min}} karaktera.",
+    "maxLength": "Dozvoljen je maksimum {{max}} karaktera.",
+    "serverError": "Greška servera. Pokušajte ponovo.",
+    "notFound": "Stranica nije pronađena.",
+    "unauthorized": "Nemate pristup ovom sadržaju.",
+    "fileTooLarge": "Fajl je prevelik.",
+    "invalidFileType": "Nije podržan ovaj tip fajla."
+  }
+}

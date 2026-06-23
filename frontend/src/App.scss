@@ -1,0 +1,9 @@
+#root {
+  min-width: 100%;
+  max-width: 100%;
+  // Lock the app shell to the viewport so the *document* never scrolls.
+  // The scroll lives inside <main> instead (see DefaultLayout.scss).
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}

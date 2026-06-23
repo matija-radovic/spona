@@ -1,0 +1,84 @@
+@use '../../css/colors' as c;
+@use '../../css/mediaqueries' as mq;
+
+$right-gap: 1.6rem;
+
+.header {
+  // position: sticky; // -- sticky position is omitted since this behaviour is mimicked by the content being scrollable
+  top: 0;
+  z-index: 100;
+  background-color: c.$black;
+  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: .7rem;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: $right-gap;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    list-style: none;
+  }
+
+  .header-link {
+    color: c.$soft-linen;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.18s ease, border-color 0.18s ease;
+
+    &:hover {
+      color: c.$white;
+    }
+
+    &-active {
+      color: c.$goldenrod;
+      border-bottom-color: c.$goldenrod;
+    }
+  }
+
+  .header-auth {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: $right-gap;
+    border-left: 1px solid rgba(c.$dim-grey, 0.5);
+  }
+
+  @media #{mq.$s-tablet} {
+    .header-right {
+      gap: 1rem;
+    }
+
+    .header-nav {
+      gap: 1rem;
+    }
+
+    .header-auth {
+      padding-left: 1rem;
+    }
+  }
+
+  @media #{mq.$m-phone} {
+    .header-nav {
+      display: none;
+    }
+
+    .header-auth {
+      padding-left: 0;
+      border-left: none;
+    }
+  }
+}

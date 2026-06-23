@@ -1,0 +1,98 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.06s ease;
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid c.$goldenrod;
+    outline-offset: 2px;
+  }
+
+  &-small {
+    padding: 0.45em 0.8em;
+    font-size: 0.75rem;
+  }
+
+  &-medium {
+    padding: 0.65em 1.2em;
+    font-size: 0.9rem;
+  }
+
+  &-large {
+    padding: 0.85em 1.9em;
+  }
+
+  &-block {
+    display: flex;
+    width: 100%;
+  }
+
+  &-primary {
+    background-color: c.$goldenrod;
+    border-color: c.$goldenrod;
+    color: c.$black;
+
+    &:hover {
+      background-color: color.scale(c.$goldenrod, $lightness: -8%);
+      border-color: color.scale(c.$goldenrod, $lightness: -8%);
+    }
+  }
+
+  &-secondary {
+    background-color: transparent;
+    border-color: c.$soft-linen;
+    color: c.$soft-linen;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.12);
+    }
+  }
+
+  &-tertiary {
+    background-color: rgba(c.$dim-grey, 0.45);
+    border-color: transparent;
+    color: c.$soft-linen;
+
+    &:hover {
+      background-color: rgba(c.$dim-grey, 0.7);
+    }
+  }
+
+  &-quaternary {
+    background-color: transparent;
+    border-color: c.$rosy-granite;
+    color: c.$rosy-granite;
+
+    &:hover {
+      background-color: rgba(c.$rosy-granite, 0.15);
+      color: c.$soft-linen;
+    }
+  }
+
+  &-ghost {
+    background-color: transparent;
+    border-color: transparent;
+    color: inherit;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.1);
+    }
+  }
+}
