@@ -1,0 +1,207 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+$panel-bg: color.scale(c.$taupe, $lightness: -42%);
+$panel-border: rgba(c.$soft-linen, 0.18);
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .contact-info-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: c.$soft-linen;
+  }
+
+  .contact-info-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .contact-info-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .contact-info-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: c.$white;
+    background-color: $panel-bg;
+    border: 1px solid $panel-border;
+    border-radius: 10px;
+    outline: none;
+
+    &::placeholder {
+      color: rgba(c.$rosy-granite, 0.7);
+    }
+
+    &:focus {
+      border-color: c.$goldenrod;
+      box-shadow: 0 0 0 2px rgba(c.$goldenrod, 0.22);
+    }
+
+    &.has-error {
+      border-color: rgba(#e5484d, 0.7);
+    }
+  }
+
+  // ── Type selector ─────────────────────────────────────────────────────────
+  .contact-info-type {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .contact-info-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    height: 100%;
+    padding: 0 0.7rem;
+    color: c.$soft-linen;
+    background-color: color.scale($panel-bg, $lightness: 8%);
+    border: 1px solid $panel-border;
+    border-radius: 999px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: c.$goldenrod;
+    }
+  }
+
+  .contact-info-dropdown {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    z-index: 8;
+    min-width: 11rem;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background-color: color.scale($panel-bg, $lightness: 6%);
+    border: 1px solid $panel-border;
+    border-radius: 10px;
+    box-shadow: 0 10px 26px rgba(c.$black, 0.4);
+  }
+
+  .contact-info-option {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: c.$soft-linen;
+    background-color: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.1);
+    }
+
+    &.is-selected {
+      color: c.$goldenrod;
+    }
+  }
+
+  .contact-info-add {
+    flex: 0 0 auto;
+    padding: 0 1rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: c.$black;
+    background-color: c.$goldenrod;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: color.scale(c.$goldenrod, $lightness: -8%);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+
+      &:hover {
+        background-color: c.$goldenrod;
+      }
+    }
+  }
+
+  .contact-info-error {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #ff9ba0;
+  }
+
+  // ── Added list ────────────────────────────────────────────────────────────
+  .contact-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.3rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    background-color: $panel-bg;
+    border: 1px solid $panel-border;
+    border-radius: 10px;
+
+    .contact-info-item-icon {
+      display: inline-flex;
+      color: c.$goldenrod;
+    }
+
+    .contact-info-item-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1 1 auto;
+
+      .contact-info-item-desc {
+        font-size: 0.72rem;
+        color: c.$rosy-granite;
+      }
+
+      .contact-info-item-value {
+        font-size: 0.88rem;
+        color: c.$white;
+        word-break: break-word;
+      }
+    }
+
+    .contact-info-item-remove {
+      display: inline-flex;
+      flex: 0 0 auto;
+      padding: 0.25rem;
+      color: c.$rosy-granite;
+      background-color: transparent;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+
+      &:hover {
+        color: #e5484d;
+        background-color: rgba(#e5484d, 0.12);
+      }
+    }
+  }
+}

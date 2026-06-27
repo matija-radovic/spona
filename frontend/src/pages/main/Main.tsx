@@ -94,14 +94,13 @@ const Main = () => {
           </ol>
 
           <div className="home-section-cta">
-            <Button to="/register" variant={ButtonVariant.SECONDARY}>
+            <Button to="/register?org=1" variant={ButtonVariant.SECONDARY}>
               {t('home.employersCta')}
             </Button>
           </div>
         </motion.div>
       </Section>
 
-      {/* ---- Community ---------------------------------------------------- */}
       <Section className="home-section home-section--split" isContainer>
         <motion.div className="home-community-copy" {...reveal}>
           <h2>{t('home.communityTitle')}</h2>
@@ -126,7 +125,6 @@ const Main = () => {
         </div>
       </Section>
 
-      {/* ---- Final CTA ---------------------------------------------------- */}
       <Section className="home-section home-final" isContainer>
         <motion.div {...reveal}>
           <h2>{t('home.finalTitle')}</h2>

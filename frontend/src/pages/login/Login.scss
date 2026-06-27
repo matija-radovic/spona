@@ -1,0 +1,75 @@
+@use 'sass:color';
+@use '../../shared/css/colors' as c;
+@use '../../shared/css/mediaqueries' as mq;
+
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2.5rem 1rem;
+
+  @media #{mq.$m-phone} {
+    align-items: flex-start;
+  }
+
+  .login-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 26rem;
+    padding: 2rem;
+    background-color: color.scale(c.$taupe, $lightness: -55%);
+    border: 1px solid rgba(c.$soft-linen, 0.14);
+    border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(c.$black, 0.45);
+
+    @media #{mq.$m-phone} {
+      padding: 1.5rem;
+    }
+  }
+
+  .login-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.3rem;
+
+    h2 {
+      margin: 0;
+    }
+
+    .login-sub {
+      color: c.$rosy-granite;
+      font-size: 0.85rem;
+    }
+  }
+
+  .login-error {
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    color: #ffd7d7;
+    background-color: rgba(#e5484d, 0.18);
+    border: 1px solid rgba(#e5484d, 0.45);
+    border-radius: 8px;
+  }
+
+  .login-switch {
+    margin: 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: c.$rosy-granite;
+
+    a {
+      color: c.$goldenrod;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

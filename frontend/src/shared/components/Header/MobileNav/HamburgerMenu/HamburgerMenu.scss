@@ -1,0 +1,43 @@
+@use '../../../../css/colors' as c;
+@use '../../../../css/mediaqueries' as mq;
+
+$line-thickness: 2px;
+$line-width: 24px;
+$hamburger-height: 20px;
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: $line-width;
+  height: $hamburger-height;
+  position: relative;
+
+  @media #{mq.$phone} {
+    display: block;
+  }
+
+  .hamburger-line {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: $line-width;
+    height: $line-thickness;
+    background-color: c.$white;
+    border-radius: 9999px;
+
+    &:nth-child(1) {
+      top: 0;
+    }
+
+    &:nth-child(2) {
+      top: calc((#{$hamburger-height} - #{$line-thickness}) / 2);
+    }
+
+    &:nth-child(3) {
+      bottom: 0;
+    }
+  }
+}

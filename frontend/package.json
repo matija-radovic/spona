@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
+    "@tabler/icons-react": "^3.44.0",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.17.0",
     "i18next": "^26.3.1",

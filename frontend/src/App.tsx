@@ -1,7 +1,7 @@
 import './App.scss'
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
-import { DefaultLayout } from '@shared/components'
+import { DefaultLayout, AuthLayout } from '@shared/components'
 import { UserProvider } from '@shared/contexts'
 import { IndexGate, GuestRoute } from '@shared/components/-routing/RouteGuards'
 import Jobs from '@pages/jobs'
@@ -15,20 +15,24 @@ const TestRoute = import.meta.env.DEV
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path='/' element={<DefaultLayout />}>
-      <Route index element={<IndexGate />} />
-      <Route path='jobs' element={<Jobs />} />
-      <Route path='companies' element={<Companies />} />
+    <>
+      <Route path='/' element={<DefaultLayout />}>
+        <Route index element={<IndexGate />} />
+        <Route path='jobs' element={<Jobs />} />
+        <Route path='companies' element={<Companies />} />
 
-      <Route element={<GuestRoute />}>
-        <Route path='login' element={<Login />} />
-        <Route path='register' element={<Register />} />
+        {TestRoute && (
+          <Route path='/test' element={<Suspense fallback={<div>Loading...</div>}><TestRoute /></Suspense>} />
+        )}
       </Route>
 
-      {TestRoute && (
-        <Route path='/test' element={<Suspense fallback={<div>Loading...</div>}><TestRoute /></Suspense>} />
-      )}
-    </Route>
+      <Route element={<AuthLayout />}>
+        <Route element={<GuestRoute />}>
+          <Route path='login' element={<Login />} />
+          <Route path='register' element={<Register />} />
+        </Route>
+      </Route>
+    </>
   )
 )
 

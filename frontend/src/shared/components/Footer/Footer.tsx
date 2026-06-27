@@ -2,6 +2,7 @@ import './Footer.scss'
 import { useTranslation } from 'react-i18next'
 import { Logo } from '@shared/components/Logo'
 import { LogoSize } from '../Logo/Logo'
+import { Link, useLocation } from 'react-router-dom'
 
 interface FooterLink {
   labelKey: string
@@ -17,13 +18,23 @@ const FOOTER_LINKS: readonly FooterLink[] = [
 ]
 
 const Footer = () => {
-  const { t } = useTranslation()
-  const year = new Date().getFullYear()
+  const { t } = useTranslation();
+  const year = new Date().getFullYear();
+
+  const location = useLocation();
+  const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   return (
     <footer className="footer">
       <div className="footer-inner container">
         <ul className="footer-links">
+          {isAuthPage &&
+            <li key='go-home'>
+              <Link to='/' className="footer-link">
+                {t('nav.home')}
+              </Link>
+            </li>
+          }
           {FOOTER_LINKS.map(({ labelKey, href }) => (
             <li key={labelKey}>
               <a href={href} className="footer-link">

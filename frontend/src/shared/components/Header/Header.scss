@@ -71,14 +71,10 @@ $right-gap: 1.6rem;
     }
   }
 
-  @media #{mq.$m-phone} {
-    .header-nav {
+  @media #{mq.$phone} {
+    // Collapse the full desktop nav on phones - the hamburger panel takes over.
+    .header-right {
       display: none;
-    }
-
-    .header-auth {
-      padding-left: 0;
-      border-left: none;
     }
   }
 }

@@ -19,4 +19,17 @@ export default defineConfig({
       }
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers/zod'],
+          'vendor-table': ['@tanstack/react-table'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
+          'vendor-motion': ['framer-motion'],
+        },
+      },
+    },
+  },
 })

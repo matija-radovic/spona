@@ -1,0 +1,153 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+// Opaque surfaces so the validity indicator never lets text show through.
+$field-bg: color.scale(c.$taupe, $lightness: -42%);
+$field-border: rgba(c.$soft-linen, 0.18);
+
+.text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+
+  .text-field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: c.$soft-linen;
+
+    .text-field-asterisk {
+      color: #e5484d;
+      line-height: 1;
+    }
+  }
+
+  .text-field-control {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .text-field-input {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: c.$white;
+    background-color: $field-bg;
+    border: 1px solid $field-border;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+
+    &::placeholder {
+      color: rgba(c.$rosy-granite, 0.7);
+    }
+
+    &:focus {
+      border-color: c.$goldenrod;
+      box-shadow: 0 0 0 2px rgba(c.$goldenrod, 0.25);
+    }
+  }
+
+  // The indicator overlaps the right edge, so shrink the typing area to match.
+  &.text-field-invalid .text-field-input,
+  &.text-field-valid .text-field-input {
+    padding-right: 2.7rem;
+  }
+
+  &.text-field-multiline .text-field-input {
+    resize: vertical;
+    min-height: 6rem;
+    line-height: 1.4;
+  }
+
+  &.text-field-invalid .text-field-input {
+    border-color: rgba(#e5484d, 0.7);
+  }
+
+  // ── Validity indicator ──────────────────────────────────────────────────
+  .text-field-indicator-wrap {
+    position: absolute;
+    top: 50%;
+    right: 0.55rem;
+    transform: translateY(-50%);
+    display: flex;
+  }
+
+  &.text-field-multiline .text-field-indicator-wrap {
+    top: 0.6rem;
+    transform: none;
+  }
+
+  .text-field-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: default;
+    // Opaque background - the indicator must never be see-through.
+    background-color: color.scale($field-bg, $lightness: 8%);
+    color: c.$white;
+  }
+
+  &.text-field-invalid .text-field-indicator {
+    background-color: #e5484d;
+    cursor: pointer;
+  }
+
+  &.text-field-valid .text-field-indicator {
+    background-color: #2ea043;
+  }
+
+  // ── Tooltip ─────────────────────────────────────────────────────────────
+  .text-field-tooltip {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: 16rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: c.$black;
+    background-color: c.$soft-linen;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(c.$black, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.14s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 0.5rem;
+      border: 5px solid transparent;
+      border-top-color: c.$soft-linen;
+    }
+  }
+
+  .text-field-indicator-wrap:hover .text-field-tooltip,
+  .text-field-indicator-wrap.is-open .text-field-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  // ── Helper text ─────────────────────────────────────────────────────────
+  .text-field-helper {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: c.$rosy-granite;
+    white-space: pre-line; // honor "\n" rows from the i18n strings
+  }
+}

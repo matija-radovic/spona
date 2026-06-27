@@ -1,0 +1,74 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+$avatar-bg: color.scale(c.$taupe, $lightness: -35%);
+
+.avatar-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+
+  .avatar-picker-label {
+    align-self: flex-start;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: c.$soft-linen;
+  }
+
+  .avatar-picker-circle {
+    position: relative;
+    width: 7rem;
+    height: 7rem;
+    padding: 0;
+    border-radius: 50%;
+    background-color: $avatar-bg;
+    border: 2px dashed rgba(c.$soft-linen, 0.3);
+    color: c.$rosy-granite;
+    cursor: pointer;
+    overflow: visible;
+    transition: border-color 0.16s ease;
+
+    &:hover {
+      border-color: c.$goldenrod;
+    }
+
+    .avatar-picker-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .avatar-picker-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .avatar-picker-pencil {
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      color: c.$black;
+      background-color: c.$goldenrod;
+      border: 2px solid color.scale(c.$taupe, $lightness: -55%);
+      border-radius: 50%;
+    }
+  }
+
+  .avatar-picker-file {
+    display: none;
+  }
+
+  .avatar-picker-hint {
+    font-size: 0.72rem;
+    color: c.$rosy-granite;
+  }
+}
