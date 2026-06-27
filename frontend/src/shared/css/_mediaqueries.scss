@@ -1,7 +1,7 @@
 $xs-phone: 'only screen and (max-width: 340px)';
 $s-phone: 'only screen and (max-width: 380px)';
 $m-phone: 'only screen and (max-width: 600px)';
-$l-phone: 'only screen and (min-width: 601px) (max-width: 768px)';
+$l-phone: 'only screen and (min-width: 601px) and (max-width: 768px)';
 $phone: 'only screen and (max-width: 768px)';
 $except-phone: 'only screen and (min-width: 769px)';
 $tablet-only: 'only screen and (min-width: 769px) and (max-width: 1024px)';
