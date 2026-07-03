@@ -1,0 +1,89 @@
+@use 'sass:color';
+@use '../../../../shared/css/colors' as c;
+
+$card-bg: color.scale(c.$taupe, $lightness: -42%);
+$card-border: rgba(c.$soft-linen, 0.14);
+
+.job-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-family: inherit;
+  text-align: left;
+  color: c.$soft-linen;
+  background-color: $card-bg;
+  border: 1px solid $card-border;
+  border-left: 3px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.06s ease;
+
+  &:hover {
+    border-color: rgba(c.$goldenrod, 0.5);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &.is-active {
+    border-color: rgba(c.$goldenrod, 0.6);
+    border-left-color: c.$goldenrod;
+    background-color: color.scale($card-bg, $lightness: 6%);
+  }
+
+  .job-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .job-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: c.$white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .job-card-poster {
+    font-size: 0.85rem;
+    color: c.$goldenrod;
+  }
+
+  .job-card-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: c.$rosy-granite;
+  }
+
+  .job-card-salary {
+    color: c.$soft-linen;
+  }
+
+  .job-card-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 3rem;
+    height: 3rem;
+    color: c.$rosy-granite;
+    background-color: color.scale($card-bg, $lightness: 10%);
+    border-radius: 10px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

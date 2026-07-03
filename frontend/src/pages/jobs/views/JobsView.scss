@@ -1,0 +1,160 @@
+@use '../../../shared/css/colors' as c;
+@use '../../../shared/css/mediaqueries' as mq;
+
+.jobs {
+  // Bounded to the viewport minus the header so this route does not ride the
+  // page scroll; the bar stays put as the non-scrolling first row, and each
+  // panel scrolls independently. (job-page.md §4 — avoids `position: sticky`.)
+  height: calc(100dvh - var(--header-height, 56px));
+  overflow: hidden;
+
+  .jobs-inner {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: var(--max-container-size);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 var(--container-spacing);
+  }
+
+  // Search + filter bar: never scrolls.
+  .jobs-bar {
+    flex: 0 0 auto;
+  }
+
+  // ── Two-pane body ──────────────────────────────────────────────────────────
+  .jobs-body {
+    display: flex;
+    gap: 1rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-top: 0.9rem;
+  }
+
+  .jobs-list {
+    flex: 0 0 clamp(320px, 34%, 420px);
+    min-width: 0;
+    min-height: 0;
+    padding: 0 0.2rem 1rem;
+  }
+
+  .jobs-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .jobs-body.is-detail-only .jobs-panel {
+    flex: 1 1 100%;
+  }
+
+  // ── List content ────────────────────────────────────────────────────────────
+  .jobs-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.2rem 0;
+    list-style: none;
+  }
+
+  .jobs-list-sentinel {
+    height: 1px;
+  }
+
+  .jobs-list-state,
+  .jobs-list-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    height: 100%;
+    padding: 1rem;
+    text-align: center;
+    color: c.$rosy-granite;
+  }
+
+  .jobs-list-empty-title {
+    font-size: 1rem;
+    color: c.$soft-linen;
+  }
+
+  .jobs-list-empty-hint {
+    font-size: 0.85rem;
+  }
+
+  .jobs-list-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    font-size: 0.85rem;
+    color: c.$rosy-granite;
+  }
+
+  .jobs-list-more-error {
+    color: #ff9ba0;
+  }
+
+  .jobs-list-footer {
+    padding: 1rem;
+    font-size: 0.85rem;
+    text-align: center;
+    color: c.$rosy-granite;
+  }
+
+  .jobs-list-retry {
+    padding: 0.45rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: c.$soft-linen;
+    background-color: rgba(c.$dim-grey, 0.45);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(c.$dim-grey, 0.7);
+    }
+  }
+
+  // ── Hint panel (right pane at /jobs index) ───────────────────────────────────
+  .jobs-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+    color: c.$rosy-granite;
+  }
+
+  // ── Phone: one pane at a time, slide between list and detail ──────────────────
+  @media #{mq.$phone} {
+    .jobs-body:not(.is-detail-only) {
+      width: 200%;
+      overflow: hidden;
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .jobs-body.is-detail {
+      transform: translateX(-50%);
+    }
+
+    .jobs-body:not(.is-detail-only) .jobs-list,
+    .jobs-body:not(.is-detail-only) .jobs-panel {
+      flex: 0 0 50%;
+      min-width: 0;
+    }
+
+    .jobs-body.is-detail-only {
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,166 @@
+@use 'sass:color';
+@use '../../../../shared/css/colors' as c;
+@use '../../../../shared/css/mediaqueries' as mq;
+
+$panel-bg: color.scale(c.$taupe, $lightness: -42%);
+$panel-border: rgba(c.$soft-linen, 0.18);
+
+.jobs-bar {
+  display: flex;
+  flex-direction: column;
+  background-color: c.$black;
+  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+
+  .jobs-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 0;
+  }
+
+  .jobs-bar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 0.85rem;
+    color: c.$rosy-granite;
+    background-color: color.scale($panel-bg, $lightness: 4%);
+    border: 1px solid $panel-border;
+    border-radius: 999px;
+
+    &:focus-within {
+      border-color: c.$goldenrod;
+    }
+  }
+
+  .jobs-bar-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.6rem 0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: c.$white;
+    background: transparent;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+      color: rgba(c.$rosy-granite, 0.75);
+    }
+
+    // strip the native search clear control for a consistent look
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+
+  .jobs-bar-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 0 0 auto;
+    padding: 0.6rem 0.9rem;
+    color: c.$soft-linen;
+    background-color: color.scale($panel-bg, $lightness: 8%);
+    border: 1px solid $panel-border;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+
+    &:hover {
+      border-color: c.$goldenrod;
+    }
+
+    &.is-open {
+      color: c.$black;
+      background-color: c.$goldenrod;
+      border-color: c.$goldenrod;
+    }
+  }
+
+  // ── Filter menu (seamless with the bar, above the divider) ──────────────────
+  .jobs-bar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.25rem 0 0.9rem;
+  }
+
+  .jobs-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: c.$soft-linen;
+    background-color: color.scale($panel-bg, $lightness: 8%);
+    border: 1px solid $panel-border;
+    border-radius: 999px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: c.$goldenrod;
+    }
+
+    .filter-toggle-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.05rem;
+      height: 1.05rem;
+      color: c.$black;
+      border: 1px solid rgba(c.$soft-linen, 0.4);
+      border-radius: 5px;
+    }
+
+    &.is-active {
+      color: c.$black;
+      background-color: c.$goldenrod;
+      border-color: c.$goldenrod;
+      font-weight: 600;
+
+      .filter-toggle-box {
+        background-color: c.$black;
+        color: c.$goldenrod;
+        border-color: c.$black;
+      }
+    }
+  }
+
+  .jobs-filters-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .jobs-filters-clear {
+    padding: 0.4rem 0.2rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: c.$rosy-granite;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: c.$soft-linen;
+      text-decoration: underline;
+    }
+  }
+
+  @media #{mq.$phone} {
+    .jobs-bar-filter-btn {
+      padding: 0.6rem;
+    }
+  }
+}

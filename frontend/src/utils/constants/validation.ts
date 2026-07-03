@@ -25,3 +25,8 @@ export const AVATAR_SIZE = 256
 export const CONTACT_DESC_MAX = 32
 export const CONTACT_VALUE_MAX = 64
 export const CONTACT_MAX_ENTRIES = 15
+
+/** CV upload rules (jobs apply flow — shared by the mock service and the UI). */
+export const CV_MAX_BYTES = 5 * 1024 * 1024
+export const CV_ACCEPTED_TYPES: readonly string[] = ['application/pdf']
+export const CV_ACCEPTED_EXT: readonly string[] = ['.pdf']

@@ -1,0 +1,106 @@
+@use 'sass:color';
+@use '../../../../shared/css/colors' as c;
+
+$panel-bg: color.scale(c.$taupe, $lightness: -42%);
+$panel-border: rgba(c.$soft-linen, 0.18);
+
+.cv-apply {
+  // One row: [choose file] [selected file + validity] [submit].
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .cv-apply-input {
+    display: none;
+  }
+
+  .cv-apply-file {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 18rem;
+    padding: 0.4rem 0.6rem;
+    color: c.$soft-linen;
+    background-color: $panel-bg;
+    border: 1px solid $panel-border;
+    border-radius: 8px;
+
+    .cv-apply-file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.82rem;
+    }
+  }
+
+  // ── Validity indicator (mirrors the TextField pattern) ──────────────────────
+  .cv-apply-indicator-wrap {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+
+  .cv-apply-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0;
+    color: c.$white;
+    border: none;
+    border-radius: 50%;
+    cursor: default;
+  }
+
+  .cv-apply-indicator-wrap.is-valid .cv-apply-indicator {
+    background-color: #2ea043;
+  }
+
+  .cv-apply-indicator-wrap.is-invalid .cv-apply-indicator {
+    background-color: #e5484d;
+    cursor: pointer;
+  }
+
+  .cv-apply-tooltip {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: 15rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: c.$black;
+    background-color: c.$soft-linen;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(c.$black, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.14s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 0.6rem;
+      border: 5px solid transparent;
+      border-top-color: c.$soft-linen;
+    }
+  }
+
+  .cv-apply-indicator-wrap:hover .cv-apply-tooltip,
+  .cv-apply-indicator-wrap.is-open .cv-apply-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  // ── Success (replaces the whole cluster) ─────────────────────────────────────
+  &.cv-apply-success {
+    gap: 0.5rem;
+    color: #2ea043;
+    font-weight: 600;
+  }
+}

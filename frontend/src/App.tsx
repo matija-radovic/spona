@@ -4,7 +4,7 @@ import { lazy, Suspense } from 'react'
 import { DefaultLayout, AuthLayout } from '@shared/components'
 import { UserProvider } from '@shared/contexts'
 import { IndexGate, GuestRoute } from '@shared/components/-routing/RouteGuards'
-import Jobs from '@pages/jobs'
+import { JobsLayout, JobsHint, JobDetail } from '@pages/jobs'
 import Companies from '@pages/companies'
 import Login from '@pages/login'
 import Register from '@pages/register'
@@ -18,7 +18,10 @@ const router = createBrowserRouter(
     <>
       <Route path='/' element={<DefaultLayout />}>
         <Route index element={<IndexGate />} />
-        <Route path='jobs' element={<Jobs />} />
+        <Route path='jobs' element={<JobsLayout />}>
+          <Route index element={<JobsHint />} />
+          <Route path=':slug' element={<JobDetail />} />
+        </Route>
         <Route path='companies' element={<Companies />} />
 
         {TestRoute && (

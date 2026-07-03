@@ -134,7 +134,18 @@
       "FULL_TIME": "Puno radno vreme",
       "PART_TIME": "Skraćeno radno vreme",
       "CONTRACT": "Ugovor",
-      "GIG": "Honorarni posao"
+      "GIG": "Honorarni posao",
+      "INTERNSHIP": "Praksa",
+      "VOLUNTEER": "Volontiranje"
+    },
+    "experience": {
+      "ENTRY": "Početni nivo",
+      "INTERNSHIP": "Praksa",
+      "MEDIOR": "Srednji nivo",
+      "SENIOR": "Senior",
+      "MANAGER": "Menadžer",
+      "DIRECTOR": "Direktor",
+      "EXECUTIVE": "Izvršni direktor"
     },
     "workplace": {
       "ONSITE": "Kancelarija",
@@ -155,6 +166,72 @@
       "contactInformation": "Kontakt informacije",
       "externalUrl": "Link za prijavu",
       "cvUpload": "Priložite CV"
+    },
+    "search": {
+      "placeholder": "Pretražite poslove, kompanije, ključne reči...",
+      "filtersOpen": "Otvori filtere",
+      "filtersClose": "Zatvori filtere"
+    },
+    "filters": {
+      "posted": "Objavljeno",
+      "sort": "Sortiraj",
+      "workplace": "Način rada",
+      "employment": "Vrsta zaposlenja",
+      "experience": "Nivo iskustva",
+      "salary": "Samo sa platom",
+      "more": "Više filtera",
+      "all": "Sve",
+      "clear": "Poništi",
+      "apply": "Primeni",
+      "postedOpt": {
+        "any": "Bilo kada",
+        "24h": "Poslednja 24h",
+        "week": "Poslednjih 7 dana",
+        "month": "Poslednjih 30 dana"
+      },
+      "sortOpt": {
+        "recommended": "Preporučeno",
+        "date_desc": "Najnovije prvo",
+        "date_asc": "Najstarije prvo"
+      },
+      "employmentOpt": {
+        "contractGig": "Ugovor / Honorarno"
+      }
+    },
+    "card": {
+      "privatePoster": "Privatni oglašivač",
+      "companyLogoAlt": "Logo kompanije"
+    },
+    "panel": {
+      "hint": "Izaberite oglas sa liste da vidite detalje.",
+      "back": "Nazad na listu",
+      "notFound": "Oglas nije pronađen ili više nije dostupan."
+    },
+    "results": {
+      "count": "{{count}} oglasa pronađeno",
+      "empty": "Nema rezultata za vašu pretragu.",
+      "emptyHint": "Pokušajte sa drugim ključnim rečima ili izmenite filtere.",
+      "loadMoreError": "Greška pri učitavanju.",
+      "retry": "Pokušaj ponovo"
+    },
+    "apply": {
+      "dropHere": "Otpustite ovde",
+      "chooseFile": "Izaberite fajl",
+      "submit": "Pošalji prijavu",
+      "success": "Prijava poslata!",
+      "selected": "Izabrani fajl"
+    },
+    "salary": {
+      "perHour": "na sat",
+      "perDay": "dnevno",
+      "perWeek": "nedeljno",
+      "perMonth": "mesečno",
+      "perJob": "po poslu",
+      "range": "{{min}} – {{max}}"
+    },
+    "favorite": {
+      "add": "Sačuvaj oglas",
+      "remove": "Ukloni iz sačuvanih"
     }
   },
   "profile": {

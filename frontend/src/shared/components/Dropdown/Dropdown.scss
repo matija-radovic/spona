@@ -1,0 +1,112 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+$panel-bg: color.scale(c.$taupe, $lightness: -42%);
+$panel-border: rgba(c.$soft-linen, 0.18);
+
+.dropdown {
+  position: relative;
+  display: inline-flex;
+
+  .dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 15rem;
+    padding: 0.5rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: c.$soft-linen;
+    background-color: color.scale($panel-bg, $lightness: 8%);
+    border: 1px solid $panel-border;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+
+    &:hover {
+      border-color: c.$goldenrod;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .dropdown-trigger-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Filled/goldenrod capsule when a non-default value is applied, so the user
+  // can see it is active even when scrolled off or inside "More".
+  &.is-active .dropdown-trigger {
+    color: c.$black;
+    background-color: c.$goldenrod;
+    border-color: c.$goldenrod;
+    font-weight: 600;
+  }
+
+  // ── Panel ─────────────────────────────────────────────────────────────────
+  .dropdown-panel {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    z-index: 40;
+    min-width: 12rem;
+    max-height: 15rem;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background-color: color.scale($panel-bg, $lightness: 6%);
+    border: 1px solid $panel-border;
+    border-radius: 10px;
+    box-shadow: 0 10px 26px rgba(c.$black, 0.4);
+  }
+
+  .dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: c.$soft-linen;
+    background-color: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.1);
+    }
+
+    &.is-selected {
+      color: c.$goldenrod;
+    }
+
+    .dropdown-option-label {
+      flex: 1 1 auto;
+    }
+  }
+
+  .dropdown-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.05rem;
+    height: 1.05rem;
+    color: c.$black;
+    border: 1px solid rgba(c.$soft-linen, 0.4);
+    border-radius: 5px;
+
+    &.is-checked {
+      background-color: c.$goldenrod;
+      border-color: c.$goldenrod;
+    }
+  }
+}
