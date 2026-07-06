@@ -8,7 +8,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: colors.$white;
+  color: colors.$soft-linen;
   background-color: colors.$black;
 
   font-synthesis: none;
@@ -24,6 +24,7 @@
 :root {
   --max-container-size: 1200px;
   --container-spacing: 15px;
+  --scrollbar-width: 0px; //fallback
 }
 
 * {
@@ -60,4 +61,8 @@ h4 {
 
 p, li, a {
   font-size: .9rem;
+}
+
+input::-webkit-search-cancel-button {
+  appearance: none;
 }

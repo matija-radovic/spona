@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $white: #ffffffff;
 $midnight-violet: #412234ff;
 $vintage-grape: #6d466bff;
@@ -10,4 +12,7 @@ $soft-linen: #ede7d9ff;
 $rosy-granite: #a49694ff;
 $dim-grey: #736b60ff;
 
-$black: #000
+$black: #000;
+
+$panel-bg: color.scale($taupe, $lightness: -42%);
+$panel-border: rgba($soft-linen, 0.18);

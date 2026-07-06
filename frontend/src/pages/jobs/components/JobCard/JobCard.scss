@@ -15,7 +15,6 @@ $card-border: rgba(c.$soft-linen, 0.14);
   color: c.$soft-linen;
   background-color: $card-bg;
   border: 1px solid $card-border;
-  border-left: 3px solid transparent;
   border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.06s ease;
@@ -29,8 +28,7 @@ $card-border: rgba(c.$soft-linen, 0.14);
   }
 
   &.is-active {
-    border-color: rgba(c.$goldenrod, 0.6);
-    border-left-color: c.$goldenrod;
+    border-color: c.$goldenrod;
     background-color: color.scale($card-bg, $lightness: 6%);
   }
 
