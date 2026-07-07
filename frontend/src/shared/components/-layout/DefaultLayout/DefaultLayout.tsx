@@ -5,10 +5,12 @@ import { Header } from "@shared/components/Header"
 import { Footer } from "@shared/components/Footer"
 import { markInitialLoadDone, useTrackLastSection } from "@shared/hooks/useLastSection"
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
+import useScrollbarGutter from '@shared/hooks/useScrollbarGutter'
 
 const DefaultLayout = () => {
     const mainRef = useRef<HTMLElement>(null)
     useGhostScrollbar(mainRef)
+    useScrollbarGutter(mainRef)
     useTrackLastSection()
 
     useEffect(() => {

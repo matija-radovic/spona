@@ -181,7 +181,7 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
 
   return (
     <div className="jobs">
-      <div className="jobs-inner">
+      <div className="jobs-inner container">
         <SearchFilterBar filters={filters} onSearch={onSearch} isMobile={isMobile} />
 
         <div className={bodyClass}>
