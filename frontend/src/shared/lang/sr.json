@@ -17,7 +17,10 @@
     "noResults": "Nema rezultata.",
     "seeMore": "Vidi više",
     "seeLess": "Vidi manje",
-    "optional": "Opciono"
+    "optional": "Opciono",
+    "comingSoon": "Uskoro dostupno.",
+    "linkCopied": "Link kopiran",
+    "copyLink": "Kopiraj link"
   },
   "nav": {
     "home": "Početna",
@@ -33,7 +36,10 @@
     "registerNow": "Registrujte se",
     "menu": "Meni",
     "openMenu": "Otvori meni",
-    "closeMenu": "Zatvori meni"
+    "closeMenu": "Zatvori meni",
+    "users": "Korisnici",
+    "myProfile": "Moj profil",
+    "profileMenu": "Meni naloga"
   },
   "auth": {
     "loginTitle": "Prijavite se",
@@ -116,7 +122,11 @@
     "deleteConfirm": "Da li ste sigurni da želite da obrišete ovu objavu?",
     "editPost": "Uredi objavu",
     "postedAs": "Objavljeno kao",
-    "postedBy": "Objavio/la"
+    "postedBy": "Objavio/la",
+    "react": "Reaguj",
+    "comments": "{{count}} komentara",
+    "moreReactions": "Još {{count}} reakcija",
+    "openPost": "Otvori objavu"
   },
   "jobs": {
     "title": "Poslovi",
@@ -227,7 +237,7 @@
       "perWeek": "nedeljno",
       "perMonth": "mesečno",
       "perJob": "po poslu",
-      "range": "{{min}} – {{max}}"
+      "range": "{{min}} - {{max}}"
     },
     "favorite": {
       "add": "Sačuvaj oglas",
@@ -235,16 +245,52 @@
     }
   },
   "profile": {
+    "notFound": "Profil nije pronađen.",
     "editProfile": "Uredi profil",
-    "followers": "Pratioci",
-    "following": "Praćeni",
-    "follow": "Prati",
-    "unfollow": "Prestani da pratiš",
-    "bio": "O meni",
-    "location": "Lokacija",
-    "website": "Veb sajt",
-    "memberSince": "Član od",
-    "noActivity": "Nema aktivnosti."
+    "settings": "Podešavanja",
+    "createJob": "Objavi posao",
+    "follow": "Zaprati",
+    "following": "Pratite",
+    "followersCount": "{{count}} pratilaca",
+    "followingCount": "{{count}} prati",
+    "tabs": {
+      "activity": "Aktivnost",
+      "contacts": "Kontakt",
+      "jobPostings": "Oglasi za posao",
+      "savedJobs": "Sačuvani oglasi"
+    },
+    "activity": {
+      "filter": {
+        "all": "Sve",
+        "posts": "Objave",
+        "comments": "Komentari"
+      },
+      "empty": "Nema aktivnosti.",
+      "commentBar": {
+        "onPost": "Komentar na objavu",
+        "onComment": "Odgovor na komentar"
+      },
+      "commentedOnPost": "je komentarisao/la objavu",
+      "repliedToComment": "je odgovorio/la na komentar"
+    },
+    "saved": {
+      "filter": {
+        "active": "Aktivni",
+        "finished": "Završeni",
+        "all": "Svi"
+      },
+      "empty": "Nemate sačuvanih oglasa.",
+      "emptyFiltered": "Nema oglasa u ovoj kategoriji."
+    }
+  },
+  "actors": {
+    "search": {
+      "placeholder": "Pretražite po imenu...",
+      "hint": "Počnite da kucate da biste pretražili.",
+      "empty": "Nema rezultata za vašu pretragu.",
+      "modeCompanies": "Kompanije",
+      "modeUsers": "Korisnici"
+    }
   },
   "organization": {
     "title": "Organizacija",
