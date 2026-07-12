@@ -11,7 +11,8 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 import { useUser } from '@shared/contexts'
-import { toggleFavorite, type JobDetailDto } from '@utils/api/jobs'
+import { type JobDetailDto } from '@utils/api/jobs'
+import { isJobSaved, toggleSavedJob } from '@utils/savedJobs'
 import { formatSalary } from '@pages/jobs/lib/formatSalary'
 import { useCvApply } from '@pages/jobs/lib/useCvApply'
 import { ContactApply } from '@pages/jobs/components/ContactApply'
@@ -28,24 +29,13 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
   const { isAuthenticated } = useUser()
   const cv = useCvApply(job.id)
 
-  const [favorited, setFavorited] = useState(job.isFavorited ?? false)
-  const [favBusy, setFavBusy] = useState(false)
+  const [favorited, setFavorited] = useState(() => isJobSaved(job.id))
 
   // TODO(auth-preview): flip/comment this guard to preview the heart while logged out
-  const canFavorite = isAuthenticated /* || true */
+  const canFavorite = isAuthenticated  /* || true */
 
-  const onToggleFavorite = async () => {
-    if (favBusy) return
-    const next = !favorited
-    setFavorited(next) // optimistic
-    setFavBusy(true)
-    try {
-      await toggleFavorite(job.id, next)
-    } catch {
-      setFavorited(!next) // revert
-    } finally {
-      setFavBusy(false)
-    }
+  const onToggleFavorite = () => {
+    setFavorited(toggleSavedJob({ id: job.id, slug: job.slug }))
   }
 
   const { createdFor } = job

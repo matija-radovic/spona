@@ -10,6 +10,10 @@
 //   - fetchJobs   : q === "prazno"            -> empty page (0 results)
 //   - fetchJobBySlug : slug === "nepostojeci" -> 404 Not Found
 //   - submitApplication : filename contains "fail" -> 413 rejection
+//   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
+//
+// Saved jobs no longer live here (types-ref.r3 [C9]); they are browser
+// localStorage (utils/savedJobs.ts). `fetchJobsByIds` only HYDRATES an id set.
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -69,8 +73,11 @@ export interface JobDetailDto extends JobListItemDto {
   contactInformation: ContactEntry[] | null
   externalUrl: string | null
   description: string
-  /** Present ONLY for authenticated viewers; drives the heart button. */
-  isFavorited?: boolean
+}
+
+/** JobListItemDto + status, so the profile Saved-jobs pane filters client-side. */
+export interface SavedJobItemDto extends JobListItemDto {
+  status: JobStatus
 }
 
 export interface JobApplication {
@@ -271,7 +278,6 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
     contactInformation: applicationType === 'CONTACT_ONLY' ? mockContact() : null,
     externalUrl: applicationType === 'EXTERNAL_URL' ? 'https://primer.rs/karijera/oglas' : null,
     description: mockDescription(title),
-    isFavorited: seed % 5 === 0,
   }
 }
 
@@ -292,10 +298,50 @@ export const submitApplication = async (jobId: string, file: File): Promise<JobA
   }
 }
 
-/** MOCK. Drives `FavoriteJob`. Real call switches verb on `next`:
- *   await api({ method: next ? 'put' : 'delete', url: `/jobs/${jobId}/favorite` }) */
-export const toggleFavorite = async (jobId: string, next: boolean): Promise<void> => {
-  void next
-  await delay(250)
-  if (!jobId) return rejectProblem(400, 'Nedostaje identifikator oglasa.', 'Bad Request')
+/**
+ * MOCK - would be: const { data } = await api.get('/jobs', { params: { id: ids, status: statuses } })
+ * Hydrates a set of saved-job ids (from localStorage) into list items, filtered
+ * by status. The whole id set resolves in one request (a saved set is bounded).
+ * ~20% of ids are intentionally omitted to model deleted jobs the pane must
+ * tolerate. Each id deterministically maps to exactly one status.
+ */
+export const fetchJobsByIds = async (
+  ids: string[],
+  statuses: JobStatus[],
+): Promise<SavedJobItemDto[]> => {
+  await delay(360)
+
+  const wanted = new Set(statuses)
+  return ids
+    .map((id, index): SavedJobItemDto | null => {
+      const seed = hashString(id)
+      if (seed % 5 === 0) return null // ~20% "deleted" - not returned
+      const status: JobStatus = seed % 3 === 0 ? 'CLOSED' : 'OPEN'
+      if (!wanted.has(status)) return null
+      const base = buildListItem(seed % TITLES.length)
+      return { ...base, id, status, slug: `${slugify(base.title)}-${(seed % 9000) + 1000 + index}` }
+    })
+    .filter((item): item is SavedJobItemDto => item !== null)
+}
+
+/**
+ * MOCK - would be: const { data } = await api.get(`/actors/${actorId}/jobs`)
+ * The actor's PUBLIC job postings: OPEN only, newest first, bare array (a
+ * profile's open postings are a bounded set - no paging speculatively). An empty
+ * array covers BOTH "has no postings" and "postings hidden by
+ * PrivacySettings.showJobPostings" - the two are indistinguishable by design, so
+ * the mock does not model the flag at all (§9).
+ */
+export const fetchActorJobPostings = async (actorId: string): Promise<JobListItemDto[]> => {
+  await delay(400)
+
+  // Some actors return [] (no postings, or hidden by privacy - indistinguishable).
+  const seed = hashString(actorId)
+  if (actorId.endsWith('-empty') || seed % 3 === 0) return []
+
+  const count = (seed % 4) + 2 // 2..5 postings
+  return Array.from({ length: count }, (_, i) => {
+    const item = buildListItem(seed + i)
+    return { ...item, createdAt: new Date(Date.now() - i * 30 * 60 * 60 * 1000).toISOString() }
+  })
 }
