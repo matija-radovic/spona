@@ -1,0 +1,14 @@
+@use '../../css/colors' as c;
+
+// Shape, size and the not-following (primary) look all come from `Button`.
+// Only the "following" state is refined here: it keeps the quiet secondary
+// outline, but hovers to the accent so it reads as "click to unfollow".
+.follow-btn.is-following {
+  border-color: rgba(c.$soft-linen, 0.35);
+
+  &:hover {
+    color: c.$white;
+    border-color: c.$goldenrod;
+    background-color: rgba(c.$goldenrod, 0.12);
+  }
+}

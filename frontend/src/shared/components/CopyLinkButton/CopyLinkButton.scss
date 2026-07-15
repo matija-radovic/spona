@@ -1,0 +1,29 @@
+@use '../../css/colors' as c;
+
+.copy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: c.$rosy-granite;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.16s ease, background-color 0.16s ease;
+
+  &:hover {
+    color: c.$soft-linen;
+    background-color: rgba(c.$soft-linen, 0.08);
+  }
+
+  &.is-copied {
+    color: c.$goldenrod;
+  }
+
+  .copy-link-label {
+    white-space: nowrap;
+  }
+}
