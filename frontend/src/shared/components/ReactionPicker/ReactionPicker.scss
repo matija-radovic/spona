@@ -1,0 +1,72 @@
+@use 'sass:color';
+@use '../../css/colors' as c;
+
+$popover-bg: color.scale(c.$taupe, $lightness: -42%);
+$popover-border: rgba(c.$soft-linen, 0.18);
+
+.reaction-picker {
+  position: relative;
+  display: inline-flex;
+
+  .reaction-picker-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    color: c.$rosy-granite;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+
+    &:hover {
+      color: c.$goldenrod;
+      background-color: rgba(c.$goldenrod, 0.12);
+    }
+  }
+
+  &.is-open .reaction-picker-trigger {
+    color: c.$goldenrod;
+  }
+
+  // ── Popover: opens above the trigger, 5 columns x 4 rows ────────────────────
+  .reaction-picker-popover {
+    position: absolute;
+    bottom: calc(100% + 0.4rem);
+    left: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.15rem;
+    padding: 0.4rem;
+    background-color: color.scale($popover-bg, $lightness: 6%);
+    border: 1px solid $popover-border;
+    border-radius: 12px;
+    box-shadow: 0 10px 26px rgba(c.$black, 0.45);
+  }
+
+  .reaction-picker-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.12);
+    }
+
+    &.is-active {
+      background-color: rgba(c.$goldenrod, 0.22);
+      border-color: c.$goldenrod;
+    }
+  }
+}
