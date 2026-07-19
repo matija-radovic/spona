@@ -77,5 +77,20 @@ $header-height: calc(3.8rem + 1px);
       flex-direction: column;
       gap: 0.75rem;
     }
+
+    // Authenticated: the account trio reuses the nav-link look; the logout button
+    // resets native button styling to match.
+    .mobile-nav-account {
+      gap: 1rem;
+    }
+
+    .mobile-nav-logout {
+      font-family: inherit;
+      font-size: 1rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+    }
   }
 }

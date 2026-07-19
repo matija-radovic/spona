@@ -7,6 +7,9 @@ export interface NavItem {
   to: string
   labelKey: string
   icon: Icon
+  // Maps to NavLink's `end`: highlight only on the exact path, not on nested
+  // routes. Omit for tabs that should stay lit inside their subtree.
+  end?: boolean
 }
 
 interface MobileNavProps {

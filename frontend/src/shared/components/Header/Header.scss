@@ -1,11 +1,11 @@
+@use 'sass:color';
 @use '../../css/colors' as c;
 @use '../../css/mediaqueries' as mq;
 
 $right-gap: 1.6rem;
+$menu-bg: color.scale(c.$taupe, $lightness: -42%);
 
 .header {
-  // position: sticky; // -- sticky position is omitted since this behaviour is mimicked by the content being scrollable
-  top: 0;
   z-index: 100;
   background-color: c.$black;
   border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
@@ -15,7 +15,8 @@ $right-gap: 1.6rem;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding: .7rem;
+    padding: .7rem 0;
+    margin: 0 max(calc(var(--container-spacing) + var(--scrollbar-width)), (100% - var(--max-container-size)) / 2);
   }
 
   .header-right {
@@ -57,6 +58,74 @@ $right-gap: 1.6rem;
     border-left: 1px solid rgba(c.$dim-grey, 0.5);
   }
 
+  // ── Authenticated header: divider + avatar menu ─────────────────────────────
+  .header-divider {
+    width: 1px;
+    height: 1.6rem;
+    background-color: rgba(c.$dim-grey, 0.4);
+  }
+
+  .header-user-menu {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .header-avatar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    color: c.$soft-linen;
+
+    .header-avatar-chevron {
+      transition: transform 0.16s ease;
+    }
+
+    &.is-open .header-avatar-chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  .header-user-menu-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 60;
+    min-width: 12rem;
+    display: flex;
+    flex-direction: column;
+    padding: 0.3rem;
+    background-color: color.scale($menu-bg, $lightness: 6%);
+    border: 1px solid rgba(c.$soft-linen, 0.18);
+    border-radius: 10px;
+    box-shadow: 0 10px 26px rgba(c.$black, 0.4);
+  }
+
+  .header-user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: c.$soft-linen;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+      background-color: rgba(c.$soft-linen, 0.1);
+    }
+  }
+
   @media #{mq.$s-tablet} {
     .header-right {
       gap: 1rem;
@@ -72,6 +141,7 @@ $right-gap: 1.6rem;
   }
 
   @media #{mq.$phone} {
+
     // Collapse the full desktop nav on phones - the hamburger panel takes over.
     .header-right {
       display: none;

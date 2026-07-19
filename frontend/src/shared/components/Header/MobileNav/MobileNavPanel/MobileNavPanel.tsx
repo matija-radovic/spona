@@ -4,8 +4,9 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant } from '@shared/components/Button'
 import type { NavItem } from '../MobileNav'
+import MobileGuestActions from './MobileNavActions/MobileGuestActions'
+import MobileAuthActions from './MobileNavActions/MobileAuthActions'
 
 const backdrop = {
   initial: { opacity: 0 },
@@ -73,11 +74,11 @@ const MobileNavPanel = ({ isOpen, onClose, items, isAuthenticated }: MobileNavPa
             {...panel}
           >
             <nav className="mobile-nav-links" aria-label={t('nav.menu')}>
-              {items.map(({ to, labelKey, icon: Icon }) => (
+              {items.map(({ to, labelKey, icon: Icon, end }) => (
                 <NavLink
                   key={to}
                   to={to}
-                  end={to === '/'}
+                  end={end}
                   className={({ isActive }) =>
                     `mobile-nav-link${isActive ? ' mobile-nav-link-active' : ''}`
                   }
@@ -88,16 +89,7 @@ const MobileNavPanel = ({ isOpen, onClose, items, isAuthenticated }: MobileNavPa
               ))}
             </nav>
 
-            {!isAuthenticated && (
-              <div className="mobile-nav-auth">
-                <Button to="/login" variant={ButtonVariant.SECONDARY} fullWidth>
-                  {t('nav.signIn')}
-                </Button>
-                <Button to="/register" variant={ButtonVariant.PRIMARY} fullWidth>
-                  {t('nav.registerNow')}
-                </Button>
-              </div>
-            )}
+            {isAuthenticated ? <MobileAuthActions onClose={onClose} /> : <MobileGuestActions />}
           </motion.aside>
         </motion.div>
       )}
