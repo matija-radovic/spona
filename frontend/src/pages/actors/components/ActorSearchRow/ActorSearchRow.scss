@@ -1,0 +1,114 @@
+@use 'sass:color';
+@use '../../../../shared/css/colors' as c;
+@use '../../../../shared/css/mediaqueries' as mq;
+
+$row-bg: color.scale(c.$taupe, $lightness: -42%);
+$row-border: rgba(c.$soft-linen, 0.14);
+$avatar-indent: 3.35rem; // SM avatar width (2.6rem) + actor-row-main gap (0.75rem)
+
+.actor-row {
+  display: grid;
+  // Follow spans both rows, so on desktop it centers against the full card
+  // (name row + description) rather than just the heading.
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'main   follow'
+    'desc   follow';
+  align-items: start;
+  column-gap: 0.85rem;
+  row-gap: 0.2rem;
+  padding: 0.7rem 1rem;
+  background-color: $row-bg;
+  border: 1px solid $row-border;
+  border-radius: 12px;
+
+  .actor-row-main {
+    grid-area: main;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover .actor-row-name {
+      color: c.$goldenrod;
+    }
+  }
+
+  .actor-row-follow {
+    grid-area: follow;
+    align-self: center;
+  }
+
+  .actor-row-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .actor-row-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: c.$white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.16s ease;
+  }
+
+  .actor-row-handle {
+    font-size: 0.8rem;
+    color: c.$rosy-granite;
+  }
+
+  .actor-row-description {
+    grid-area: desc;
+    margin: 0;
+    // Lines the text up under the name/handle.
+    padding-left: $avatar-indent;
+    // Forces wrapping well before the card edge, keeping long descriptions
+    // to ~3 lines instead of running edge to edge.
+    padding-right: 2.5rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: c.$rosy-granite;
+  }
+
+  .actor-row-read-more {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: rgba(c.$goldenrod, 0.75);
+    cursor: pointer;
+    transition: color 0.16s ease;
+
+    &:hover,
+    &:focus-visible {
+      color: c.$goldenrod;
+    }
+  }
+
+  // Mobile declutter: pull Follow out of the full-card span and into the name
+  // row instead (so it reads as an action on the heading, not a control
+  // floating beside a 3-line description), and drop it to an icon-only pill.
+  @media #{mq.$phone} {
+    grid-template-areas:
+      'main   follow'
+      'desc   desc';
+
+    .actor-row-follow {
+      padding: 0.5rem;
+
+      .follow-btn-label {
+        display: none;
+      }
+    }
+
+    .actor-row-description {
+      padding-right: 0.5rem;
+    }
+  }
+}

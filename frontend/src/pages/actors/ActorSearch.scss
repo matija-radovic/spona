@@ -1,0 +1,129 @@
+@use 'sass:color';
+@use '../../shared/css/colors' as c;
+
+.actor-search {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .actor-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+  }
+
+  .actor-search-input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 0.85rem;
+    color: c.$rosy-granite;
+    background-color: color.scale(c.$panel-bg, $lightness: 4%);
+    border: 1px solid c.$panel-border;
+    border-radius: 999px;
+
+    &:focus-within {
+      border-color: c.$goldenrod;
+    }
+
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0.6rem 0;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: c.$white;
+      background: transparent;
+      border: none;
+      outline: none;
+
+      &::placeholder {
+        color: rgba(c.$rosy-granite, 0.75);
+      }
+    }
+  }
+
+  .actor-search-modes {
+    display: inline-flex;
+    flex: 0 0 auto;
+    background-color: c.$panel-bg;
+    border: 1px solid c.$panel-border;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .actor-search-mode {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.75rem;
+    color: c.$rosy-granite;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+
+    &:hover {
+      color: c.$soft-linen;
+    }
+
+    &.is-active {
+      color: c.$black;
+      background-color: c.$goldenrod;
+    }
+  }
+
+  .actor-search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .actor-search-sentinel {
+    height: 1px;
+  }
+
+  .actor-search-hint,
+  .actor-search-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: c.$rosy-granite;
+  }
+
+  .actor-search-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    font-size: 0.85rem;
+    color: c.$rosy-granite;
+  }
+
+  .actor-search-more-error {
+    color: #ff9ba0;
+  }
+
+  .actor-search-retry {
+    padding: 0.45rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: c.$soft-linen;
+    background-color: rgba(c.$dim-grey, 0.45);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(c.$dim-grey, 0.7);
+    }
+  }
+}
