@@ -1,0 +1,32 @@
+@use '../../../../shared/css/colors' as c;
+
+.profile-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+
+  .profile-tab {
+    position: relative;
+    padding: 0.7rem 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: c.$rosy-granite;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease;
+
+    &:hover {
+      color: c.$soft-linen;
+    }
+
+    &.is-active {
+      color: c.$goldenrod;
+      border-bottom-color: c.$goldenrod;
+    }
+  }
+}

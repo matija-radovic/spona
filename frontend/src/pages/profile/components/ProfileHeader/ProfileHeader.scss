@@ -1,0 +1,109 @@
+@use '../../../../shared/css/colors' as c;
+@use '../../../../shared/css/mediaqueries' as mq;
+
+.profile-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+
+  @media #{mq.$phone} {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .profile-head-avatar {
+    flex: 0 0 auto;
+  }
+
+  // ── Cell 2: identity (takes the remaining width) ────────────────────────────
+  .profile-head-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .profile-head-name {
+    font-size: 1.7rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: c.$white;
+  }
+
+  .profile-head-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: c.$rosy-granite;
+  }
+
+  .profile-head-site {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: c.$goldenrod;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .profile-head-follows {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: c.$soft-linen;
+  }
+
+  .profile-head-dot {
+    color: c.$dim-grey;
+  }
+
+  .profile-head-bio {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: c.$soft-linen;
+    white-space: pre-line;
+  }
+
+  .profile-head-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.1rem;
+    flex: 0 1 auto;
+
+    @media #{mq.$phone} {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 1.1rem 1.1rem;
+    }
+  }
+
+  .profile-head-action-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+
+    @media #{mq.$phone} {
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+  }
+
+  .profile-head-copy.is-copied {
+    color: c.$goldenrod;
+  }
+}
