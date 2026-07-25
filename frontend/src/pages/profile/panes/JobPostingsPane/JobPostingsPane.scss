@@ -1,0 +1,10 @@
+// Reuses the JobCard component; replicates the thin list-gap rhythm locally
+// (do not @extend across page SCSS files - profile-page.r1 §10.4).
+.job-postings-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

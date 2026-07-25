@@ -1,0 +1,62 @@
+@use 'sass:color';
+@use '../../../../shared/css/colors' as c;
+@use '../../../../shared/css/mediaqueries' as mq;
+
+$box-bg: color.scale(c.$taupe, $lightness: -42%);
+$box-border: rgba(c.$soft-linen, 0.18);
+
+.contact-pane {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media #{mq.$tablet} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media #{mq.$phone} {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact-pane-box {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    padding: 0.7rem 0.85rem;
+    background-color: $box-bg;
+    border: 1px solid $box-border;
+    border-radius: 10px;
+  }
+
+  .contact-pane-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: c.$goldenrod;
+  }
+
+  .contact-pane-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .contact-pane-desc {
+      font-size: 0.74rem;
+      color: c.$rosy-granite;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .contact-pane-value {
+      font-size: 0.9rem;
+      color: c.$white;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
