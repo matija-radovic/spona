@@ -1,0 +1,18 @@
+@use '../../shared/css/colors' as c;
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding-bottom: 3rem;
+
+  .profile-status {
+    padding: 4rem 1rem;
+    text-align: center;
+    color: c.$rosy-granite;
+  }
+
+  .profile-pane {
+    padding-top: 0.5rem;
+  }
+}
