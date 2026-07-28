@@ -1,5 +1,6 @@
 import './SearchFilterBar.scss'
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
   IconSearch,
@@ -27,41 +28,33 @@ interface SearchFilterBarProps {
 }
 
 // The parent keys this component by the URL querystring, so a real navigation
-// (e.g. browser Back) remounts it with fresh `filters` — no sync effect needed.
-// Staged edits before submit never change the URL, so they survive re-renders.
+// (e.g. browser Back) remounts it — and RHF re-seeds every field from
+// `defaultValues: filters`, no sync effect needed. Staged edits live in the form
+// and never touch the URL until submit. `role` is carried through from the
+// home-page chips: it has no input, but as a default value it round-trips
+// through `handleSubmit` (RHF keeps unregistered defaults; shouldUnregister is
+// false by default).
 const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) => {
   const { t } = useTranslation()
-  const [draft, setDraft] = useState<FilterState>(filters)
+  const { register, control, handleSubmit, reset, getValues } = useForm<FilterState>({
+    defaultValues: filters,
+  })
   const [menuOpen, setMenuOpen] = useState(false)
   const [showMore, setShowMore] = useState(false)
 
   const primaryFilters = FILTERS.slice(0, isMobile ? Math.min(2, PRIMARY_FILTER_COUNT) : PRIMARY_FILTER_COUNT)
   const moreFilters = FILTERS.slice(primaryFilters.length)
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    onSearch(draft)
+  const onSubmit = handleSubmit((values) => {
+    onSearch(values)
     setMenuOpen(false)
-  }
+  })
 
-  const clearFilters = () => setDraft({ ...emptyFilters(), q: draft.q, role: draft.role })
-
-  const updateSingle = (key: 'posted' | 'sort', next: string | string[] | null) => {
-    const value = typeof next === 'string' && next !== '' ? next : null
-    setDraft((d) => (key === 'posted' ? { ...d, posted: value } : { ...d, sort: value }))
-  }
-
-  const updateMulti = (key: 'workplace' | 'employment' | 'experience', next: string[]) => {
-    setDraft((d) => {
-      switch (key) {
-        case 'workplace':
-          return { ...d, workplace: next }
-        case 'employment':
-          return { ...d, employment: next }
-        case 'experience':
-          return { ...d, experience: next }
-      }
-    })
+  // Clear every filter but keep the free-text query and the carried-through role.
+  // keepDefaultValues leaves the "since URL" baseline intact.
+  const clearFilters = () => {
+    const { q, role } = getValues()
+    reset({ ...emptyFilters(), q, role }, { keepDefaultValues: true })
   }
 
   const renderFilter = (config: FilterConfig) => {
@@ -69,18 +62,24 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
 
     if (config.kind === 'toggle') {
       return (
-        <button
+        <Controller
           key={config.key}
-          type="button"
-          className={`filter-toggle${draft.salary ? ' is-active' : ''}`}
-          onClick={() => setDraft((d) => ({ ...d, salary: !d.salary }))}
-          aria-pressed={draft.salary}
-        >
-          <span className="filter-toggle-box" aria-hidden>
-            {draft.salary && <IconCheck size={13} />}
-          </span>
-          {label}
-        </button>
+          control={control}
+          name="salary"
+          render={({ field }) => (
+            <button
+              type="button"
+              className={`filter-toggle${field.value ? ' is-active' : ''}`}
+              onClick={() => field.onChange(!field.value)}
+              aria-pressed={field.value}
+            >
+              <span className="filter-toggle-box" aria-hidden>
+                {field.value && <IconCheck size={13} />}
+              </span>
+              {label}
+            </button>
+          )}
+        />
       )
     }
 
@@ -89,27 +88,40 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
     if (config.kind === 'single') {
       const key = config.key as 'posted' | 'sort'
       return (
-        <Dropdown
+        <Controller
           key={config.key}
-          label={label}
-          options={options}
-          value={draft[key] ?? ''}
-          placeholder={label}
-          onChange={(next) => updateSingle(key, next)}
+          control={control}
+          name={key}
+          render={({ field }) => (
+            <Dropdown
+              label={label}
+              options={options}
+              value={field.value ?? ''}
+              placeholder={label}
+              // Selecting the empty ("any"/"recommended") option clears to null.
+              onChange={(next) => field.onChange(typeof next === 'string' && next !== '' ? next : null)}
+            />
+          )}
         />
       )
     }
 
     const key = config.key as 'workplace' | 'employment' | 'experience'
     return (
-      <Dropdown
+      <Controller
         key={config.key}
-        multiple
-        label={label}
-        options={options}
-        value={draft[key]}
-        placeholder={`${label}: ${t('jobs.filters.all')}`}
-        onChange={(next) => updateMulti(key, next as string[])}
+        control={control}
+        name={key}
+        render={({ field }) => (
+          <Dropdown
+            multiple
+            label={label}
+            options={options}
+            value={field.value}
+            placeholder={`${label}: ${t('jobs.filters.all')}`}
+            onChange={(next) => field.onChange(next as string[])}
+          />
+        )}
       />
     )
   }
@@ -118,18 +130,16 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
   const Chevron = menuOpen ? IconChevronUp : IconChevronDown
 
   return (
-    <form className="jobs-bar" onSubmit={handleSubmit} role="search">
+    <form className="jobs-bar" onSubmit={onSubmit} role="search">
       <div className="jobs-bar-row">
         <div className="jobs-bar-search">
           <IconSearch size={18} aria-hidden />
           <input
             type="search"
-            className="jobs-bar-input"
-            value={draft.q}
-            onChange={(e) => setDraft((d) => ({ ...d, q: e.target.value }))}
             placeholder={t('jobs.search.placeholder')}
             enterKeyHint="search"
             aria-label={t('jobs.search.placeholder')}
+            {...register('q')}
           />
         </div>
 

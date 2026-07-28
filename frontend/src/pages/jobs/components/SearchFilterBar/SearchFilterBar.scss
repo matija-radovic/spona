@@ -2,9 +2,6 @@
 @use '../../../../shared/css/colors' as c;
 @use '../../../../shared/css/mediaqueries' as mq;
 
-$panel-bg: color.scale(c.$taupe, $lightness: -42%);
-$panel-border: rgba(c.$soft-linen, 0.18);
-
 .jobs-bar {
   display: flex;
   flex-direction: column;
@@ -26,33 +23,28 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     min-width: 0;
     padding: 0 0.85rem;
     color: c.$rosy-granite;
-    background-color: color.scale($panel-bg, $lightness: 4%);
-    border: 1px solid $panel-border;
+    background-color: color.scale(c.$panel-bg, $lightness: 4%);
+    border: 1px solid c.$panel-border;
     border-radius: 999px;
 
     &:focus-within {
       border-color: c.$goldenrod;
     }
-  }
 
-  .jobs-bar-input {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding: 0.6rem 0;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: c.$white;
-    background: transparent;
-    border: none;
-    outline: none;
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0.6rem 0;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: c.$white;
+      background: transparent;
+      border: none;
+      outline: none;
 
-    &::placeholder {
-      color: rgba(c.$rosy-granite, 0.75);
-    }
-
-    // strip the native search clear control for a consistent look
-    &::-webkit-search-cancel-button {
-      appearance: none;
+      &::placeholder {
+        color: rgba(c.$rosy-granite, 0.75);
+      }
     }
   }
 
@@ -63,8 +55,8 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     flex: 0 0 auto;
     padding: 0.6rem 0.9rem;
     color: c.$soft-linen;
-    background-color: color.scale($panel-bg, $lightness: 8%);
-    border: 1px solid $panel-border;
+    background-color: color.scale(c.$panel-bg, $lightness: 8%);
+    border: 1px solid c.$panel-border;
     border-radius: 999px;
     cursor: pointer;
     transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
@@ -103,8 +95,8 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     font-family: inherit;
     font-size: 0.85rem;
     color: c.$soft-linen;
-    background-color: color.scale($panel-bg, $lightness: 8%);
-    border: 1px solid $panel-border;
+    background-color: color.scale(c.$panel-bg, $lightness: 8%);
+    border: 1px solid c.$panel-border;
     border-radius: 999px;
     cursor: pointer;
 
