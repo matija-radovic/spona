@@ -1,10 +1,68 @@
 @use '../../../../shared/css/colors' as c;
 
+$hint-width: 2.5rem;
+
 .profile-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  position: relative;
   border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+
+  .profile-tabs-lane {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: $hint-width; // Keeps a scrolled-into-view tab clear of the edge fades.
+    margin-bottom: -1px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .profile-tabs-track {
+    position: relative;
+    display: flex;
+    gap: 0.4rem;
+    width: max-content;
+  }
+
+  .profile-tabs-edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    pointer-events: none;
+
+    &.profile-tabs-edge-start {
+      left: 0;
+    }
+
+    &.profile-tabs-edge-end {
+      right: 0;
+    }
+  }
+
+  .profile-tabs-hint {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: $hint-width;
+    display: flex;
+    align-items: center;
+    color: c.$rosy-granite;
+    pointer-events: none;
+
+    &.profile-tabs-hint-start {
+      left: 0;
+      justify-content: flex-start;
+      background: linear-gradient(to right, c.$black 30%, rgba(c.$black, 0));
+    }
+
+    &.profile-tabs-hint-end {
+      right: 0;
+      justify-content: flex-end;
+      background: linear-gradient(to left, c.$black 30%, rgba(c.$black, 0));
+    }
+  }
 
   .profile-tab {
     position: relative;
@@ -12,13 +70,17 @@
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 500;
+    white-space: nowrap;
     color: c.$rosy-granite;
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
     cursor: pointer;
     transition: color 0.16s ease, border-color 0.16s ease;
+
+    &:focus-visible {
+      outline-offset: -2px;
+    }
 
     &:hover {
       color: c.$soft-linen;
