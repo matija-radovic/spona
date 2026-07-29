@@ -340,8 +340,9 @@ export const fetchActorJobPostings = async (actorId: string): Promise<JobListIte
   if (actorId.endsWith('-empty') || seed % 3 === 0) return []
 
   const count = (seed % 4) + 2 // 2..5 postings
+  const base = seed % TITLES.length
   return Array.from({ length: count }, (_, i) => {
-    const item = buildListItem(seed + i)
+    const item = buildListItem(base + i)
     return { ...item, createdAt: new Date(Date.now() - i * 30 * 60 * 60 * 1000).toISOString() }
   })
 }
