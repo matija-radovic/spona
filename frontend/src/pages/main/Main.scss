@@ -3,7 +3,7 @@
 
 .home {
   .home-lead {
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     font-size: 1.15rem;
     max-width: 56ch;
     margin-top: 0.75rem;
@@ -44,8 +44,8 @@
   .home-community-image {
     aspect-ratio: 4 / 3;
     border-radius: 1rem;
-    background-color: rgba(c.$dim-grey, 0.3);
-    border: 1px dashed rgba(c.$rosy-granite, 0.5);
+    background-color: c.$fill-muted;
+    border: 1px dashed c.$border-strong;
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -60,7 +60,7 @@
   // ---- Generic section -------------------------------------------------
   .home-section {
     padding: 3.5rem 0;
-    border-top: 1px solid rgba(c.$dim-grey, 0.25);
+    border-top: 1px solid c.$border-line;
 
     h2 {
       line-height: 1.15;
@@ -102,8 +102,8 @@
   }
 
   .home-step {
-    background-color: rgba(c.$dim-grey, 0.18);
-    border: 1px solid rgba(c.$dim-grey, 0.35);
+    background-color: c.$fill-muted;
+    border: 1px solid c.$border-line;
     border-radius: 0.9rem;
     padding: 1.75rem;
 
@@ -112,7 +112,7 @@
     }
 
     p {
-      color: c.$rosy-granite;
+      color: c.$text-muted;
       font-size: 1rem;
     }
   }
@@ -123,8 +123,8 @@
     width: 2.4rem;
     height: 2.4rem;
     border-radius: 50%;
-    background-color: c.$goldenrod;
-    color: c.$black;
+    background-color: c.$accent;
+    color: c.$text-on-accent;
     font-weight: 700;
   }
 
@@ -139,7 +139,7 @@
     li {
       position: relative;
       padding-left: 1.5rem;
-      color: c.$soft-linen;
+      color: c.$text-primary;
 
       &::before {
         content: '';
@@ -149,7 +149,7 @@
         width: 0.6rem;
         height: 0.6rem;
         border-radius: 50%;
-        background-color: c.$goldenrod;
+        background-color: c.$accent;
       }
     }
   }

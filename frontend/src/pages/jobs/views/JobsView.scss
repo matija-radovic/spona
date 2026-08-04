@@ -69,12 +69,12 @@
     height: 100%;
     padding: 1rem;
     text-align: center;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   .jobs-list-empty-title {
     font-size: 1rem;
-    color: c.$soft-linen;
+    color: c.$text-primary;
   }
 
   .jobs-list-empty-hint {
@@ -88,32 +88,32 @@
     gap: 0.75rem;
     padding: 0.9rem;
     font-size: 0.85rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   .jobs-list-more-error {
-    color: #ff9ba0;
+    color: c.$danger-text;
   }
 
   .jobs-list-footer {
     padding: 1rem;
     font-size: 0.85rem;
     text-align: center;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   .jobs-list-retry {
     padding: 0.45rem 0.9rem;
     font-family: inherit;
     font-size: 0.82rem;
-    color: c.$soft-linen;
-    background-color: rgba(c.$dim-grey, 0.45);
+    color: c.$text-primary;
+    background-color: c.$fill-control;
     border: none;
     border-radius: 999px;
     cursor: pointer;
 
     &:hover {
-      background-color: rgba(c.$dim-grey, 0.7);
+      background-color: c.$fill-control-hover;
     }
   }
 
@@ -127,7 +127,7 @@
     height: 100%;
     padding: 2rem;
     text-align: center;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   // ── Phone: one pane at a time, slide between list and detail ──────────────────

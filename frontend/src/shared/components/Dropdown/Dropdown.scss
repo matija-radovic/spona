@@ -1,8 +1,4 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
-
-$panel-bg: color.scale(c.$taupe, $lightness: -42%);
-$panel-border: rgba(c.$soft-linen, 0.18);
 
 .dropdown {
   position: relative;
@@ -16,16 +12,16 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     padding: 0.5rem 0.8rem;
     font-family: inherit;
     font-size: 0.85rem;
-    color: c.$soft-linen;
-    background-color: color.scale($panel-bg, $lightness: 8%);
-    border: 1px solid $panel-border;
+    color: c.$text-primary;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
     transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
 
     &:hover {
-      border-color: c.$goldenrod;
+      border-color: c.$accent;
     }
 
     &:disabled {
@@ -39,12 +35,12 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     }
   }
 
-  // Filled/goldenrod capsule when a non-default value is applied, so the user
+  // Filled/accent capsule when a non-default value is applied, so the user
   // can see it is active even when scrolled off or inside "More".
   &.is-active .dropdown-trigger {
-    color: c.$black;
-    background-color: c.$goldenrod;
-    border-color: c.$goldenrod;
+    color: c.$text-on-accent;
+    background-color: c.$accent;
+    border-color: c.$accent;
     font-weight: 600;
   }
 
@@ -59,10 +55,10 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     margin: 0;
     padding: 0.3rem;
     list-style: none;
-    background-color: color.scale($panel-bg, $lightness: 6%);
-    border: 1px solid $panel-border;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 10px;
-    box-shadow: 0 10px 26px rgba(c.$black, 0.4);
+    box-shadow: c.$shadow-popover;
   }
 
   .dropdown-option {
@@ -73,7 +69,7 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     padding: 0.5rem 0.6rem;
     font-family: inherit;
     font-size: 0.85rem;
-    color: c.$soft-linen;
+    color: c.$text-primary;
     background-color: transparent;
     border: none;
     border-radius: 7px;
@@ -81,11 +77,11 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     text-align: left;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.1);
+      background-color: c.$overlay-hover;
     }
 
     &.is-selected {
-      color: c.$goldenrod;
+      color: c.$accent;
     }
 
     .dropdown-option-label {
@@ -100,13 +96,13 @@ $panel-border: rgba(c.$soft-linen, 0.18);
     flex: 0 0 auto;
     width: 1.05rem;
     height: 1.05rem;
-    color: c.$black;
-    border: 1px solid rgba(c.$soft-linen, 0.4);
+    color: c.$text-on-accent;
+    border: 1px solid c.$border-strong;
     border-radius: 5px;
 
     &.is-checked {
-      background-color: c.$goldenrod;
-      border-color: c.$goldenrod;
+      background-color: c.$accent;
+      border-color: c.$accent;
     }
   }
 }

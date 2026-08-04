@@ -1,7 +1,4 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
-
-$avatar-bg: color.scale(c.$taupe, $lightness: -35%);
 
 .avatar-picker {
   display: flex;
@@ -13,7 +10,7 @@ $avatar-bg: color.scale(c.$taupe, $lightness: -35%);
     align-self: flex-start;
     font-size: 0.85rem;
     font-weight: 600;
-    color: c.$soft-linen;
+    color: c.$text-primary;
   }
 
   .avatar-picker-circle {
@@ -22,15 +19,15 @@ $avatar-bg: color.scale(c.$taupe, $lightness: -35%);
     height: 7rem;
     padding: 0;
     border-radius: 50%;
-    background-color: $avatar-bg;
-    border: 2px dashed rgba(c.$soft-linen, 0.3);
-    color: c.$rosy-granite;
+    background-color: c.$surface-3;
+    border: 2px dashed c.$border-strong;
+    color: c.$text-muted;
     cursor: pointer;
     overflow: visible;
     transition: border-color 0.16s ease;
 
     &:hover {
-      border-color: c.$goldenrod;
+      border-color: c.$accent;
     }
 
     .avatar-picker-image {
@@ -56,9 +53,10 @@ $avatar-bg: color.scale(c.$taupe, $lightness: -35%);
       justify-content: center;
       width: 2rem;
       height: 2rem;
-      color: c.$black;
-      background-color: c.$goldenrod;
-      border: 2px solid color.scale(c.$taupe, $lightness: -55%);
+      color: c.$text-on-accent;
+      background-color: c.$accent;
+      // Matches the auth card behind it, so the badge reads as a punched hole.
+      border: 2px solid c.$surface-1;
       border-radius: 50%;
     }
   }
@@ -69,6 +67,6 @@ $avatar-bg: color.scale(c.$taupe, $lightness: -35%);
 
   .avatar-picker-hint {
     font-size: 0.72rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 }

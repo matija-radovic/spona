@@ -1,8 +1,4 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
-
-$popover-bg: color.scale(c.$taupe, $lightness: -42%);
-$popover-border: rgba(c.$soft-linen, 0.18);
 
 .reaction-picker {
   position: relative;
@@ -13,7 +9,7 @@ $popover-border: rgba(c.$soft-linen, 0.18);
     align-items: center;
     justify-content: center;
     padding: 0.4rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     background: transparent;
     border: none;
     border-radius: 8px;
@@ -21,13 +17,13 @@ $popover-border: rgba(c.$soft-linen, 0.18);
     transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
-      color: c.$goldenrod;
-      background-color: rgba(c.$goldenrod, 0.12);
+      color: c.$accent;
+      background-color: c.$accent-wash;
     }
   }
 
   &.is-open .reaction-picker-trigger {
-    color: c.$goldenrod;
+    color: c.$accent;
   }
 
   // ── Popover: opens above the trigger, 5 columns x 4 rows ────────────────────
@@ -40,10 +36,10 @@ $popover-border: rgba(c.$soft-linen, 0.18);
     grid-template-columns: repeat(5, 1fr);
     gap: 0.15rem;
     padding: 0.4rem;
-    background-color: color.scale($popover-bg, $lightness: 6%);
-    border: 1px solid $popover-border;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 12px;
-    box-shadow: 0 10px 26px rgba(c.$black, 0.45);
+    box-shadow: c.$shadow-popover;
   }
 
   .reaction-picker-cell {
@@ -61,12 +57,12 @@ $popover-border: rgba(c.$soft-linen, 0.18);
     transition: background-color 0.12s ease, border-color 0.12s ease;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.12);
+      background-color: c.$overlay-hover;
     }
 
     &.is-active {
-      background-color: rgba(c.$goldenrod, 0.22);
-      border-color: c.$goldenrod;
+      background-color: c.$accent-glow;
+      border-color: c.$accent;
     }
   }
 }

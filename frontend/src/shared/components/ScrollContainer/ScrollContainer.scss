@@ -1,3 +1,5 @@
+@use '../../css/colors' as c;
+
 .scroll-container {
     overflow-y: auto;
     overflow-x: hidden;
@@ -27,18 +29,18 @@
     }
 
     &:hover {
-        scrollbar-color: rgba(150, 150, 150, 0.45) transparent;
+        scrollbar-color: c.$scrollbar-thumb transparent;
 
         &::-webkit-scrollbar-thumb {
-            background-color: rgba(150, 150, 150, 0.45);
+            background-color: c.$scrollbar-thumb;
         }
     }
 
     &.is-scrolling {
-        scrollbar-color: rgba(150, 150, 150, 0.7) transparent;
+        scrollbar-color: c.$scrollbar-thumb-active transparent;
 
         &::-webkit-scrollbar-thumb {
-            background-color: rgba(150, 150, 150, 0.7);
+            background-color: c.$scrollbar-thumb-active;
         }
     }
 }

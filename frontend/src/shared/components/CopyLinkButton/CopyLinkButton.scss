@@ -7,7 +7,7 @@
   padding: 0.4rem 0.6rem;
   font-family: inherit;
   font-size: 0.82rem;
-  color: c.$rosy-granite;
+  color: c.$text-muted;
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -15,12 +15,12 @@
   transition: color 0.16s ease, background-color 0.16s ease;
 
   &:hover {
-    color: c.$soft-linen;
-    background-color: rgba(c.$soft-linen, 0.08);
+    color: c.$text-primary;
+    background-color: c.$overlay-hover;
   }
 
   &.is-copied {
-    color: c.$goldenrod;
+    color: c.$accent;
   }
 
   .copy-link-label {

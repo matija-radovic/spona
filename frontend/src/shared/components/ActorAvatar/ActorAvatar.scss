@@ -1,8 +1,5 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
 @use '../../css/mediaqueries' as mq;
-
-$avatar-bg: color.scale(c.$taupe, $lightness: -35%);
 
 .actor-avatar {
   position: relative;
@@ -11,9 +8,9 @@ $avatar-bg: color.scale(c.$taupe, $lightness: -35%);
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: $avatar-bg;
-  border: 2px solid rgba(c.$soft-linen, 0.3);
-  color: c.$rosy-granite;
+  background-color: c.$surface-3;
+  border: 2px solid c.$border-strong;
+  color: c.$text-muted;
   overflow: hidden;
 
   .actor-avatar-image {

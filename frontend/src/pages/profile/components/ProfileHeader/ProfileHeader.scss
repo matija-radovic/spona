@@ -29,7 +29,7 @@
     font-size: 1.7rem;
     font-weight: 600;
     line-height: 1.2;
-    color: c.$white;
+    color: c.$text-strong;
   }
 
   .profile-head-sub {
@@ -38,14 +38,14 @@
     align-items: center;
     gap: 0.4rem;
     font-size: 0.85rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   .profile-head-site {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    color: c.$goldenrod;
+    color: c.$accent;
     text-decoration: none;
 
     &:hover {
@@ -58,18 +58,18 @@
     align-items: center;
     gap: 0.4rem;
     font-size: 0.85rem;
-    color: c.$soft-linen;
+    color: c.$text-primary;
   }
 
   .profile-head-dot {
-    color: c.$dim-grey;
+    color: c.$text-faint;
   }
 
   .profile-head-bio {
     margin-top: 0.35rem;
     font-size: 0.9rem;
     line-height: 1.5;
-    color: c.$soft-linen;
+    color: c.$text-primary;
     white-space: pre-line;
   }
 
@@ -104,6 +104,6 @@
   }
 
   .profile-head-copy.is-copied {
-    color: c.$goldenrod;
+    color: c.$accent;
   }
 }

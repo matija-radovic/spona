@@ -1,9 +1,4 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
-
-// Opaque surfaces so the validity indicator never lets text show through.
-$field-bg: color.scale(c.$taupe, $lightness: -42%);
-$field-border: rgba(c.$soft-linen, 0.18);
 
 .text-field {
   display: flex;
@@ -17,10 +12,10 @@ $field-border: rgba(c.$soft-linen, 0.18);
     gap: 0.3rem;
     font-size: 0.85rem;
     font-weight: 600;
-    color: c.$soft-linen;
+    color: c.$text-primary;
 
     .text-field-asterisk {
-      color: #e5484d;
+      color: c.$danger;
       line-height: 1;
     }
   }
@@ -36,20 +31,21 @@ $field-border: rgba(c.$soft-linen, 0.18);
     padding: 0.7rem 0.85rem;
     font-family: inherit;
     font-size: 0.9rem;
-    color: c.$white;
-    background-color: $field-bg;
-    border: 1px solid $field-border;
+    color: c.$text-strong;
+    // Opaque so the validity indicator never lets text show through.
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
     border-radius: 10px;
     outline: none;
     transition: border-color 0.16s ease, box-shadow 0.16s ease;
 
     &::placeholder {
-      color: rgba(c.$rosy-granite, 0.7);
+      color: c.$text-placeholder;
     }
 
     &:focus {
-      border-color: c.$goldenrod;
-      box-shadow: 0 0 0 2px rgba(c.$goldenrod, 0.25);
+      border-color: c.$accent;
+      box-shadow: 0 0 0 2px c.$accent-glow;
     }
   }
 
@@ -66,7 +62,7 @@ $field-border: rgba(c.$soft-linen, 0.18);
   }
 
   &.text-field-invalid .text-field-input {
-    border-color: rgba(#e5484d, 0.7);
+    border-color: c.$danger-border;
   }
 
   // ── Validity indicator ──────────────────────────────────────────────────
@@ -94,17 +90,17 @@ $field-border: rgba(c.$soft-linen, 0.18);
     border-radius: 50%;
     cursor: default;
     // Opaque background - the indicator must never be see-through.
-    background-color: color.scale($field-bg, $lightness: 8%);
-    color: c.$white;
+    background-color: c.$surface-4;
+    color: c.$text-strong;
   }
 
   &.text-field-invalid .text-field-indicator {
-    background-color: #e5484d;
+    background-color: c.$danger;
     cursor: pointer;
   }
 
   &.text-field-valid .text-field-indicator {
-    background-color: #2ea043;
+    background-color: c.$success;
   }
 
   // ── Tooltip ─────────────────────────────────────────────────────────────
@@ -118,10 +114,11 @@ $field-border: rgba(c.$soft-linen, 0.18);
     padding: 0.45rem 0.6rem;
     font-size: 0.75rem;
     line-height: 1.3;
-    color: c.$black;
-    background-color: c.$soft-linen;
+    // Inverted surface: dark ink on the light end of the neutral ramp.
+    color: c.$neutral-900;
+    background-color: c.$neutral-100;
     border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(c.$black, 0.35);
+    box-shadow: c.$shadow-tooltip;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.14s ease;
@@ -132,7 +129,7 @@ $field-border: rgba(c.$soft-linen, 0.18);
       top: 100%;
       right: 0.5rem;
       border: 5px solid transparent;
-      border-top-color: c.$soft-linen;
+      border-top-color: c.$neutral-100;
     }
   }
 
@@ -147,7 +144,7 @@ $field-border: rgba(c.$soft-linen, 0.18);
     margin: 0;
     font-size: 0.75rem;
     line-height: 1.35;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     white-space: pre-line; // honor "\n" rows from the i18n strings
   }
 }

@@ -1,14 +1,12 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
 @use '../../css/mediaqueries' as mq;
 
 $right-gap: 1.6rem;
-$menu-bg: color.scale(c.$taupe, $lightness: -42%);
 
 .header {
   z-index: 100;
-  background-color: c.$black;
-  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+  background-color: c.$surface-0;
+  border-bottom: 1px solid c.$border-line;
 
   .header-inner {
     display: flex;
@@ -33,7 +31,7 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
   }
 
   .header-link {
-    color: c.$soft-linen;
+    color: c.$text-primary;
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
@@ -41,12 +39,12 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     transition: color 0.18s ease, border-color 0.18s ease;
 
     &:hover {
-      color: c.$white;
+      color: c.$text-strong;
     }
 
     &-active {
-      color: c.$goldenrod;
-      border-bottom-color: c.$goldenrod;
+      color: c.$accent;
+      border-bottom-color: c.$accent;
     }
   }
 
@@ -55,14 +53,14 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     align-items: center;
     gap: 0.75rem;
     padding-left: $right-gap;
-    border-left: 1px solid rgba(c.$dim-grey, 0.5);
+    border-left: 1px solid c.$border-line;
   }
 
   // ── Authenticated header: divider + avatar menu ─────────────────────────────
   .header-divider {
     width: 1px;
     height: 1.6rem;
-    background-color: rgba(c.$dim-grey, 0.4);
+    background-color: c.$border-line;
   }
 
   .header-user-menu {
@@ -79,7 +77,7 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     border: none;
     border-radius: 999px;
     cursor: pointer;
-    color: c.$soft-linen;
+    color: c.$text-primary;
 
     .header-avatar-chevron {
       transition: transform 0.16s ease;
@@ -99,10 +97,10 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     display: flex;
     flex-direction: column;
     padding: 0.3rem;
-    background-color: color.scale($menu-bg, $lightness: 6%);
-    border: 1px solid rgba(c.$soft-linen, 0.18);
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 10px;
-    box-shadow: 0 10px 26px rgba(c.$black, 0.4);
+    box-shadow: c.$shadow-popover;
   }
 
   .header-user-menu-item {
@@ -113,7 +111,7 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     padding: 0.55rem 0.7rem;
     font-family: inherit;
     font-size: 0.88rem;
-    color: c.$soft-linen;
+    color: c.$text-primary;
     text-decoration: none;
     background: transparent;
     border: none;
@@ -122,7 +120,7 @@ $menu-bg: color.scale(c.$taupe, $lightness: -42%);
     text-align: left;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.1);
+      background-color: c.$overlay-hover;
     }
   }
 

@@ -10,7 +10,7 @@
     align-items: center;
     gap: 0.2rem;
     font-size: 0.85rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   .reaction-summary-emoji {
@@ -23,15 +23,15 @@
     font-family: inherit;
     font-size: 0.8rem;
     font-weight: 600;
-    color: c.$soft-linen;
-    background-color: rgba(c.$dim-grey, 0.4);
+    color: c.$text-primary;
+    background-color: c.$fill-control;
     border: none;
     border-radius: 999px;
     cursor: pointer;
     transition: background-color 0.16s ease;
 
     &:hover {
-      background-color: rgba(c.$dim-grey, 0.7);
+      background-color: c.$fill-control-hover;
     }
   }
 }

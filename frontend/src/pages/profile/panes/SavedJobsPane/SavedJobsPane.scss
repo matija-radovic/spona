@@ -23,20 +23,20 @@
   gap: 0.7rem;
   padding: 2rem 1rem;
   text-align: center;
-  color: c.$rosy-granite;
+  color: c.$text-muted;
 }
 
 .saved-jobs-pane-retry {
   padding: 0.45rem 0.9rem;
   font-family: inherit;
   font-size: 0.82rem;
-  color: c.$soft-linen;
-  background-color: rgba(c.$dim-grey, 0.45);
+  color: c.$text-primary;
+  background-color: c.$fill-control;
   border: none;
   border-radius: 999px;
   cursor: pointer;
 
   &:hover {
-    background-color: rgba(c.$dim-grey, 0.7);
+    background-color: c.$fill-control-hover;
   }
 }

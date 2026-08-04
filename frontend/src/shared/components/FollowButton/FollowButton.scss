@@ -4,11 +4,11 @@
 // Only the "following" state is refined here: it keeps the quiet secondary
 // outline, but hovers to the accent so it reads as "click to unfollow".
 .follow-btn.is-following {
-  border-color: rgba(c.$soft-linen, 0.35);
+  border-color: c.$border-strong;
 
   &:hover {
-    color: c.$white;
-    border-color: c.$goldenrod;
-    background-color: rgba(c.$goldenrod, 0.12);
+    color: c.$text-strong;
+    border-color: c.$accent;
+    background-color: c.$accent-wash;
   }
 }

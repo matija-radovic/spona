@@ -1,16 +1,12 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
-
-$card-bg: color.scale(c.$taupe, $lightness: -42%);
-$card-border: rgba(c.$soft-linen, 0.14);
 
 .post-card {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
   padding: 0.9rem 1rem;
-  background-color: $card-bg;
-  border: 1px solid $card-border;
+  background-color: c.$surface-2;
+  border: 1px solid c.$border-panel;
   border-radius: 12px;
 
   // ── Row 1: author ───────────────────────────────────────────────────────────
@@ -23,7 +19,7 @@ $card-border: rgba(c.$soft-linen, 0.14);
     color: inherit;
 
     &:hover .post-card-name {
-      color: c.$goldenrod;
+      color: c.$accent;
     }
   }
 
@@ -36,13 +32,13 @@ $card-border: rgba(c.$soft-linen, 0.14);
   .post-card-name {
     font-size: 0.95rem;
     font-weight: 600;
-    color: c.$white;
+    color: c.$text-strong;
     transition: color 0.16s ease;
   }
 
   .post-card-sub {
     font-size: 0.78rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
   }
 
   // ── Row 2: content (the only navigation surface) ────────────────────────────
@@ -56,14 +52,14 @@ $card-border: rgba(c.$soft-linen, 0.14);
     margin: 0 -0.5rem;
     font-size: 0.9rem;
     line-height: 1.5;
-    color: c.$soft-linen;
+    color: c.$text-primary;
     white-space: pre-line;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.16s ease;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.06);
+      background-color: c.$overlay-subtle;
     }
   }
 
@@ -88,7 +84,7 @@ $card-border: rgba(c.$soft-linen, 0.14);
     padding: 0.4rem 0.55rem;
     font-family: inherit;
     font-size: 0.82rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     background: transparent;
     border: none;
     border-radius: 8px;
@@ -96,8 +92,8 @@ $card-border: rgba(c.$soft-linen, 0.14);
     transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
-      color: c.$soft-linen;
-      background-color: rgba(c.$soft-linen, 0.08);
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
     }
   }
 }

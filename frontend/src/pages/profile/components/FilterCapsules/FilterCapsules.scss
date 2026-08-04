@@ -9,22 +9,22 @@
     padding: 0.45rem 0.95rem;
     font-family: inherit;
     font-size: 0.82rem;
-    color: c.$soft-linen;
-    background-color: rgba(c.$dim-grey, 0.4);
+    color: c.$text-primary;
+    background-color: c.$fill-control;
     border: 1px solid transparent;
     border-radius: 999px;
     cursor: pointer;
     transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 
     &:hover {
-      background-color: rgba(c.$dim-grey, 0.65);
+      background-color: c.$fill-control-hover;
     }
 
     &.is-active {
-      color: c.$black;
+      color: c.$text-on-accent;
       font-weight: 600;
-      background-color: c.$goldenrod;
-      border-color: c.$goldenrod;
+      background-color: c.$accent;
+      border-color: c.$accent;
     }
   }
 }

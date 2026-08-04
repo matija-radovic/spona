@@ -1,18 +1,83 @@
 @use 'sass:color';
 
-$white: #ffffffff;
-$midnight-violet: #412234ff;
-$vintage-grape: #6d466bff;
-$wisteria: #b49fccff;
-$soft-blush: #ead7d7ff;
+// Single source of truth for color. Two layers: ramps hold the only hex
+// literals in src/ and seed everything below; tokens are what components use.
 
-$taupe: #4b4237ff;
-$goldenrod: #d5a021ff; 
-$soft-linen: #ede7d9ff;
-$rosy-granite: #a49694ff;
-$dim-grey: #736b60ff;
+// Ramps
 
-$black: #000;
+$neutral-000: #ffffff;
+$neutral-100: #ede7d9;
+$neutral-300: #a49694;
+$neutral-500: #736b60;
+$neutral-700: #4b4237; // seeds the surface ladder, never used raw
+$neutral-900: #000000;
 
-$panel-bg: color.scale($taupe, $lightness: -42%);
-$panel-border: rgba($soft-linen, 0.18);
+$accent-500: #d5a021;
+$accent-600: color.scale($accent-500, $lightness: -8%);
+
+$danger-500: #e5484d;
+$danger-300: #ff9ba0; // legible as text on a dark surface
+$success-500: #2ea043;
+
+
+// Tokens
+
+// Elevation ladder: higher number = lighter = nearer the viewer. Pick by depth,
+// not by widget. A popover and a filter capsule are both $surface-4.
+$surface-0: $neutral-900; // the page itself
+$surface-1: color.scale($neutral-700, $lightness: -55%); // sunken, auth cards
+$surface-2: color.scale($neutral-700, $lightness: -42%); // default: cards, panels, inputs
+$surface-3: color.scale($surface-2, $lightness: 4%); // wells, media tiles
+$surface-4: color.scale($surface-2, $lightness: 8%); // raised: popovers, capsules
+
+$text-strong: $neutral-000; // titles, names, typed input
+$text-primary: $neutral-100; // the default reading color
+$text-muted: $neutral-300; // secondary copy, resting icons
+$text-faint: $neutral-500; // footer copy, separator glyphs
+$text-placeholder: rgba($neutral-300, 0.7);
+$text-on-accent: $neutral-900;
+
+$accent: $accent-500;
+$accent-hover: $accent-600;
+$accent-wash: rgba($accent-500, 0.12); // hover backgrounds
+$accent-glow: rgba($accent-500, 0.22); // focus rings, active cells
+$accent-muted: rgba($accent-500, 0.5); // decorative borders, secondary fills
+$accent-subdued: rgba($accent-500, 0.75); // dimmed accent text
+
+$border-panel: rgba($neutral-100, 0.18); // the default: cards, panels, inputs
+$border-strong: rgba($neutral-100, 0.35); // tick boxes, avatar rings, dashed drops
+$border-line: rgba($neutral-500, 0.4); // dividers and rules
+
+// Hover tints, painted over whatever sits beneath.
+$overlay-subtle: rgba($neutral-100, 0.06); // large areas, e.g. text blocks
+$overlay-hover: rgba($neutral-100, 0.1); // menu items, icon buttons
+
+$fill-muted: rgba($neutral-500, 0.25); // quiet blocks, context bars
+$fill-control: rgba($neutral-500, 0.45); // tertiary buttons, capsules
+$fill-control-hover: rgba($neutral-500, 0.7);
+
+$scrim: rgba($neutral-900, 0.55); // backdrop behind an overlay panel
+$scrim-strong: rgba($neutral-900, 0.72); // full-panel drag overlay
+
+// Complete box-shadow values. Assign directly, do not rebuild.
+$shadow-tooltip: 0 6px 18px rgba($neutral-900, 0.4);
+$shadow-popover: 0 10px 26px rgba($neutral-900, 0.4);
+$shadow-card: 0 18px 50px rgba($neutral-900, 0.45);
+
+$danger: $danger-500;
+$danger-text: $danger-300;
+$danger-wash: rgba($danger-500, 0.15); // error box fill, destructive hover
+$danger-border: rgba($danger-500, 0.7);
+$success: $success-500;
+
+$scrollbar-thumb: rgba($neutral-300, 0.45); // ScrollContainer only
+$scrollbar-thumb-active: rgba($neutral-300, 0.7);
+
+
+// Parked
+// An earlier violet direction, not part of the active brand.
+
+$midnight-violet: #412234;
+$vintage-grape: #6d466b;
+$wisteria: #b49fcc;
+$soft-blush: #ead7d7;

@@ -4,7 +4,7 @@ $hint-width: 2.5rem;
 
 .profile-tabs {
   position: relative;
-  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+  border-bottom: 1px solid c.$border-line;
 
   .profile-tabs-lane {
     overflow-x: auto;
@@ -48,19 +48,19 @@ $hint-width: 2.5rem;
     width: $hint-width;
     display: flex;
     align-items: center;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     pointer-events: none;
 
     &.profile-tabs-hint-start {
       left: 0;
       justify-content: flex-start;
-      background: linear-gradient(to right, c.$black 30%, rgba(c.$black, 0));
+      background: linear-gradient(to right, c.$surface-0 30%, rgba(c.$surface-0, 0));
     }
 
     &.profile-tabs-hint-end {
       right: 0;
       justify-content: flex-end;
-      background: linear-gradient(to left, c.$black 30%, rgba(c.$black, 0));
+      background: linear-gradient(to left, c.$surface-0 30%, rgba(c.$surface-0, 0));
     }
   }
 
@@ -71,7 +71,7 @@ $hint-width: 2.5rem;
     font-size: 0.9rem;
     font-weight: 500;
     white-space: nowrap;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
@@ -83,12 +83,12 @@ $hint-width: 2.5rem;
     }
 
     &:hover {
-      color: c.$soft-linen;
+      color: c.$text-primary;
     }
 
     &.is-active {
-      color: c.$goldenrod;
-      border-bottom-color: c.$goldenrod;
+      color: c.$accent;
+      border-bottom-color: c.$accent;
     }
   }
 }

@@ -6,8 +6,8 @@ $font-size: .75rem;
 .footer {
   margin-top: 1rem;
   padding: 1rem 0 1.5rem 0;
-  border-top: 1px solid rgba(c.$dim-grey, 0.4);
-  background-color: c.$black;
+  border-top: 1px solid c.$border-line;
+  background-color: c.$surface-0;
 
   .footer-inner {
     display: flex;
@@ -36,12 +36,12 @@ $font-size: .75rem;
   }
 
   .footer-link {
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     text-decoration: none;
     transition: color 0.18s ease;
 
     &:hover {
-      color: c.$soft-linen;
+      color: c.$text-primary;
       text-decoration: underline;
     }
   }
@@ -60,7 +60,7 @@ $font-size: .75rem;
   }
 
   .footer-copy {
-    color: c.$dim-grey;
+    color: c.$text-faint;
   }
 
   .footer-copy,

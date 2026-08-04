@@ -1,4 +1,3 @@
-@use 'sass:color';
 @use '../../css/colors' as c;
 
 .btn {
@@ -21,7 +20,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid c.$goldenrod;
+    outline: 2px solid c.$accent;
     outline-offset: 2px;
   }
 
@@ -45,44 +44,44 @@
   }
 
   &-primary {
-    background-color: c.$goldenrod;
-    border-color: c.$goldenrod;
-    color: c.$black;
+    background-color: c.$accent;
+    border-color: c.$accent;
+    color: c.$text-on-accent;
 
     &:hover {
-      background-color: color.scale(c.$goldenrod, $lightness: -8%);
-      border-color: color.scale(c.$goldenrod, $lightness: -8%);
+      background-color: c.$accent-hover;
+      border-color: c.$accent-hover;
     }
   }
 
   &-secondary {
     background-color: transparent;
-    border-color: c.$soft-linen;
-    color: c.$soft-linen;
+    border-color: c.$text-primary;
+    color: c.$text-primary;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.12);
+      background-color: c.$overlay-hover;
     }
   }
 
   &-tertiary {
-    background-color: rgba(c.$dim-grey, 0.45);
+    background-color: c.$fill-control;
     border-color: transparent;
-    color: c.$soft-linen;
+    color: c.$text-primary;
 
     &:hover {
-      background-color: rgba(c.$dim-grey, 0.7);
+      background-color: c.$fill-control-hover;
     }
   }
 
   &-quaternary {
     background-color: transparent;
-    border-color: c.$rosy-granite;
-    color: c.$rosy-granite;
+    border-color: c.$text-muted;
+    color: c.$text-muted;
 
     &:hover {
-      background-color: rgba(c.$rosy-granite, 0.15);
-      color: c.$soft-linen;
+      background-color: c.$overlay-hover;
+      color: c.$text-primary;
     }
   }
 
@@ -92,7 +91,7 @@
     color: inherit;
 
     &:hover {
-      background-color: rgba(c.$soft-linen, 0.1);
+      background-color: c.$overlay-hover;
     }
   }
 }

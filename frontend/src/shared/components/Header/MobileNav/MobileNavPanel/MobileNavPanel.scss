@@ -26,7 +26,7 @@ $header-height: calc(3.8rem + 1px);
   .mobile-nav-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(c.$black, 0.55);
+    background: c.$scrim;
   }
 
   .mobile-nav-panel {
@@ -35,7 +35,7 @@ $header-height: calc(3.8rem + 1px);
     right: 0;
     bottom: 0;
     width: min($panel-width, $panel-max-width);
-    background: c.$black;
+    background: c.$surface-0;
     display: flex;
     flex-direction: column;
     padding: $panel-pad;
@@ -51,7 +51,7 @@ $header-height: calc(3.8rem + 1px);
       display: flex;
       align-items: center;
       gap: 0.7rem;
-      color: c.$soft-linen;
+      color: c.$text-primary;
       text-decoration: none;
       font-weight: 500;
       transition: color 0.18s ease;
@@ -61,17 +61,17 @@ $header-height: calc(3.8rem + 1px);
       }
 
       &:hover {
-        color: c.$white;
+        color: c.$text-strong;
       }
 
       &-active {
-        color: c.$goldenrod;
+        color: c.$accent;
       }
     }
 
     .mobile-nav-auth {
       margin-top: auto;
-      border-top: 1px solid rgba(c.$dim-grey, 0.4);
+      border-top: 1px solid c.$border-line;
       padding-top: 1rem;
       display: flex;
       flex-direction: column;

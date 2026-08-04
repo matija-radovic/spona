@@ -1,12 +1,11 @@
-@use 'sass:color';
 @use '../../../../shared/css/colors' as c;
 @use '../../../../shared/css/mediaqueries' as mq;
 
 .jobs-bar {
   display: flex;
   flex-direction: column;
-  background-color: c.$black;
-  border-bottom: 1px solid rgba(c.$dim-grey, 0.4);
+  background-color: c.$surface-0;
+  border-bottom: 1px solid c.$border-line;
 
   .jobs-bar-row {
     display: flex;
@@ -22,13 +21,13 @@
     flex: 1 1 auto;
     min-width: 0;
     padding: 0 0.85rem;
-    color: c.$rosy-granite;
-    background-color: color.scale(c.$panel-bg, $lightness: 4%);
-    border: 1px solid c.$panel-border;
+    color: c.$text-muted;
+    background-color: c.$surface-3;
+    border: 1px solid c.$border-panel;
     border-radius: 999px;
 
     &:focus-within {
-      border-color: c.$goldenrod;
+      border-color: c.$accent;
     }
 
     input {
@@ -37,13 +36,13 @@
       padding: 0.6rem 0;
       font-family: inherit;
       font-size: 0.9rem;
-      color: c.$white;
+      color: c.$text-strong;
       background: transparent;
       border: none;
       outline: none;
 
       &::placeholder {
-        color: rgba(c.$rosy-granite, 0.75);
+        color: c.$text-placeholder;
       }
     }
   }
@@ -54,21 +53,21 @@
     gap: 0.3rem;
     flex: 0 0 auto;
     padding: 0.6rem 0.9rem;
-    color: c.$soft-linen;
-    background-color: color.scale(c.$panel-bg, $lightness: 8%);
-    border: 1px solid c.$panel-border;
+    color: c.$text-primary;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 999px;
     cursor: pointer;
     transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
 
     &:hover {
-      border-color: c.$goldenrod;
+      border-color: c.$accent;
     }
 
     &.is-open {
-      color: c.$black;
-      background-color: c.$goldenrod;
-      border-color: c.$goldenrod;
+      color: c.$text-on-accent;
+      background-color: c.$accent;
+      border-color: c.$accent;
     }
   }
 
@@ -94,14 +93,14 @@
     padding: 0.5rem 0.8rem;
     font-family: inherit;
     font-size: 0.85rem;
-    color: c.$soft-linen;
-    background-color: color.scale(c.$panel-bg, $lightness: 8%);
-    border: 1px solid c.$panel-border;
+    color: c.$text-primary;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
     border-radius: 999px;
     cursor: pointer;
 
     &:hover {
-      border-color: c.$goldenrod;
+      border-color: c.$accent;
     }
 
     .filter-toggle-box {
@@ -110,21 +109,22 @@
       justify-content: center;
       width: 1.05rem;
       height: 1.05rem;
-      color: c.$black;
-      border: 1px solid rgba(c.$soft-linen, 0.4);
+      color: c.$text-on-accent;
+      border: 1px solid c.$border-strong;
       border-radius: 5px;
     }
 
     &.is-active {
-      color: c.$black;
-      background-color: c.$goldenrod;
-      border-color: c.$goldenrod;
+      color: c.$text-on-accent;
+      background-color: c.$accent;
+      border-color: c.$accent;
       font-weight: 600;
 
+      // Inverted inside the filled capsule.
       .filter-toggle-box {
-        background-color: c.$black;
-        color: c.$goldenrod;
-        border-color: c.$black;
+        background-color: c.$neutral-900;
+        color: c.$accent;
+        border-color: c.$neutral-900;
       }
     }
   }
@@ -139,13 +139,13 @@
     padding: 0.4rem 0.2rem;
     font-family: inherit;
     font-size: 0.85rem;
-    color: c.$rosy-granite;
+    color: c.$text-muted;
     background: transparent;
     border: none;
     cursor: pointer;
 
     &:hover {
-      color: c.$soft-linen;
+      color: c.$text-primary;
       text-decoration: underline;
     }
   }
