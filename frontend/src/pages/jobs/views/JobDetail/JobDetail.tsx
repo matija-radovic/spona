@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconArrowLeft } from '@tabler/icons-react'
+import { Button, ButtonVariant } from '@shared/components/Button'
 import { fetchJobBySlug, type JobDetailDto } from '@utils/api/jobs'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
 import { useJobsOutletContext } from '@pages/jobs/lib/jobsOutletContext'
@@ -69,16 +70,15 @@ const JobDetail = () => {
                 {isNotFound ? t('jobs.panel.notFound') : problem?.detail || t('errors.serverError')}
               </p>
               {!isNotFound && (
-                <button
-                  type="button"
-                  className="job-detail-retry"
+                <Button
+                  variant={ButtonVariant.TERTIARY}
                   onClick={() => {
                     setLoadedSlug(undefined)
                     setReloadKey((k) => k + 1)
                   }}
                 >
                   {t('jobs.results.retry')}
-                </button>
+                </Button>
               )}
             </>
           )}

@@ -6,7 +6,10 @@
 .follow-btn.is-following {
   border-color: c.$border-strong;
 
-  &:hover {
+  // `:not(:disabled)` is load-bearing, not decoration: without it this ties with
+  // `.btn-secondary:hover:not(:disabled)` on specificity and would be settled by
+  // stylesheet order alone.
+  &:hover:not(:disabled) {
     color: c.$text-strong;
     border-color: c.$accent;
     background-color: c.$accent-wash;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useOnScreen from '@shared/hooks/useOnScreen'
+import { Button, ButtonVariant } from '@shared/components/Button'
 import { searchActors, type ActorSearchItemDto } from '@utils/api/profiles'
 import { ActorSearchRow } from '../ActorSearchRow'
 
@@ -116,9 +117,9 @@ const ActorResults = ({ query, type }: ActorResultsProps) => {
       {loadMoreError && (
         <div className="actor-search-more actor-search-more-error">
           <span>{t('jobs.results.loadMoreError')}</span>
-          <button type="button" className="actor-search-retry" onClick={loadMore}>
+          <Button variant={ButtonVariant.TERTIARY} onClick={loadMore}>
             {t('jobs.results.retry')}
-          </button>
+          </Button>
         </div>
       )}
     </>

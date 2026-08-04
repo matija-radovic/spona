@@ -102,21 +102,6 @@
     color: c.$text-muted;
   }
 
-  .jobs-list-retry {
-    padding: 0.45rem 0.9rem;
-    font-family: inherit;
-    font-size: 0.82rem;
-    color: c.$text-primary;
-    background-color: c.$fill-control;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: c.$fill-control-hover;
-    }
-  }
-
   // ── Hint panel (right pane at /jobs index) ───────────────────────────────────
   .jobs-hint {
     display: flex;

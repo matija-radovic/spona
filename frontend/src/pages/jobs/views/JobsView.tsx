@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
 import useOnScreen from '@shared/hooks/useOnScreen'
+import { Button, ButtonVariant } from '@shared/components/Button'
 import { fetchJobs, type JobListItemDto } from '@utils/api/jobs'
 import { filtersToSearchParams, type FilterState } from '@pages/jobs/lib/filters'
 import { getJobsCache, saveJobsScroll, setJobsCache } from '@pages/jobs/lib/jobsCache'
@@ -198,9 +199,9 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
               {listState === 'error' && items.length === 0 && (
                 <div className="jobs-list-state">
                   <p>{t('errors.serverError')}</p>
-                  <button type="button" className="jobs-list-retry" onClick={retryFirstPage}>
+                  <Button variant={ButtonVariant.TERTIARY} onClick={retryFirstPage}>
                     {t('jobs.results.retry')}
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -228,9 +229,9 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
                   {loadMoreError && (
                     <div className="jobs-list-more jobs-list-more-error">
                       <span>{t('jobs.results.loadMoreError')}</span>
-                      <button type="button" className="jobs-list-retry" onClick={loadMore}>
+                      <Button variant={ButtonVariant.TERTIARY} onClick={loadMore}>
                         {t('jobs.results.retry')}
-                      </button>
+                      </Button>
                     </div>
                   )}
 

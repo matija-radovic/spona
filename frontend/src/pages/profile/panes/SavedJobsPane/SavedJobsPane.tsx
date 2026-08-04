@@ -2,6 +2,7 @@ import './SavedJobsPane.scss'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Button, ButtonVariant } from '@shared/components/Button'
 import { JobCard } from '@pages/jobs/components/JobCard'
 import { FilterCapsules, type CapsuleOption } from '@pages/profile/components/FilterCapsules'
 import { fetchJobsByIds, type SavedJobItemDto } from '@utils/api/jobs'
@@ -131,9 +132,9 @@ const SavedJobsPane = () => {
     return (
       <div className="saved-jobs-pane-state">
         <p>{t('errors.serverError')}</p>
-        <button type="button" className="saved-jobs-pane-retry" onClick={retry}>
+        <Button variant={ButtonVariant.TERTIARY} onClick={retry}>
           {t('jobs.results.retry')}
-        </button>
+        </Button>
       </div>
     )
   }

@@ -1,4 +1,5 @@
 import './FilterCapsules.scss'
+import { Button, ButtonVariant } from '@shared/components/Button'
 
 export interface CapsuleOption {
   key: string
@@ -21,15 +22,15 @@ interface FilterCapsulesProps {
 const FilterCapsules = ({ options, active, onChange, ariaLabel }: FilterCapsulesProps) => (
   <div className="filter-capsules" role="group" aria-label={ariaLabel}>
     {options.map((option) => (
-      <button
+      <Button
         key={option.key}
-        type="button"
-        className={`filter-capsule${option.key === active ? ' is-active' : ''}`}
+        variant={option.key === active ? ButtonVariant.PRIMARY : ButtonVariant.TERTIARY}
+        className="filter-capsule"
         aria-pressed={option.key === active}
         onClick={() => onChange(option.key)}
       >
         {option.label}
-      </button>
+      </Button>
     ))}
   </div>
 )

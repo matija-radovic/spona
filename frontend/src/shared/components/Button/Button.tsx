@@ -31,6 +31,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
   /** When set, the button renders as a react-router <Link> to this path. */
   to?: string
+  /** When set, the button renders as a plain <a href> - for targets outside the SPA. */
+  href?: string
+  /** Only with `href`: opens in a new tab with a safe `rel`. */
+  external?: boolean
   children: ReactNode
 }
 
@@ -39,6 +43,8 @@ const Button = ({
   size = ButtonSize.MEDIUM,
   fullWidth = false,
   to,
+  href,
+  external = false,
   className,
   children,
   type = 'button',
@@ -51,6 +57,18 @@ const Button = ({
       <Link to={to} className={classes}>
         {children}
       </Link>
+    )
+  }
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={classes}
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {children}
+      </a>
     )
   }
 

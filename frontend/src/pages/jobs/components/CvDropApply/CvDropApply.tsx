@@ -2,7 +2,7 @@ import './CvDropApply.scss'
 import { useRef, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCheck, IconX, IconUpload, IconFileText } from '@tabler/icons-react'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant, ButtonSize } from '@shared/components/Button'
 import type { CvApply } from '@pages/jobs/lib/useCvApply'
 
 interface CvDropApplyProps {
@@ -43,7 +43,11 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
         onChange={onPick}
       />
 
-      <Button variant={ButtonVariant.SECONDARY} size="small" onClick={() => inputRef.current?.click()}>
+      <Button
+        variant={ButtonVariant.SECONDARY}
+        size={ButtonSize.SMALL}
+        onClick={() => inputRef.current?.click()}
+      >
         <IconUpload size={16} aria-hidden />
         {t('jobs.apply.chooseFile')}
       </Button>
@@ -77,7 +81,12 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
         </span>
       )}
 
-      <Button variant={ButtonVariant.PRIMARY} size="small" onClick={cv.handleSubmit} disabled={cv.applyDisabled}>
+      <Button
+        variant={ButtonVariant.PRIMARY}
+        size={ButtonSize.SMALL}
+        onClick={cv.handleSubmit}
+        disabled={cv.applyDisabled}
+      >
         {cv.submitting ? t('common.loading') : t('jobs.apply.submit')}
       </Button>
     </div>

@@ -2,6 +2,7 @@ import './ContactInfoWidget.scss'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
+import { Button, ButtonVariant } from '../Button'
 import {
   CONTACT_DESC_MAX,
   CONTACT_VALUE_MAX,
@@ -144,14 +145,14 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
             enterKeyHint="done"
             aria-label={t('auth.contact.valuePlaceholder')}
           />
-          <button
-            type="button"
+          <Button
+            variant={ButtonVariant.PRIMARY}
             className="contact-info-add"
             onClick={addEntry}
             disabled={limitReached}
           >
             {t('auth.contact.add')}
-          </button>
+          </Button>
         </div>
 
         {descTooLong && (

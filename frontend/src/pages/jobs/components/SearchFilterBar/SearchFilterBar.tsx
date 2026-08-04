@@ -12,7 +12,7 @@ import {
   IconAdjustmentsHorizontal,
 } from '@tabler/icons-react'
 import { Dropdown } from '@shared/components'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant, ButtonSize } from '@shared/components/Button'
 import {
   FILTERS,
   PRIMARY_FILTER_COUNT,
@@ -175,10 +175,15 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
           </div>
 
           <div className="jobs-filters-actions">
-            <button type="button" className="jobs-filters-clear" onClick={clearFilters}>
+            <Button
+              variant={ButtonVariant.GHOST}
+              size={ButtonSize.SMALL}
+              className="jobs-filters-clear"
+              onClick={clearFilters}
+            >
               {t('jobs.filters.clear')}
-            </button>
-            <Button type="submit" variant={ButtonVariant.PRIMARY} size="small">
+            </Button>
+            <Button type="submit" variant={ButtonVariant.PRIMARY} size={ButtonSize.SMALL}>
               {t('jobs.filters.apply')}
             </Button>
           </div>

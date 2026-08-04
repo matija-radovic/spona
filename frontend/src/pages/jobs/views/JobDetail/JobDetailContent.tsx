@@ -10,6 +10,7 @@ import {
   IconExternalLink,
   IconUpload,
 } from '@tabler/icons-react'
+import { Button, ButtonVariant } from '@shared/components/Button'
 import { useUser } from '@shared/contexts'
 import { type JobDetailDto } from '@utils/api/jobs'
 import { isJobSaved, toggleSavedJob } from '@utils/savedJobs'
@@ -123,15 +124,15 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
         )}
 
         {job.applicationType === 'EXTERNAL_URL' && job.externalUrl && (
-          <a
-            className="btn btn-primary btn-medium job-detail-external"
+          <Button
+            variant={ButtonVariant.PRIMARY}
             href={job.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            external
+            className="job-detail-external"
           >
             {t('jobs.applyExternal')}
             <IconExternalLink size={16} aria-hidden />
-          </a>
+          </Button>
         )}
 
         {isCvDrop && <CvDropApply cv={cv} />}

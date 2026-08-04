@@ -135,17 +135,15 @@
     gap: 0.75rem;
   }
 
+  // Ghost Button, adapted: hugs its label (so it reads as the quiet secondary
+  // action beside Apply) and underlines instead of taking a hover fill.
   .jobs-filters-clear {
     padding: 0.4rem 0.2rem;
-    font-family: inherit;
-    font-size: 0.85rem;
     color: c.$text-muted;
-    background: transparent;
-    border: none;
-    cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: c.$text-primary;
+      background-color: transparent;
       text-decoration: underline;
     }
   }

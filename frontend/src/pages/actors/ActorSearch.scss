@@ -110,19 +110,4 @@
   .actor-search-more-error {
     color: c.$danger-text;
   }
-
-  .actor-search-retry {
-    padding: 0.45rem 0.9rem;
-    font-family: inherit;
-    font-size: 0.82rem;
-    color: c.$text-primary;
-    background-color: c.$fill-control;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: c.$fill-control-hover;
-    }
-  }
 }

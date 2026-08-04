@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useOnScreen from '@shared/hooks/useOnScreen'
-import { PostCard } from '@shared/components'
+import { Button, ButtonVariant, PostCard } from '@shared/components'
 import {
   fetchActorActivity,
   setReaction,
@@ -179,9 +179,9 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     return (
       <div className="activity-pane-state">
         <p>{t('errors.serverError')}</p>
-        <button type="button" className="activity-pane-retry" onClick={retry}>
+        <Button variant={ButtonVariant.TERTIARY} onClick={retry}>
           {t('jobs.results.retry')}
-        </button>
+        </Button>
       </div>
     )
   }
@@ -211,9 +211,9 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
       {loadMoreError && (
         <div className="activity-pane-more activity-pane-more-error">
           <span>{t('jobs.results.loadMoreError')}</span>
-          <button type="button" className="activity-pane-retry" onClick={loadMore}>
+          <Button variant={ButtonVariant.TERTIARY} onClick={loadMore}>
             {t('jobs.results.retry')}
-          </button>
+          </Button>
         </div>
       )}
     </div>

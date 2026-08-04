@@ -28,21 +28,6 @@
     font-size: 0.95rem;
   }
 
-  .job-detail-retry {
-    padding: 0.5rem 1rem;
-    font-family: inherit;
-    font-size: 0.85rem;
-    color: c.$text-primary;
-    background-color: c.$fill-control;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: c.$fill-control-hover;
-    }
-  }
-
   // ── Top bar (back + favourite) ──────────────────────────────────────────────
   .job-detail-topbar {
     display: flex;
