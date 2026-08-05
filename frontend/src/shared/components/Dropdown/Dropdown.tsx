@@ -108,7 +108,7 @@ const Dropdown = ({
         aria-expanded={open}
       >
         <span className="dropdown-trigger-label">{triggerLabel}</span>
-        <Chevron size={16} aria-hidden />
+        <Chevron aria-hidden />
       </button>
 
       {open && (
@@ -127,10 +127,10 @@ const Dropdown = ({
                 >
                   {multiple && (
                     <span className={`dropdown-check${active ? ' is-checked' : ''}`} aria-hidden>
-                      {active && <IconCheck size={13} />}
+                      {active && <IconCheck />}
                     </span>
                   )}
-                  {OptionIcon && <OptionIcon size={16} aria-hidden />}
+                  {OptionIcon && <OptionIcon aria-hidden />}
                   <span className="dropdown-option-label">{option.label}</span>
                 </button>
               </li>

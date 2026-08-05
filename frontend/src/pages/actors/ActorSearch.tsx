@@ -38,7 +38,7 @@ const ActorSearch = ({ type }: ActorSearchProps) => {
     <div className="actor-search container">
       <div className="actor-search-bar">
         <div className="actor-search-input">
-          <IconSearch size={18} aria-hidden />
+          <IconSearch aria-hidden />
           <input
             type="search"
             value={value}
@@ -57,7 +57,7 @@ const ActorSearch = ({ type }: ActorSearchProps) => {
             aria-pressed={type === 'org'}
             aria-label={t('actors.search.modeCompanies')}
           >
-            <IconBuildingFactory2 size={18} aria-hidden />
+            <IconBuildingFactory2 aria-hidden />
           </button>
           <button
             type="button"
@@ -66,7 +66,7 @@ const ActorSearch = ({ type }: ActorSearchProps) => {
             aria-pressed={type === 'user'}
             aria-label={t('actors.search.modeUsers')}
           >
-            <IconUsers size={18} aria-hidden />
+            <IconUsers aria-hidden />
           </button>
         </div>
       </div>

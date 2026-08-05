@@ -41,6 +41,8 @@
     align-items: center;
     justify-content: center;
     padding: 0.35rem;
+    font-size: 1rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background: transparent;
     border: none;
@@ -58,6 +60,8 @@
     justify-content: center;
     margin-left: auto;
     padding: 0.35rem;
+    font-size: 1.1rem;
+    line-height: var(--control-line-height);
     color: c.$text-muted;
     background: transparent;
     border: none;
@@ -113,6 +117,7 @@
       align-items: center;
       gap: 0.35rem;
       font-size: 0.85rem;
+      line-height: var(--control-line-height);
       color: c.$text-muted;
     }
   }
@@ -134,6 +139,8 @@
   }
 
   .job-detail-logo {
+    --icon-size: 1.875rem;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -193,6 +200,8 @@
   }
 
   .job-detail-drop-inner {
+    --icon-size: 1.75rem;
+
     display: flex;
     flex-direction: column;
     align-items: center;

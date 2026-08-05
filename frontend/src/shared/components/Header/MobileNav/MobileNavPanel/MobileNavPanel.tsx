@@ -83,7 +83,7 @@ const MobileNavPanel = ({ isOpen, onClose, items, isAuthenticated }: MobileNavPa
                     `mobile-nav-link${isActive ? ' mobile-nav-link-active' : ''}`
                   }
                 >
-                  <Icon className="mobile-nav-link-icon" size={22} stroke={1.75} aria-hidden />
+                  <Icon className="mobile-nav-link-icon" aria-hidden />
                   {t(labelKey)}
                 </NavLink>
               ))}

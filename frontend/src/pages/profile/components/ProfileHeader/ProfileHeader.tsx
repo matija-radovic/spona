@@ -66,7 +66,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <IconExternalLink size={14} aria-hidden />
+                  <IconExternalLink aria-hidden />
                   {website.replace(/^https?:\/\//, '')}
                 </a>
               </>
@@ -91,7 +91,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
         <div className="profile-head-action-group">
           {profile.viewerCanEdit ? (
             <Button variant={ButtonVariant.TERTIARY} to={settingsPath}>
-              <IconSettings size={17} aria-hidden />
+              <IconSettings aria-hidden />
               {t('profile.settings')}
             </Button>
           ) : (
@@ -103,7 +103,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
             className={copied ? 'profile-head-copy is-copied' : 'profile-head-copy'}
             onClick={copy}
           >
-            {copied ? <IconCheck size={17} aria-hidden /> : <IconLink size={17} aria-hidden />}
+            {copied ? <IconCheck aria-hidden /> : <IconLink aria-hidden />}
             {copied ? t('common.linkCopied') : t('common.copyLink')}
           </Button>
         </div>
@@ -111,7 +111,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
         {profile.viewerCanEdit && (
           <div className="profile-head-action-group">
             <Button variant={ButtonVariant.PRIMARY} to="/jobs/new">
-              <IconPlus size={17} aria-hidden />
+              <IconPlus aria-hidden />
               {t('profile.createJob')}
             </Button>
           </div>

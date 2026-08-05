@@ -17,7 +17,9 @@
     align-items: center;
     gap: 0.4rem;
     max-width: 18rem;
-    padding: 0.4rem 0.6rem;
+    padding: 0.4em 0.6em;
+    font-size: 0.75rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: c.$surface-2;
     border: 1px solid c.$border-panel;
@@ -27,7 +29,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: 0.82rem;
     }
   }
 
@@ -38,11 +39,13 @@
   }
 
   .cv-apply-indicator {
+    --icon-size: 0.8em;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.4rem;
-    height: 1.4rem;
+    width: calc(var(--control-line-height) * 1em);
+    height: calc(var(--control-line-height) * 1em);
     padding: 0;
     color: c.$text-strong;
     border: none;
@@ -97,6 +100,7 @@
   // ── Success (replaces the whole cluster) ─────────────────────────────────────
   &.cv-apply-success {
     gap: 0.5rem;
+    line-height: var(--control-line-height);
     color: c.$success;
     font-weight: 600;
   }

@@ -56,7 +56,7 @@ const JobDetail = () => {
         <div className="job-detail-topbar">
           {isMobile && (
             <button type="button" className="job-detail-back" onClick={onBack} aria-label={t('jobs.panel.back')}>
-              <IconArrowLeft size={20} aria-hidden />
+              <IconArrowLeft aria-hidden />
             </button>
           )}
         </div>

@@ -55,6 +55,7 @@
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8rem;
+    line-height: var(--control-line-height);
     color: c.$text-muted;
   }
 
@@ -63,6 +64,8 @@
   }
 
   .job-card-logo {
+    --icon-size: 1.625rem;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;

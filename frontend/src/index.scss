@@ -25,12 +25,23 @@
   --max-container-size: 1200px;
   --container-spacing: 15px;
   --scrollbar-width: 0px; //fallback
+
+  --control-line-height: 1.25;
+  --icon-size: calc(var(--control-line-height) * 1em);
+  --icon-stroke: 2;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.tabler-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  stroke-width: var(--icon-stroke);
+  flex-shrink: 0;
 }
 
 .container {

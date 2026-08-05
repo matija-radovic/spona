@@ -21,6 +21,7 @@
     flex: 1 1 auto;
     min-width: 0;
     padding: 0 0.85rem;
+    font-size: 0.9rem;
     color: c.$text-muted;
     background-color: c.$surface-3;
     border: 1px solid c.$border-panel;
@@ -36,6 +37,7 @@
       padding: 0.6rem 0;
       font-family: inherit;
       font-size: 0.9rem;
+      line-height: var(--control-line-height);
       color: c.$text-strong;
       background: transparent;
       border: none;
@@ -53,6 +55,8 @@
     gap: 0.3rem;
     flex: 0 0 auto;
     padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: c.$surface-4;
     border: 1px solid c.$border-panel;
@@ -93,6 +97,7 @@
     padding: 0.5rem 0.8rem;
     font-family: inherit;
     font-size: 0.85rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: c.$surface-4;
     border: 1px solid c.$border-panel;
@@ -107,11 +112,15 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 1.05rem;
-      height: 1.05rem;
+      width: var(--icon-size);
+      height: var(--icon-size);
       color: c.$text-on-accent;
       border: 1px solid c.$border-strong;
       border-radius: 5px;
+
+      svg {
+        --icon-size: 0.95em;
+      }
     }
 
     &.is-active {

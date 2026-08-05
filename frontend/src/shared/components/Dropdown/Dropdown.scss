@@ -12,6 +12,7 @@
     padding: 0.5rem 0.8rem;
     font-family: inherit;
     font-size: 0.85rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: c.$surface-4;
     border: 1px solid c.$border-panel;
@@ -69,6 +70,7 @@
     padding: 0.5rem 0.6rem;
     font-family: inherit;
     font-size: 0.85rem;
+    line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: transparent;
     border: none;
@@ -94,11 +96,15 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 1.05rem;
-    height: 1.05rem;
+    width: var(--icon-size);
+    height: var(--icon-size);
     color: c.$text-on-accent;
     border: 1px solid c.$border-strong;
     border-radius: 5px;
+
+    svg {
+      --icon-size: 0.95em;
+    }
 
     &.is-checked {
       background-color: c.$accent;

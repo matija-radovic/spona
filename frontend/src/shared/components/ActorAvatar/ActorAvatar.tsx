@@ -9,12 +9,6 @@ export const ActorAvatarSize = Object.freeze({
 
 export type ActorAvatarSize = (typeof ActorAvatarSize)[keyof typeof ActorAvatarSize]
 
-const ICON_SIZE: Record<ActorAvatarSize, number> = {
-  sm: 20,
-  md: 30,
-  xl: 52,
-}
-
 interface ActorAvatarProps {
   avatarUrl: string | null
   actorType: 'user' | 'org'
@@ -37,7 +31,7 @@ const ActorAvatar = ({ avatarUrl, actorType, size = ActorAvatarSize.MD, alt = ''
       {avatarUrl ? (
         <img src={avatarUrl} alt={alt} className="actor-avatar-image" />
       ) : (
-        <Fallback className="actor-avatar-placeholder" size={ICON_SIZE[size]} aria-hidden />
+        <Fallback className="actor-avatar-placeholder" aria-hidden />
       )}
     </span>
   )

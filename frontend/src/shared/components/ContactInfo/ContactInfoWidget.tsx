@@ -88,7 +88,7 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
               aria-label={t('auth.contact.selectType')}
             >
               <SelectedIcon />
-              <IconChevronDown size={14} />
+              <IconChevronDown />
             </button>
 
             {dropdownOpen && (
@@ -190,7 +190,7 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
                   onClick={() => removeEntry(index)}
                   aria-label={t('auth.contact.remove')}
                 >
-                  <IconX size={15} />
+                  <IconX />
                 </button>
               </li>
             )

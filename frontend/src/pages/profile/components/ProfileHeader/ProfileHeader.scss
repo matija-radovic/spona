@@ -45,6 +45,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
+    font-size: inherit;
+    line-height: var(--control-line-height);
     color: c.$accent;
     text-decoration: none;
 

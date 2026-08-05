@@ -45,7 +45,7 @@ const CommentActivityCard = ({ comment, onReact }: CommentActivityCardProps) => 
   return (
     <article className="comment-card">
       <div className="comment-card-bar">
-        <ContextIcon size={14} aria-hidden />
+        <ContextIcon aria-hidden />
         <span>{barLabel}</span>
       </div>
 
@@ -84,7 +84,7 @@ const CommentActivityCard = ({ comment, onReact }: CommentActivityCardProps) => 
                 onClick={openPost}
                 aria-label={t('post.openPost')}
               >
-                <IconMessageCircle size={18} aria-hidden />
+                <IconMessageCircle aria-hidden />
               </button>
             )}
           </div>

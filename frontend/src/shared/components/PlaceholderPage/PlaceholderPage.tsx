@@ -11,7 +11,7 @@ const PlaceholderPage = () => {
 
   return (
     <div className="placeholder-page container">
-      <IconTool size={40} stroke={1.5} aria-hidden />
+      <IconTool aria-hidden />
       <p className="placeholder-page-text">{t('common.comingSoon')}</p>
     </div>
   )

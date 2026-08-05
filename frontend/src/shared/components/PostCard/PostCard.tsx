@@ -72,7 +72,7 @@ const PostCard = ({ post, onReact }: PostCardProps) => {
             onClick={openPost}
             aria-label={t('post.comments', { count: post.commentCount })}
           >
-            <IconMessageCircle size={18} aria-hidden />
+            <IconMessageCircle aria-hidden />
             <span>{post.commentCount}</span>
           </button>
 

@@ -104,6 +104,9 @@
 
   // ── Hint panel (right pane at /jobs index) ───────────────────────────────────
   .jobs-hint {
+    --icon-size: 2.6rem;
+    --icon-stroke: 1.5;
+
     display: flex;
     flex-direction: column;
     align-items: center;

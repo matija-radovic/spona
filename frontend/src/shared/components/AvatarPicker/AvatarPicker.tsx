@@ -42,10 +42,10 @@ const AvatarPicker = ({ label, value, onChange }: AvatarPickerProps) => {
         {value ? (
           <img src={value} alt="" className="avatar-picker-image" />
         ) : (
-          <IconUser className="avatar-picker-placeholder" size={44} />
+          <IconUser className="avatar-picker-placeholder" />
         )}
         <span className="avatar-picker-pencil" aria-hidden="true">
-          <IconPencil size={15} />
+          <IconPencil />
         </span>
       </button>
 

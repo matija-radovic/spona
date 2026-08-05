@@ -29,16 +29,22 @@
 
   // ── Sizes ──────────────────────────────────────────────────────────────────
   &.actor-avatar-sm {
+    --icon-size: 1.25rem;
+
     width: 2.6rem;
     height: 2.6rem;
   }
 
   &.actor-avatar-md {
+    --icon-size: 1.875rem;
+
     width: 4.5rem;
     height: 4.5rem;
   }
 
   &.actor-avatar-xl {
+    --icon-size: 3.25rem;
+
     width: 8.5rem;
     height: 8.5rem;
 

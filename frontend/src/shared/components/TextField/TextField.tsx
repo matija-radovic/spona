@@ -90,7 +90,7 @@ const TextField = forwardRef<HTMLInputElement | HTMLTextAreaElement, TextFieldPr
                 aria-label={error ?? label}
                 tabIndex={error ? 0 : -1}
               >
-                {status === 'invalid' ? <IconX size={14} aria-hidden="true" /> : <IconCheck size={14} aria-hidden="true" />}
+                {status === 'invalid' ? <IconX aria-hidden="true" /> : <IconCheck aria-hidden="true" />}
               </button>
               {error && (
                 <span className="text-field-tooltip" role="tooltip">

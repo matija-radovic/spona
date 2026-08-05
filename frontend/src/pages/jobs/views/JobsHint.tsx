@@ -6,7 +6,7 @@ const JobsHint = () => {
   const { t } = useTranslation()
   return (
     <div className="jobs-hint">
-      <IconClick size={42} stroke={1.5} aria-hidden />
+      <IconClick aria-hidden />
       <p>{t('jobs.panel.hint')}</p>
     </div>
   )

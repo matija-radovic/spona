@@ -26,7 +26,7 @@ const CopyLinkButton = ({ url, label, className }: CopyLinkButtonProps) => {
 
   return (
     <button type="button" className={rootClass} onClick={copy} aria-label={text}>
-      {copied ? <IconCheck size={17} aria-hidden /> : <IconLink size={17} aria-hidden />}
+      {copied ? <IconCheck aria-hidden /> : <IconLink aria-hidden />}
       {label && <span className="copy-link-label">{text}</span>}
     </button>
   )

@@ -74,7 +74,7 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
               aria-pressed={field.value}
             >
               <span className="filter-toggle-box" aria-hidden>
-                {field.value && <IconCheck size={13} />}
+                {field.value && <IconCheck />}
               </span>
               {label}
             </button>
@@ -133,7 +133,7 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
     <form className="jobs-bar" onSubmit={onSubmit} role="search">
       <div className="jobs-bar-row">
         <div className="jobs-bar-search">
-          <IconSearch size={18} aria-hidden />
+          <IconSearch aria-hidden />
           <input
             type="search"
             placeholder={t('jobs.search.placeholder')}
@@ -150,8 +150,8 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
           aria-expanded={menuOpen}
           aria-label={menuOpen ? t('jobs.search.filtersClose') : t('jobs.search.filtersOpen')}
         >
-          <FilterIcon size={18} aria-hidden />
-          {!isMobile && <Chevron size={16} aria-hidden />}
+          <FilterIcon aria-hidden />
+          {!isMobile && <Chevron aria-hidden />}
         </button>
       </div>
 
@@ -167,7 +167,7 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
                 onClick={() => setShowMore((s) => !s)}
                 aria-pressed={showMore}
               >
-                <IconAdjustmentsHorizontal size={15} aria-hidden />
+                <IconAdjustmentsHorizontal aria-hidden />
                 {t('jobs.filters.more')}
               </button>
             )}

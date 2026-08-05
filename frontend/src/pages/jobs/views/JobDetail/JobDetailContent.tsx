@@ -50,7 +50,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
       {isCvDrop && cv.dragActive && (
         <div className="job-detail-drop-overlay" aria-hidden>
           <div className="job-detail-drop-inner">
-            <IconUpload size={28} />
+            <IconUpload />
             <span>{t('jobs.apply.dropHere')}</span>
           </div>
         </div>
@@ -59,7 +59,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
       <div className="job-detail-topbar">
         {isMobile && (
           <button type="button" className="job-detail-back" onClick={onBack} aria-label={t('jobs.panel.back')}>
-            <IconArrowLeft size={20} aria-hidden />
+            <IconArrowLeft aria-hidden />
           </button>
         )}
         {canFavorite && (
@@ -70,7 +70,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
             aria-pressed={favorited}
             aria-label={favorited ? t('jobs.favorite.remove') : t('jobs.favorite.add')}
           >
-            {favorited ? <IconHeartFilled size={22} /> : <IconHeart size={22} />}
+            {favorited ? <IconHeartFilled /> : <IconHeart />}
           </button>
         )}
       </div>
@@ -85,13 +85,13 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
           <div className="job-detail-meta">
             {job.location && (
               <span className="job-detail-meta-item">
-                <IconMapPin size={15} aria-hidden />
+                <IconMapPin aria-hidden />
                 {job.location}
               </span>
             )}
             {job.salary && (
               <span className="job-detail-meta-item">
-                <IconCoin size={15} aria-hidden />
+                <IconCoin aria-hidden />
                 {formatSalary(job.salary, t)}
               </span>
             )}
@@ -109,7 +109,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
             {createdFor.avatarUrl ? (
               <img src={createdFor.avatarUrl} alt={t('jobs.card.companyLogoAlt')} />
             ) : (
-              <IconBuilding size={30} aria-hidden />
+              <IconBuilding aria-hidden />
             )}
           </span>
         )}
@@ -131,7 +131,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
             className="job-detail-external"
           >
             {t('jobs.applyExternal')}
-            <IconExternalLink size={16} aria-hidden />
+            <IconExternalLink aria-hidden />
           </Button>
         )}
 

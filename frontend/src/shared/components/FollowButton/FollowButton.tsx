@@ -63,7 +63,7 @@ const FollowButton = ({ actorId, following, onChange, className }: FollowButtonP
       aria-pressed={following}
       aria-label={label}
     >
-      {following ? <IconUserCheck size={17} aria-hidden /> : <IconUserPlus size={17} aria-hidden />}
+      {following ? <IconUserCheck aria-hidden /> : <IconUserPlus aria-hidden />}
       {/* Wrapped so a caller can hide the text (icon-only on mobile) while the
           aria-label keeps the button named. */}
       <span className="follow-btn-label">{label}</span>

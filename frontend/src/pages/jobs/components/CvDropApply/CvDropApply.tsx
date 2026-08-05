@@ -27,7 +27,7 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
   if (cv.success) {
     return (
       <div className="cv-apply cv-apply-success">
-        <IconCheck size={20} aria-hidden />
+        <IconCheck aria-hidden />
         <span>{t('jobs.apply.success')}</span>
       </div>
     )
@@ -48,13 +48,13 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
         size={ButtonSize.SMALL}
         onClick={() => inputRef.current?.click()}
       >
-        <IconUpload size={16} aria-hidden />
+        <IconUpload aria-hidden />
         {t('jobs.apply.chooseFile')}
       </Button>
 
       {cv.file && (
         <span className="cv-apply-file">
-          <IconFileText size={16} aria-hidden />
+          <IconFileText aria-hidden />
           <span className="cv-apply-file-name">{cv.file.name}</span>
 
           <span
@@ -70,7 +70,7 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
               aria-label={cv.errorText ?? t('jobs.apply.selected')}
               tabIndex={cv.errorText ? 0 : -1}
             >
-              {cv.showValid ? <IconCheck size={14} aria-hidden /> : <IconX size={14} aria-hidden />}
+              {cv.showValid ? <IconCheck aria-hidden /> : <IconX aria-hidden />}
             </button>
             {cv.errorText && (
               <span className="cv-apply-tooltip" role="tooltip">

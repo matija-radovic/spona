@@ -24,7 +24,7 @@ const ContactPane = ({ entries }: ContactPaneProps) => {
         return (
           <li key={`${entry.type}-${index}`} className="contact-pane-box">
             <span className="contact-pane-icon">
-              <EntryIcon size={18} aria-hidden />
+              <EntryIcon aria-hidden />
             </span>
             <span className="contact-pane-text">
               <span className="contact-pane-desc">{entry.description || t(option.labelKey)}</span>

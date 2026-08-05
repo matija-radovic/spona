@@ -19,7 +19,7 @@ const ContactApply = ({ entries }: ContactApplyProps) => (
       return (
         <li key={`${entry.type}-${index}`} className="contact-apply-item">
           <span className="contact-apply-icon">
-            <EntryIcon size={18} aria-hidden />
+            <EntryIcon aria-hidden />
           </span>
           <span className="contact-apply-text">
             {entry.description && <span className="contact-apply-desc">{entry.description}</span>}

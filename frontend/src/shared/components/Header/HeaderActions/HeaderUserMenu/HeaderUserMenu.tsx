@@ -56,13 +56,13 @@ const HeaderUserMenu = () => {
         aria-label={t('nav.profileMenu')}
       >
         <ActorAvatar avatarUrl={user.avatarUrl || null} actorType="user" size={ActorAvatarSize.SM} />
-        <IconChevronDown className="header-avatar-chevron" size={16} aria-hidden />
+        <IconChevronDown className="header-avatar-chevron" aria-hidden />
       </button>
 
       {open && (
         <div className="header-user-menu-panel" role="menu">
           <Link to={`/users/${user.username}`} className="header-user-menu-item" role="menuitem" onClick={close}>
-            <IconUserCircle size={18} aria-hidden />
+            <IconUserCircle aria-hidden />
             {t('nav.myProfile')}
           </Link>
           <Link
@@ -71,11 +71,11 @@ const HeaderUserMenu = () => {
             role="menuitem"
             onClick={close}
           >
-            <IconSettings size={18} aria-hidden />
+            <IconSettings aria-hidden />
             {t('nav.settings')}
           </Link>
           <button type="button" className="header-user-menu-item" role="menuitem" onClick={onLogout}>
-            <IconLogout size={18} aria-hidden />
+            <IconLogout aria-hidden />
             {t('nav.logout')}
           </button>
         </div>

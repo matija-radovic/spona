@@ -42,6 +42,9 @@ $hint-width: 2.5rem;
   }
 
   .profile-tabs-hint {
+    --icon-size: 0.875rem;
+    --icon-stroke: 1.75;
+
     position: absolute;
     top: 0;
     bottom: 0;

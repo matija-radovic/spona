@@ -31,14 +31,14 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
 
         {job.location && (
           <span className="job-card-meta">
-            <IconMapPin size={15} aria-hidden />
+            <IconMapPin aria-hidden />
             {job.location}
           </span>
         )}
 
         {job.salary && (
           <span className="job-card-meta job-card-salary">
-            <IconCoin size={15} aria-hidden />
+            <IconCoin aria-hidden />
             {formatSalary(job.salary, t)}
           </span>
         )}
@@ -51,7 +51,7 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
           {createdFor.avatarUrl ? (
             <img src={createdFor.avatarUrl} alt={t('jobs.card.companyLogoAlt')} />
           ) : (
-            <IconBuilding size={26} aria-hidden />
+            <IconBuilding aria-hidden />
           )}
         </span>
       )}

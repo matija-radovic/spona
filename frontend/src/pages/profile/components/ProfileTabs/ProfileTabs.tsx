@@ -71,7 +71,7 @@ const ProfileTabs = ({ tabs, active, onChange }: ProfileTabsProps) => {
             aria-hidden
             {...hint}
           >
-            <IconChevronLeft size={14} stroke={1.75} />
+            <IconChevronLeft />
           </motion.span>
         )}
 
@@ -82,7 +82,7 @@ const ProfileTabs = ({ tabs, active, onChange }: ProfileTabsProps) => {
             aria-hidden
             {...hint}
           >
-            <IconChevronRight size={14} stroke={1.75} />
+            <IconChevronRight />
           </motion.span>
         )}
       </AnimatePresence>

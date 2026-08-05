@@ -61,7 +61,7 @@ const ReactionPicker = ({ viewerReactions, onToggle, className }: ReactionPicker
         aria-expanded={open}
         aria-label={t('post.react')}
       >
-        <IconMoodSmile size={19} aria-hidden />
+        <IconMoodSmile aria-hidden />
       </button>
 
       {open && (
