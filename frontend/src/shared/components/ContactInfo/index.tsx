@@ -1,2 +1,5 @@
 export { default as ContactInfoWidget } from './ContactInfoWidget'
-export { type ContactEntry } from './contactEntry'
+export { default as ContactValue } from './ContactValue'
+export { contactTypeOption } from './contactTypes'
+export { contactHref } from './contactLink'
+export { type ContactEntry, ContactType } from './contactEntry'

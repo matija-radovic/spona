@@ -83,16 +83,28 @@
       "valuePlaceholder": "Unesite kontakt vrednost",
       "add": "Dodaj",
       "remove": "Ukloni kontakt",
+      "groups": {
+        "direct": "Kontakt",
+        "link": "Linkovi"
+      },
       "types": {
         "phone": "Telefon",
         "email": "Email",
         "fax": "Faks",
+        "website": "Veb sajt",
+        "linkedin": "LinkedIn",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
         "other": "Ostalo"
       },
       "hints": {
         "phone": "npr. „telefon za podršku“",
         "email": "npr. „email za poslove“",
         "fax": "npr. „faks računovodstva“",
+        "website": "npr. „portfolio“",
+        "linkedin": "npr. „poslovni profil“",
+        "instagram": "npr. „lični profil“",
+        "facebook": "npr. „stranica firme“",
         "other": "Opišite ovaj kontakt"
       }
     },

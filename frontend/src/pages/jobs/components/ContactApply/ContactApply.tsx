@@ -1,6 +1,5 @@
 import './ContactApply.scss'
-import { contactTypeOption } from '@shared/components/ContactInfo/icons'
-import type { ContactEntry } from '@shared/components'
+import { ContactValue, contactTypeOption, type ContactEntry } from '@shared/components'
 
 interface ContactApplyProps {
   entries: ContactEntry[]
@@ -23,7 +22,7 @@ const ContactApply = ({ entries }: ContactApplyProps) => (
           </span>
           <span className="contact-apply-text">
             {entry.description && <span className="contact-apply-desc">{entry.description}</span>}
-            <span className="contact-apply-value">{entry.value}</span>
+            <ContactValue entry={entry} className="contact-apply-value" />
           </span>
         </li>
       )

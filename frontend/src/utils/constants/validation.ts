@@ -21,9 +21,14 @@ export const PASSWORD_REGEX = /^[A-Za-z0-9~!@#$%^&*()_+={}|[\]:;"'<,>.?/]+$/
 /** Avatar target dimensions after in-browser processing. */
 export const AVATAR_SIZE = 256
 
-/** Additional-contact entry bounds (shared by the schema and the widget). */
+/**
+ * Additional-contact entry bounds (shared by the schema and the widget).
+ * `VALUE_MAX` is 128 rather than 64 because the link types (website, LinkedIn,
+ * ...) store full URLs - a real LinkedIn profile URL already runs ~50 chars
+ * before anyone adds a query string.
+ */
 export const CONTACT_DESC_MAX = 32
-export const CONTACT_VALUE_MAX = 64
+export const CONTACT_VALUE_MAX = 128
 export const CONTACT_MAX_ENTRIES = 15
 
 /** CV upload rules (jobs apply flow — shared by the mock service and the UI). */

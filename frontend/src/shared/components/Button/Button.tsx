@@ -1,6 +1,7 @@
 import './Button.scss'
 import { Link } from 'react-router-dom'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { safeHref } from '@utils/safeUrl'
 
 export const ButtonVariant = Object.freeze({
   PRIMARY: 'primary',
@@ -31,7 +32,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
   /** When set, the button renders as a react-router <Link> to this path. */
   to?: string
-  /** When set, the button renders as a plain <a href> - for targets outside the SPA. */
+  /**
+   * When set, the button renders as a plain <a href> - for targets outside the
+   * SPA. Sanitized through `safeHref`; a URL that can't be made safe (a
+   * `javascript:` scheme, junk from a backend field) falls back to a plain
+   * <button> that does nothing, rather than shipping a live hostile link.
+   */
   href?: string
   /** Only with `href`: opens in a new tab with a safe `rel`. */
   external?: boolean
@@ -60,10 +66,11 @@ const Button = ({
     )
   }
 
-  if (href) {
+  const safe = safeHref(href)
+  if (safe) {
     return (
       <a
-        href={href}
+        href={safe}
         className={classes}
         {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       >

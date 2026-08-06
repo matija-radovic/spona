@@ -79,6 +79,7 @@
     left: 0;
     z-index: 8;
     min-width: 11rem;
+    max-height: 15rem;
     margin: 0;
     padding: 0.3rem;
     list-style: none;
@@ -86,6 +87,34 @@
     border: 1px solid c.$border-panel;
     border-radius: 10px;
     box-shadow: c.$shadow-popover;
+
+    // usePopoverFlip: no room below, more above.
+    &.is-above {
+      top: auto;
+      bottom: calc(100% + 0.35rem);
+    }
+  }
+
+  .contact-info-group + .contact-info-group {
+    margin-top: 0.15rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid c.$border-line;
+  }
+
+  .contact-info-group-label {
+    margin: 0;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: c.$text-faint;
+  }
+
+  .contact-info-group-options {
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .contact-info-option {

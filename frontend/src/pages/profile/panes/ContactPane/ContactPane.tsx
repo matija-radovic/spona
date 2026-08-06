@@ -1,7 +1,6 @@
 import './ContactPane.scss'
 import { useTranslation } from 'react-i18next'
-import { contactTypeOption } from '@shared/components/ContactInfo/icons'
-import type { ContactEntry } from '@shared/components'
+import { ContactValue, contactTypeOption, type ContactEntry } from '@shared/components'
 
 interface ContactPaneProps {
   /** The tab only renders when this is non-empty (§6), so it is always populated. */
@@ -11,7 +10,7 @@ interface ContactPaneProps {
 /**
  * The actor's additional contacts in a grid of equal boxes (icon + description /
  * type fallback + value). Mirrors ContactApply's per-entry rendering, reusing the
- * icon-per-type map.
+ * icon-per-type map and the shared `ContactValue` (which decides link vs text).
  */
 const ContactPane = ({ entries }: ContactPaneProps) => {
   const { t } = useTranslation()
@@ -28,7 +27,7 @@ const ContactPane = ({ entries }: ContactPaneProps) => {
             </span>
             <span className="contact-pane-text">
               <span className="contact-pane-desc">{entry.description || t(option.labelKey)}</span>
-              <span className="contact-pane-value">{entry.value}</span>
+              <ContactValue entry={entry} className="contact-pane-value" />
             </span>
           </li>
         )

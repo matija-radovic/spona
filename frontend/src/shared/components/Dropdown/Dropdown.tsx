@@ -2,6 +2,7 @@ import './Dropdown.scss'
 import { useEffect, useRef, useState } from 'react'
 import { IconCheck, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import type { Icon } from '@tabler/icons-react'
+import usePopoverFlip from '@shared/hooks/usePopoverFlip'
 
 export interface DropdownOption {
   value: string
@@ -30,6 +31,8 @@ interface DropdownProps {
  * Overflow caveat (job-filter.md §4.3): the panel is `position: absolute`, so an
  * `overflow: hidden/auto` ancestor would clip it. The filter menu that hosts
  * these dropdowns therefore keeps `overflow: visible` (option 1 — no portal).
+ * Still absolute, so it also can't reposition itself — `usePopoverFlip` opens it
+ * upward when the trigger sits too close to the bottom of the viewport.
  */
 const Dropdown = ({
   label,
@@ -43,6 +46,9 @@ const Dropdown = ({
 }: DropdownProps) => {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  const { above: openAbove, panelRef } = usePopoverFlip(open, triggerRef)
 
   useEffect(() => {
     if (!open) return
@@ -101,6 +107,7 @@ const Dropdown = ({
     <div className={rootClass} ref={rootRef}>
       <button
         type="button"
+        ref={triggerRef}
         className="dropdown-trigger"
         onClick={() => setOpen((o) => !o)}
         disabled={disabled}
@@ -112,7 +119,13 @@ const Dropdown = ({
       </button>
 
       {open && (
-        <ul className="dropdown-panel scroll-container" role="listbox" aria-label={label} aria-multiselectable={multiple}>
+        <ul
+          ref={panelRef}
+          className={`dropdown-panel scroll-container${openAbove ? ' is-above' : ''}`}
+          role="listbox"
+          aria-label={label}
+          aria-multiselectable={multiple}
+        >
           {options.map((option) => {
             const OptionIcon = option.icon
             const active = isSelected(option.value)

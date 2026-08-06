@@ -5,6 +5,7 @@ import { IconSettings, IconPlus, IconExternalLink, IconLink, IconCheck } from '@
 import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant, FollowButton } from '@shared/components'
 import useCopyLink from '@shared/hooks/useCopyLink'
 import { actorPath } from '@utils/actorPath'
+import { safeHref, displayUrl, WEB_PROTOCOLS } from '@utils/safeUrl'
 import type { ProfileDto } from '@utils/api/profiles'
 
 interface ProfileHeaderProps {
@@ -32,7 +33,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   const name = isUser ? profile.fullName : profile.displayName
   const handle = isUser ? profile.username : profile.slug
   const bio = isUser ? profile.bio : profile.description
-  const website = isUser ? null : profile.website
+  const website = isUser ? null : safeHref(profile.website, { protocols: WEB_PROTOCOLS })
   const settingsPath = isUser ? `/users/${handle}/settings` : `/companies/${handle}/settings`
   const profileUrl = `${window.location.origin}${actorPath({ actorType: profile.actorType, handle })}`
 
@@ -67,7 +68,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
                   rel="noopener noreferrer"
                 >
                   <IconExternalLink aria-hidden />
-                  {website.replace(/^https?:\/\//, '')}
+                  {displayUrl(website)}
                 </a>
               </>
             )}

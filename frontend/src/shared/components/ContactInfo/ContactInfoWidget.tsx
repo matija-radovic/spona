@@ -3,12 +3,19 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
 import { Button, ButtonVariant } from '../Button'
+import usePopoverFlip from '@shared/hooks/usePopoverFlip'
 import {
   CONTACT_DESC_MAX,
   CONTACT_VALUE_MAX,
   CONTACT_MAX_ENTRIES,
 } from '@utils/constants/validation'
-import { CONTACT_TYPE_OPTIONS, contactTypeOption } from './icons'
+import {
+  CONTACT_TYPE_OPTIONS,
+  CONTACT_GROUP_ORDER,
+  CONTACT_GROUP_LABEL_KEYS,
+  contactTypeOption,
+  resolveContactType,
+} from './contactTypes'
 import type { ContactEntry } from './contactEntry'
 
 interface ContactInfoWidgetProps {
@@ -27,6 +34,11 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
   const [touched, setTouched] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const capsuleRef = useRef<HTMLButtonElement>(null)
+
+  // The panel is ~8 rows tall; near the bottom of a form it would otherwise run
+  // past the fold and only be reachable by scrolling.
+  const { above: openAbove, panelRef } = usePopoverFlip(dropdownOpen, capsuleRef)
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -35,8 +47,15 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
         setDropdownOpen(false)
       }
     }
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setDropdownOpen(false)
+    }
     document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside)
+      document.removeEventListener('keydown', onKeyDown)
+    }
   }, [dropdownOpen])
 
   // ── Live validity (read per keystroke, the same way the rest of the form does)
@@ -48,10 +67,18 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
   const valueError = touched && (valueEmpty || valueTooLong)
   const canAdd = !limitReached && !valueEmpty && !descTooLong && !valueTooLong
 
+  // Upgrades `website`/`other` to a recognised brand as the value is typed, so
+  // the icon the entry will be stored with is visible before Add. An explicit
+  // pick is never overridden (see `resolveContactType`).
+  const effectiveType = resolveContactType(type, trimmedValue)
+
   const addEntry = () => {
     setTouched(true)
     if (!canAdd) return
-    onChange([...value, { type, description: description.trim(), value: trimmedValue }])
+    onChange([
+      ...value,
+      { type: effectiveType, description: description.trim(), value: trimmedValue },
+    ])
     setDescription('')
     setDraftValue('')
     setTouched(false)
@@ -68,7 +95,7 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
     }
   }
 
-  const selected = contactTypeOption(type)
+  const selected = contactTypeOption(effectiveType)
   const SelectedIcon = selected.icon
 
   return (
@@ -81,38 +108,60 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
           <div className="contact-info-type" ref={dropdownRef}>
             <button
               type="button"
+              ref={capsuleRef}
               className="contact-info-capsule"
               onClick={() => setDropdownOpen((open) => !open)}
               aria-haspopup="listbox"
               aria-expanded={dropdownOpen}
-              aria-label={t('auth.contact.selectType')}
+              aria-label={`${t('auth.contact.selectType')}: ${t(selected.labelKey)}`}
             >
               <SelectedIcon />
               <IconChevronDown />
             </button>
 
             {dropdownOpen && (
-              <ul className="contact-info-dropdown" role="listbox">
-                {CONTACT_TYPE_OPTIONS.map((option) => {
-                  const OptionIcon = option.icon
-                  return (
-                    <li key={option.key}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={option.key === type}
-                        className={`contact-info-option${option.key === type ? ' is-selected' : ''}`}
-                        onClick={() => {
-                          setType(option.key)
-                          setDropdownOpen(false)
-                        }}
-                      >
-                        <OptionIcon />
-                        <span>{t(option.labelKey)}</span>
-                      </button>
-                    </li>
-                  )
-                })}
+              <ul
+                ref={panelRef}
+                className={`contact-info-dropdown scroll-container${openAbove ? ' is-above' : ''}`}
+                role="listbox"
+                aria-label={t('auth.contact.selectType')}
+              >
+                {CONTACT_GROUP_ORDER.map((group) => (
+                  <li
+                    key={group}
+                    role="group"
+                    aria-label={t(CONTACT_GROUP_LABEL_KEYS[group])}
+                    className="contact-info-group"
+                  >
+                    <p className="contact-info-group-label" aria-hidden>
+                      {t(CONTACT_GROUP_LABEL_KEYS[group])}
+                    </p>
+                    <ul className="contact-info-group-options" role="presentation">
+                      {CONTACT_TYPE_OPTIONS.filter((option) => option.group === group).map(
+                        (option) => {
+                          const OptionIcon = option.icon
+                          return (
+                            <li key={option.key} role="presentation">
+                              <button
+                                type="button"
+                                role="option"
+                                aria-selected={option.key === type}
+                                className={`contact-info-option${option.key === type ? ' is-selected' : ''}`}
+                                onClick={() => {
+                                  setType(option.key)
+                                  setDropdownOpen(false)
+                                }}
+                              >
+                                <OptionIcon />
+                                <span>{t(option.labelKey)}</span>
+                              </button>
+                            </li>
+                          )
+                        },
+                      )}
+                    </ul>
+                  </li>
+                ))}
               </ul>
             )}
           </div>

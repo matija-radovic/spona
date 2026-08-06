@@ -166,6 +166,7 @@ const mockSalary = (seed: number): Salary => {
 const mockContact = (): ContactEntry[] => [
   { type: 'email', description: 'Email za prijave', value: 'posao@primer.rs' },
   { type: 'phone', description: 'Kontakt telefon', value: '+381 11 234 567' },
+  { type: 'linkedin', description: 'Profil kompanije', value: 'linkedin.com/company/primer' },
 ]
 
 const mockDescription = (title: string): string =>

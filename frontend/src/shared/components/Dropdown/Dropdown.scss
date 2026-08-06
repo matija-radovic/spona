@@ -60,6 +60,12 @@
     border: 1px solid c.$border-panel;
     border-radius: 10px;
     box-shadow: c.$shadow-popover;
+
+    // usePopoverFlip: no room below, more above.
+    &.is-above {
+      top: auto;
+      bottom: calc(100% + 0.35rem);
+    }
   }
 
   .dropdown-option {

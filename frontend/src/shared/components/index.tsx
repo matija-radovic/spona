@@ -9,7 +9,14 @@ export { Logo } from './Logo'
 export { Button, ButtonVariant, ButtonSize } from './Button'
 export { TextField } from './TextField'
 export { AvatarPicker } from './AvatarPicker'
-export { ContactInfoWidget, type ContactEntry } from './ContactInfo'
+export {
+  ContactInfoWidget,
+  ContactValue,
+  contactTypeOption,
+  contactHref,
+  ContactType,
+  type ContactEntry,
+} from './ContactInfo'
 export { Dropdown, type DropdownOption } from './Dropdown'
 export { ScrollContainer } from './ScrollContainer'
 export { ActorAvatar, ActorAvatarSize } from './ActorAvatar'

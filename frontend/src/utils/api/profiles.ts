@@ -122,11 +122,17 @@ const hashString = (value: string): number => {
 const iso = (daysAgo: number): string =>
   new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
 
+// Covers every rendering branch of the Contact pane: a mailto, a tel, three
+// link types (one schemeless, one with `www.`), a fax that never links, and an
+// `other` whose value is deliberately not a URL.
 const CONTACTS_FULL: ContactEntry[] = [
   { type: 'email', description: 'Email za saradnju', value: 'kontakt@primer.rs' },
   { type: 'phone', description: 'Telefon', value: '+381 64 123 4567' },
-  { type: 'other', description: 'LinkedIn', value: 'linkedin.com/in/primer' },
+  { type: 'linkedin', description: 'Poslovni profil', value: 'linkedin.com/in/primer' },
+  { type: 'instagram', description: 'Instagram', value: 'https://www.instagram.com/primer' },
+  { type: 'website', description: 'Portfolio', value: 'https://primer.rs' },
   { type: 'fax', description: 'Faks', value: '+381 11 765 4321' },
+  { type: 'other', description: 'Kancelarija', value: 'Bulevar kralja Aleksandra 73' },
 ]
 
 // ── Named mock profiles (specific shapes the panes/tabs need to exercise) ──────
@@ -171,7 +177,7 @@ const USER_PROFILES: Record<string, ProfileDto> = {
     bio: 'Product designer.\nRadim na proizvodima za region.',
     avatarUrl: null,
     location: 'Niš',
-    otherContactInfo: CONTACTS_FULL, // 4 entries
+    otherContactInfo: CONTACTS_FULL, // every type, incl. the non-linking ones
     followers: 512,
     following: 210,
     createdAt: iso(700),
