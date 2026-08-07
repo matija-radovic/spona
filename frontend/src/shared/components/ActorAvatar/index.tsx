@@ -1,1 +1,2 @@
-export { default as ActorAvatar, ActorAvatarSize } from './ActorAvatar'
+export { default as ActorAvatar } from './ActorAvatar'
+export { ActorAvatarSize } from './actorAvatarSize'

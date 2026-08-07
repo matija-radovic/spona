@@ -1,15 +1,7 @@
 import './Logo.scss'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-
-export const LogoSize = Object.freeze({
-  TINY: 'tiny',
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large',
-} as const)
-
-export type LogoSize = (typeof LogoSize)[keyof typeof LogoSize]
+import { LogoSize } from './logoSize'
 
 interface LogoProps {
   size?: LogoSize

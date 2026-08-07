@@ -1,13 +1,6 @@
 import './ActorAvatar.scss'
 import { IconUser, IconBuilding } from '@tabler/icons-react'
-
-export const ActorAvatarSize = Object.freeze({
-  SM: 'sm',
-  MD: 'md',
-  XL: 'xl',
-} as const)
-
-export type ActorAvatarSize = (typeof ActorAvatarSize)[keyof typeof ActorAvatarSize]
+import { ActorAvatarSize } from './actorAvatarSize'
 
 interface ActorAvatarProps {
   avatarUrl: string | null

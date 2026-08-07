@@ -95,13 +95,15 @@ const Register = () => {
   // Editing the password re-validates a previously-entered confirm field so its
   // green check flips to invalid the instant the two diverge.
   useEffect(() => {
-    const subscription = userForm.watch((_, { name }) => {
-      if (name === 'username') setUsernameTaken(false)
-      if (name === 'password' && userForm.getValues('confirmPassword')) {
-        userForm.trigger('confirmPassword')
-      }
+    return userForm.subscribe({
+      formState: { values: true },
+      callback: ({ name }) => {
+        if (name === 'username') setUsernameTaken(false)
+        if (name === 'password' && userForm.getValues('confirmPassword')) {
+          userForm.trigger('confirmPassword')
+        }
+      },
     })
-    return () => subscription.unsubscribe()
   }, [userForm])
 
   const finishUser = (user: UserDto) => {

@@ -1,2 +1,4 @@
-export { UserProvider, useUser } from './UserContext'
-export type { User } from './UserContext'
+/* eslint-disable react-refresh/only-export-components -- Re-export barrel: it defines no component of its own, so it is never a fast-refresh boundary. */
+export { UserProvider } from './UserProvider'
+export { useUser } from './userContext'
+export type { User } from './userContext'

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Re-export barrel: it defines no component of its own, so it is never a fast-refresh boundary. */
 import DefaultLayout from "./-layout/DefaultLayout/DefaultLayout";
 import AuthLayout from "./-layout/AuthLayout/AuthLayout";
 export { DefaultLayout, AuthLayout }

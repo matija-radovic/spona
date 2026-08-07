@@ -1,7 +1,6 @@
 import './Footer.scss'
 import { useTranslation } from 'react-i18next'
-import { Logo } from '@shared/components/Logo'
-import { LogoSize } from '../Logo/Logo'
+import { Logo, LogoSize } from '@shared/components/Logo'
 import { Link, useLocation } from 'react-router-dom'
 
 interface FooterLink {
