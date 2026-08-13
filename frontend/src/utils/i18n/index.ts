@@ -17,4 +17,13 @@ i18n
         },
     })
 
+if (import.meta.hot) {
+    import.meta.hot.accept('@shared/lang/sr.json', (mod) => {
+        if (!mod) return
+        i18n.removeResourceBundle('sr', 'translation')
+        i18n.addResourceBundle('sr', 'translation', mod.default, true, true)
+        i18n.emit('languageChanged', i18n.language)
+    })
+}
+
 export default i18n
