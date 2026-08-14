@@ -19,6 +19,7 @@ export {
   type ContactEntry,
 } from './ContactInfo'
 export { Dropdown, type DropdownOption } from './Dropdown'
+export { Modal } from './Modal'
 export { ScrollContainer } from './ScrollContainer'
 export { ActorAvatar, ActorAvatarSize } from './ActorAvatar'
 export { CopyLinkButton } from './CopyLinkButton'
