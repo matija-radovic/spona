@@ -1,0 +1,101 @@
+@use '../../../../shared/css/colors' as c;
+@use '../../../../shared/css/mediaqueries' as mq;
+
+$panel-width: 30rem;
+
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+
+  .settings-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: c.$scrim;
+  }
+
+  .settings-modal-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: $panel-width;
+    max-height: 100%;
+    padding: 1.1rem 1.2rem 1.2rem;
+    overflow-y: auto;
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 14px;
+    box-shadow: c.$shadow-popover;
+  }
+
+  .settings-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    .settings-modal-title {
+      color: c.$text-strong;
+    }
+  }
+
+  .settings-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0.3rem;
+    font-size: 0.9rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease;
+
+    &:hover {
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
+    }
+  }
+
+  .settings-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    color: c.$text-primary;
+
+    p {
+      line-height: 1.5;
+    }
+
+    .settings-modal-warning {
+      color: c.$danger-text;
+    }
+
+    .settings-modal-error {
+      font-size: 0.8rem;
+      color: c.$danger-text;
+    }
+  }
+
+  .settings-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+
+    @media #{mq.$m-phone} {
+      .btn {
+        flex: 1 1 auto;
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { formatNumber } from '@utils/format'
 import type { Salary, SalaryPeriod } from '@utils/api/jobs'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
@@ -10,15 +11,11 @@ const PERIOD_KEY: Record<SalaryPeriod, string> = {
   JOB: 'jobs.salary.perJob',
 }
 
-const groupThousands = (n: number): string => n.toLocaleString('sr-RS')
-
-/**
- * Shared salary formatter (job-page.md §5.4). Honors a `displayText` override;
- * otherwise renders a single figure or an inclusive range, plus currency and a
- * cadence label. Used by both the card and the detail panel.
- */
-export const formatSalary = (salary: Salary, t: Translate): string => {
+/** A `displayText` override wins; otherwise a single figure or an inclusive range. */
+export const formatSalary = (salary: Salary, t: Translate, locale: string): string => {
   if (salary.displayText) return salary.displayText
+
+  const groupThousands = (n: number): string => formatNumber(n, locale)
 
   const amount =
     salary.max === null

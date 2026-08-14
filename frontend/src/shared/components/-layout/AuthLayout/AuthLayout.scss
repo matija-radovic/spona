@@ -1,3 +1,5 @@
+@use '../../../css/colors' as c;
+
 .auth-layout {
     display: flex;
     flex-direction: column;
@@ -15,6 +17,14 @@
         .auth-layout-content {
             flex: 1 0 auto;
             min-height: 100dvh;
+        }
+
+        .auth-layout-invite-hint {
+            padding: 1.2rem 1.2rem 0;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            text-align: center;
+            color: c.$text-muted;
         }
     }
 }

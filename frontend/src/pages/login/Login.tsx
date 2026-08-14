@@ -10,6 +10,7 @@ import { TextField } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/Button'
 import { useUser } from '@shared/contexts'
 import { loginRequest } from '@utils/api/auth'
+import { invitePathAfterAuth } from '@utils/pendingInvite'
 
 const buildSchema = (t: (key: string) => string) =>
   z.object({
@@ -43,7 +44,7 @@ const Login = () => {
         email: user.email,
         avatarUrl: user.avatarUrl ?? '',
       })
-      navigate('/jobs')
+      navigate(invitePathAfterAuth(user.username) ?? '/jobs')
     } catch {
       setServerError(t('errors.loginFailed'))
     }

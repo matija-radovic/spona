@@ -142,8 +142,7 @@
     }
   }
 
-  // Primary Button, adapted: squared off to match the input it sits beside, with
-  // its height coming from the row (hence no vertical padding of its own).
+  // Primary Button, adapted: squared off to match the input, height inherited from the row.
   .contact-info-add {
     flex: 0 0 auto;
     padding: 0 1rem;
@@ -212,7 +211,7 @@
       cursor: pointer;
 
       &:hover {
-        color: c.$danger;
+        color: c.$danger-text;
         background-color: c.$danger-wash;
       }
     }

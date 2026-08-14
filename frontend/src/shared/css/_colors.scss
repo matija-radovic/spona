@@ -15,8 +15,9 @@ $neutral-900: #000000;
 $accent-500: #d5a021;
 $accent-600: color.scale($accent-500, $lightness: -8%);
 
-$danger-500: #e5484d;
-$danger-300: #ff9ba0; // legible as text on a dark surface
+$danger-300: #ff5c62; 
+$danger-500: #b0161d;
+$danger-600: color.scale($danger-500, $lightness: -12%);
 $success-500: #2ea043;
 
 
@@ -65,9 +66,10 @@ $shadow-popover: 0 10px 26px rgba($neutral-900, 0.4);
 $shadow-card: 0 18px 50px rgba($neutral-900, 0.45);
 
 $danger: $danger-500;
+$danger-hover: $danger-600;
 $danger-text: $danger-300;
 $danger-wash: rgba($danger-500, 0.15); // error box fill, destructive hover
-$danger-border: rgba($danger-500, 0.7);
+$danger-border: rgba($danger-300, 0.7);
 $success: $success-500;
 
 $scrollbar-thumb: rgba($neutral-300, 0.45); // ScrollContainer only

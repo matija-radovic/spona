@@ -4,26 +4,19 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconMessage, IconMessageReply, IconMessageCircle } from '@tabler/icons-react'
 import { ActorAvatar, ActorAvatarSize, ReactionPicker, ReactionSummary } from '@shared/components'
+import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
 import type { ActivityCommentDto } from '@utils/api/activity'
-
-const dateLabel = (iso: string) => new Date(iso).toLocaleDateString('sr-RS')
-const dateTitle = (iso: string) => new Date(iso).toLocaleString('sr-RS')
 
 interface CommentActivityCardProps {
   comment: ActivityCommentDto
   onReact: (emoji: string, next: boolean) => void
 }
 
-/**
- * Profile-specific comment entry. Differs from PostCard: a top context bar
- * ("comment on a post" / "reply to a comment") with a matching icon and a
- * divider under it, no copy button, and a comment-jump button only on root
- * comments. Below the bar it deliberately reads like a post (`@handle • date`).
- * The content block carries the target comment id in nav state.
- */
+/** Like PostCard, plus a context bar naming the target and minus the copy button. */
 const CommentActivityCard = ({ comment, onReact }: CommentActivityCardProps) => {
   const { t } = useTranslation()
+  const format = useFormat()
   const navigate = useNavigate()
   const { author, reactions, isReply } = comment
 
@@ -54,10 +47,10 @@ const CommentActivityCard = ({ comment, onReact }: CommentActivityCardProps) => 
           <ActorAvatar avatarUrl={author.avatarUrl} actorType={author.actorType} size={ActorAvatarSize.SM} />
           <span className="comment-card-identity">
             <span className="comment-card-name">{author.name}</span>
-            <span className="comment-card-sub" title={dateTitle(comment.createdAt)}>
+            <span className="comment-card-sub" title={format.date(comment.createdAt, 'dateTime')}>
               {author.actorType === 'user'
-                ? `@${author.handle} • ${dateLabel(comment.createdAt)}`
-                : dateLabel(comment.createdAt)}
+                ? `@${author.handle} • ${format.date(comment.createdAt, 'short')}`
+                : format.date(comment.createdAt, 'short')}
             </span>
           </span>
         </Link>

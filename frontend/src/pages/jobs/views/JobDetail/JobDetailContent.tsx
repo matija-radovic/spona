@@ -12,6 +12,7 @@ import {
 } from '@tabler/icons-react'
 import { Button, ButtonVariant } from '@shared/components/Button'
 import { useUser } from '@shared/contexts'
+import useFormat from '@shared/hooks/useFormat'
 import { type JobDetailDto } from '@utils/api/jobs'
 import { isJobSaved, toggleSavedJob } from '@utils/savedJobs'
 import { formatSalary } from '@pages/jobs/lib/formatSalary'
@@ -27,6 +28,7 @@ interface JobDetailContentProps {
 
 const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
   const { t } = useTranslation()
+  const format = useFormat()
   const { isAuthenticated } = useUser()
   const cv = useCvApply(job.id)
 
@@ -41,8 +43,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
 
   const { createdFor } = job
   const isOrg = createdFor.actorType === 'org'
-  // The drop target is the WHOLE panel (title/head + apply + description), so a
-  // file can be dropped anywhere on the job, not just onto the apply row.
+  // The drop target is the WHOLE panel, not just the apply row.
   const isCvDrop = job.applicationType === 'CV_DROP'
 
   return (
@@ -92,7 +93,7 @@ const JobDetailContent = ({ job, isMobile, onBack }: JobDetailContentProps) => {
             {job.salary && (
               <span className="job-detail-meta-item">
                 <IconCoin aria-hidden />
-                {formatSalary(job.salary, t)}
+                {formatSalary(job.salary, t, format.locale)}
               </span>
             )}
           </div>

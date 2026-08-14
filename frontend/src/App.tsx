@@ -1,5 +1,5 @@
 import './App.scss'
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { DefaultLayout, AuthLayout } from '@shared/components'
 import { UserProvider } from '@shared/contexts'
@@ -9,7 +9,18 @@ import ActorSearch from '@pages/actors'
 import Profile from '@pages/profile'
 import Feed from '@pages/feed'
 import Post from '@pages/posts'
-import Settings from '@pages/settings'
+import {
+  UserSettings,
+  OrgSettings,
+  UserProfileSection,
+  OrganizationsSection,
+  AccountSection,
+  OrgProfileSection,
+  MembersSection,
+  ManagementSection,
+  PrivacySection,
+} from '@pages/settings'
+import InviteCapture from '@pages/invite'
 import Login from '@pages/login'
 import Register from '@pages/register'
 
@@ -32,7 +43,13 @@ const router = createBrowserRouter(
           <Route index element={<ActorSearch type='user' />} />
           <Route path=':username' element={<Profile actorType='user' />} />
           <Route element={<ProtectedRoute />}>
-            <Route path=':username/settings' element={<Settings />} />
+            <Route path=':username/settings' element={<UserSettings />}>
+              <Route index element={<Navigate to='profile' replace />} />
+              <Route path='profile' element={<UserProfileSection />} />
+              <Route path='privacy' element={<PrivacySection />} />
+              <Route path='organizations' element={<OrganizationsSection />} />
+              <Route path='account' element={<AccountSection />} />
+            </Route>
           </Route>
         </Route>
 
@@ -40,11 +57,19 @@ const router = createBrowserRouter(
           <Route index element={<ActorSearch type='org' />} />
           <Route path=':slug' element={<Profile actorType='org' />} />
           <Route element={<ProtectedRoute />}>
-            <Route path=':slug/settings' element={<Settings />} />
+            <Route path=':slug/settings' element={<OrgSettings />}>
+              <Route index element={<Navigate to='profile' replace />} />
+              <Route path='profile' element={<OrgProfileSection />} />
+              <Route path='privacy' element={<PrivacySection />} />
+              <Route path='members' element={<MembersSection />} />
+              <Route path='management' element={<ManagementSection />} />
+            </Route>
           </Route>
         </Route>
 
         <Route path='posts/:postId' element={<Post />} />
+
+        <Route path='i/:token' element={<InviteCapture />} />
 
         {/* `jobs/new` is a flat static route so it wins over `jobs/:slug`. */}
         <Route element={<ProtectedRoute />}>

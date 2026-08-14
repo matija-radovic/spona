@@ -1,0 +1,221 @@
+@use '../../../../../shared/css/colors' as c;
+@use '../../../../../shared/css/mediaqueries' as mq;
+
+.members-section {
+  .members-refresh {
+    font-size: 0.9rem;
+  }
+
+  // Optical nudge: the count chip beside the title pulls the row's apparent centre up.
+  .members-block .members-refresh {
+    position: relative;
+    top: 0.3rem;
+  }
+
+  .members-table,
+  .invitations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+
+    th {
+      padding: 0.5rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-align: left;
+      color: c.$text-muted;
+      border-bottom: 1px solid c.$border-line;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.65rem 0.6rem;
+      vertical-align: middle;
+      color: c.$text-primary;
+      border-bottom: 1px solid c.$border-line;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  .members-table-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .members-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .members-identity-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .members-identity-name {
+      color: c.$text-strong;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .members-identity-handle {
+      font-size: 0.75rem;
+      color: c.$text-muted;
+      text-decoration: none;
+
+      &:hover {
+        color: c.$accent;
+      }
+
+      &.is-muted:hover {
+        color: c.$text-muted;
+      }
+    }
+  }
+
+  .members-action {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .members-role-dropdown.is-active .dropdown-trigger {
+    font-weight: normal;
+    color: c.$text-primary;
+    background-color: c.$surface-4;
+    border-color: c.$border-panel;
+
+    &:hover {
+      border-color: c.$accent;
+    }
+  }
+
+  .invitations-status {
+    color: c.$text-muted;
+  }
+
+  .invite-form {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.9rem 1rem;
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 12px;
+
+    @media #{mq.$s-tablet} {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .invite-form-field {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .invite-form-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+      padding-top: 1.55rem;
+
+      @media #{mq.$s-tablet} {
+        width: 100%;
+        padding-top: 0;
+      }
+    }
+  }
+
+  @media #{mq.$phone} {
+    .members-table,
+    .invitations-table {
+      display: block;
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: block;
+      }
+
+      // Nested under .members-row to outrank `tr:last-child td` and keep the last divider.
+      .members-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        margin-bottom: 0.6rem;
+        padding: 0.5rem 0.85rem;
+        background-color: c.$surface-2;
+        border: 1px solid c.$border-panel;
+        border-radius: 12px;
+
+        td {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.8rem;
+          grid-column: 1 / -1;
+          padding: 0.3rem 0;
+          text-align: right;
+          border-bottom: none;
+        }
+
+        td[data-label]::before {
+          content: attr(data-label);
+          flex: 0 0 auto;
+          font-size: 0.72rem;
+          color: c.$text-muted;
+          text-align: left;
+        }
+
+        .members-cell-identity,
+        .members-action {
+          grid-row: 1;
+          padding-bottom: 0.55rem;
+          border-bottom: 1px solid c.$border-line;
+        }
+
+        .members-cell-identity {
+          display: block;
+          grid-column: 1;
+          min-width: 0;
+          text-align: left;
+
+          &::before {
+            display: none;
+          }
+        }
+
+        .members-action {
+          grid-column: 2;
+          justify-content: flex-end;
+          padding-left: 0.8rem;
+
+          &:empty {
+            display: none;
+          }
+
+          .btn {
+            padding: .5rem 1rem .475rem 1rem;
+          }
+        }
+
+        .members-action, .members-cell-identity {
+          margin-bottom: .5rem;
+        }
+      }
+    }
+  }
+}

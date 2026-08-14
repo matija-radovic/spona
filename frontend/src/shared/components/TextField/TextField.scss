@@ -15,7 +15,7 @@
     color: c.$text-primary;
 
     .text-field-asterisk {
-      color: c.$danger;
+      color: c.$danger-text;
       line-height: 1;
     }
   }
@@ -91,7 +91,6 @@
     border: none;
     border-radius: 50%;
     cursor: default;
-    // Opaque background - the indicator must never be see-through.
     background-color: c.$surface-4;
     color: c.$text-strong;
   }

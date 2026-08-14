@@ -4,6 +4,8 @@ export const ButtonVariant = Object.freeze({
   TERTIARY: 'tertiary',
   QUATERNARY: 'quaternary',
   GHOST: 'ghost',
+  DANGER: 'danger',
+  DANGER_OUTLINE: 'danger-outline',
 } as const)
 
 export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant]

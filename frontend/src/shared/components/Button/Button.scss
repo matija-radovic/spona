@@ -24,8 +24,7 @@
     outline-offset: 2px;
   }
 
-  // Every variant's hover is guarded by :not(:disabled), so a disabled button
-  // stays visually inert instead of lighting up under the cursor.
+  // Every variant guards hover with :not(:disabled), so a disabled button stays inert.
   &:disabled {
     cursor: not-allowed;
     opacity: 0.45;
@@ -100,6 +99,27 @@
 
     &:hover:not(:disabled) {
       background-color: c.$overlay-hover;
+    }
+  }
+
+  &-danger {
+    background-color: c.$danger;
+    border-color: c.$danger;
+    color: c.$text-strong;
+
+    &:hover:not(:disabled) {
+      background-color: c.$danger-hover;
+      border-color: c.$danger-hover;
+    }
+  }
+
+  &-danger-outline {
+    background-color: transparent;
+    border-color: c.$danger-border;
+    color: c.$danger-text;
+
+    &:hover:not(:disabled) {
+      background-color: c.$danger-wash;
     }
   }
 }

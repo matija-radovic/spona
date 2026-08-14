@@ -1,6 +1,7 @@
 import './JobCard.scss'
 import { useTranslation } from 'react-i18next'
 import { IconBuilding, IconMapPin, IconCoin } from '@tabler/icons-react'
+import useFormat from '@shared/hooks/useFormat'
 import type { JobListItemDto } from '@utils/api/jobs'
 import { formatSalary } from '@pages/jobs/lib/formatSalary'
 
@@ -12,6 +13,7 @@ interface JobCardProps {
 
 const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
   const { t } = useTranslation()
+  const format = useFormat()
   const { createdFor } = job
   const isOrg = createdFor.actorType === 'org'
 
@@ -39,7 +41,7 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
         {job.salary && (
           <span className="job-card-meta job-card-salary">
             <IconCoin aria-hidden />
-            {formatSalary(job.salary, t)}
+            {formatSalary(job.salary, t, format.locale)}
           </span>
         )}
 

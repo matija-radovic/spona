@@ -1,14 +1,13 @@
 // -----------------------------------------------------------------------------
-// MOCK auth service. The Spring Boot backend does not exist yet, so every call
-// here fakes a successful (or failing) response instead of hitting the network.
-// The real axios call is left commented above each mock body; DTO shapes mirror
-// `User` / `Organization` from app-info/types-ref.ts. A single-entry GET/POST is
-// expected to return just the data object (no _links until full REST is added).
+// MOCK auth service: every call fakes a response, with the real axios call left
+// commented above each mock body. DTO shapes mirror app-info/types-ref.ts, and a
+// single-entry GET/POST returns the bare data object (no _links yet).
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
+import type { ProblemDetail } from './types'
 
 type AdditionalContactInformation = ContactEntry[]
 
@@ -61,6 +60,8 @@ export interface CreateOrganizationPayload {
   legalName: string
   description: string | null
   website: string | null
+  /** Set from the registration stage's AvatarPicker; settings edits it later. */
+  avatarUrl: string | null
   location: string | null
   otherContactInfo: AdditionalContactInformation
 }
@@ -85,6 +86,25 @@ export const loginRequest = async (payload: LoginPayload): Promise<UserDto> => {
     avatarUrl: null,
     location: null,
     otherContactInfo: [],
+  }
+}
+
+/**
+ * MOCK - would be: await api.post('/auth/password-reset', { email })
+ * Every syntactically valid address gets the same answer, so the endpoint never
+ * reveals which emails are registered; a malformed one is the only visible failure.
+ */
+export const requestPasswordReset = async (email: string): Promise<void> => {
+  await delay(500)
+  if (!email.includes('@')) {
+    const problem: ProblemDetail = {
+      type: 'about:blank',
+      title: 'Bad Request',
+      status: 400,
+      detail: 'Nevažeća email adresa.',
+      instance: '/api/auth/password-reset',
+    }
+    return Promise.reject(problem)
   }
 }
 
@@ -125,7 +145,7 @@ export const createOrganization = async (
     legalName: payload.legalName,
     description: payload.description,
     website: payload.website,
-    avatarUrl: null,
+    avatarUrl: payload.avatarUrl,
     location: payload.location,
     otherContactInfo: payload.otherContactInfo,
   }

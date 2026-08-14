@@ -7,11 +7,9 @@ import { ActorAvatar, ActorAvatarSize } from '@shared/components/ActorAvatar'
 import { CopyLinkButton } from '@shared/components/CopyLinkButton'
 import { ReactionPicker } from '@shared/components/ReactionPicker'
 import { ReactionSummary } from '@shared/components/ReactionSummary'
+import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
 import type { ActivityPostDto } from '@utils/api/activity'
-
-const dateLabel = (iso: string) => new Date(iso).toLocaleDateString('sr-RS')
-const dateTitle = (iso: string) => new Date(iso).toLocaleString('sr-RS')
 
 interface PostCardProps {
   post: ActivityPostDto
@@ -19,13 +17,10 @@ interface PostCardProps {
   onReact: (emoji: string, next: boolean) => void
 }
 
-/**
- * The short-post representation reused by the profile Activity pane and (later)
- * the feed. There is no title and the card is NOT wholly clickable: only the
- * content block navigates to the post, so the action buttons never misfire.
- */
+/** Only the content block navigates, not the whole card, so actions never misfire. */
 const PostCard = ({ post, onReact }: PostCardProps) => {
   const { t } = useTranslation()
+  const format = useFormat()
   const navigate = useNavigate()
   const { author, reactions } = post
 
@@ -43,10 +38,10 @@ const PostCard = ({ post, onReact }: PostCardProps) => {
         <ActorAvatar avatarUrl={author.avatarUrl} actorType={author.actorType} size={ActorAvatarSize.SM} />
         <span className="post-card-identity">
           <span className="post-card-name">{author.name}</span>
-          <span className="post-card-sub" title={dateTitle(post.createdAt)}>
+          <span className="post-card-sub" title={format.date(post.createdAt, 'dateTime')}>
             {author.actorType === 'user'
-              ? `@${author.handle} • ${dateLabel(post.createdAt)}`
-              : dateLabel(post.createdAt)}
+              ? `@${author.handle} • ${format.date(post.createdAt, 'short')}`
+              : format.date(post.createdAt, 'short')}
           </span>
         </span>
       </Link>

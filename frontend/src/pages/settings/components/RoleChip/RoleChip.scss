@@ -1,0 +1,31 @@
+@use '../../../../shared/css/colors' as c;
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  line-height: var(--control-line-height);
+  white-space: nowrap;
+  color: c.$text-primary;
+  background-color: c.$fill-muted;
+  border: 1px solid c.$border-panel;
+  border-radius: 999px;
+
+  // ── Sizes ──────────────────────────────────────────────────────────────────
+  &.role-chip-size-sm {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  // Matches .dropdown-trigger's box, so a static chip and a role dropdown line up in one column.
+  &.role-chip-size-md {
+    padding: 0.55em 1.1em;
+    font-size: 0.9rem;
+  }
+
+  &.role-chip-owner {
+    color: c.$accent;
+    background-color: c.$accent-wash;
+    border-color: c.$accent-muted;
+  }
+}

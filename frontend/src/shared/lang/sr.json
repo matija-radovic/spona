@@ -5,12 +5,16 @@
   },
   "common": {
     "save": "Sačuvaj",
+    "saving": "Čuvanje...",
+    "saved": "Sačuvano",
     "cancel": "Otkaži",
     "delete": "Obriši",
     "edit": "Uredi",
+    "change": "Promeni",
     "submit": "Pošalji",
     "confirm": "Potvrdi",
     "close": "Zatvori",
+    "hide": "Sakrij",
     "back": "Nazad",
     "next": "Dalje",
     "loading": "Učitavanje...",
@@ -59,7 +63,7 @@
     "registerCta": "Registrujte se",
     "loginSubmit": "Prijavi se",
     "usernameHelper": "Od {{min}} do {{max}} karaktera. Dozvoljena su mala slova, brojevi, '-' i '_'.",
-    "passwordHelper": "Od {{min}} do {{max}} karaktera.\nDozvoljeni su slova, brojevi i specijalni znaci: ~!@#$%^&*()_+={}|[]:;\"'<,>.?/",
+    "passwordHelper": "Od {{min}} do {{max}} karaktera. \nDozvoljena su slova, brojevi i specijalni znaci: ~!@#$%^&*()_+={}|[]:;\"'<,>.?/",
     "steps": {
       "account": "Nalog",
       "personal": "Lični podaci",
@@ -316,6 +320,155 @@
       "admin": "Administrator",
       "editor": "Urednik",
       "recruiter": "Regruter"
+    }
+  },
+  "settings": {
+    "nav": {
+      "profile": "Javni profil",
+      "privacy": "Privatnost",
+      "organizations": "Organizacije",
+      "account": "Nalog",
+      "members": "Članovi",
+      "management": "Upravljanje"
+    },
+    "save": "Sačuvaj izmene",
+    "readOnly": "Vaša uloga ne dozvoljava izmene ovih podataka.",
+    "profile": {
+      "title": "Javni profil",
+      "hint": "Ovi podaci se prikazuju svima koji posete vaš profil.",
+      "orgHint": "Ovi podaci se prikazuju svima koji posete stranicu organizacije."
+    },
+    "privacy": {
+      "title": "Privatnost",
+      "showJobPostings": "Prikaži moje oglase za posao na profilu",
+      "showJobPostingsHint": "Kada je isključeno, posetioci neće videti karticu sa oglasima za posao."
+    },
+    "account": {
+      "title": "Upravljanje nalogom",
+      "username": {
+        "title": "Korisničko ime",
+        "helper": "Od {{min}} do {{max}} karaktera. Nakon izmene stari linkovi ka vašem profilu prestaju da rade.",
+        "action": "Promeni korisničko ime",
+        "submit": "Ažuriraj korisničko ime",
+        "success": "Korisničko ime je ažurirano."
+      },
+      "email": {
+        "title": "Email adresa",
+        "helper": "Adresa naloga je privatna i ne prikazuje se na profilu. Obaveštenje o izmeni šaljemo na staru adresu.",
+        "current": "Trenutna lozinka",
+        "action": "Promeni email adresu",
+        "submit": "Ažuriraj email adresu",
+        "success": "Email adresa je ažurirana."
+      },
+      "password": {
+        "title": "Lozinka",
+        "current": "Trenutna lozinka",
+        "new": "Nova lozinka",
+        "repeat": "Ponovite novu lozinku",
+        "action": "Promeni lozinku",
+        "submit": "Ažuriraj lozinku",
+        "success": "Lozinka je promenjena.",
+        "resetSent": "Link za promenu lozinke poslat je na {{email}}."
+      },
+      "delete": {
+        "title": "Obriši nalog",
+        "warning": "Brisanje naloga je trajno. Zajedno sa vačim nalogom se brišu i objave, komentari i oglasi za posao, kao i sve organizacije čiji ste vlasnik sa njihovim celokupnim sadržajem.",
+        "button": "Obriši nalog",
+        "passwordLabel": "Unesite lozinku da potvrdite"
+      }
+    },
+    "organizations": {
+      "title": "Organizacije",
+      "mine": "Vaše organizacije",
+      "empty": "Niste član nijedne organizacije.",
+      "invitations": "Pozivnice",
+      "role": "Uloga",
+      "joined": "Član od",
+      "roleUpdated": "Uloga promenjena",
+      "invitedBy": "Pozvao/la",
+      "memberCount": "Broj članova",
+      "manage": "Podešavanja",
+      "leave": "Napusti",
+      "leaveConfirm": "Napustićete organizaciju {{name}}. Vaše objave i oglasi ostaju organizaciji.",
+      "ownerCannotLeave": "Vlasnik ne može napustiti organizaciju. Prvo prenesite vlasništvo.",
+      "accept": "Prihvati",
+      "decline": "Odbij",
+      "invitedYou": "pozvao/la vas je {{name}}"
+    },
+    "members": {
+      "title": "Upravljanje članovima",
+      "memberTableTitle": "Članovi",
+      "member": "Član",
+      "joined": "Datum pristupa",
+      "role": "Uloga",
+      "remove": "Ukloni",
+      "refresh": "Osveži"
+    },
+    "invitations": {
+      "title": "Pozivnice",
+      "identifier": "Korisničko ime ili email adresa",
+      "roleLabel": "Uloga",
+      "invite": "Pozovi",
+      "invitee": "Pozvani",
+      "sentAt": "Datum",
+      "invitedAs": "Pozvan/a kao",
+      "statusLabel": "Status",
+      "notRegistered": "nema nalog, pridružiće se nakon registracije",
+      "waiting": "Na čekanju",
+      "declined": "Odbijena",
+      "cancel": "Otkaži pozivnicu",
+      "dismiss": "Ukloni sa liste",
+      "empty": "Nema poslatih pozivnica."
+    },
+    "org": {
+      "title": "Upravljanje organizacijom",
+      "slug": {
+        "title": "Adresa organizacije",
+        "helper": "Adresa je deo linka ka organizaciji. Nakon izmene svaki postojeći link prestaje da radi."
+      },
+      "transfer": {
+        "title": "Prenos vlasništva",
+        "helper": "Vlasništvo se prenosi samo administratoru. Prvo postavite člana za administratora, pa onda prenesite vlasništvo.",
+        "needsAdmin": "Prvo postavite nekog člana za administratora.",
+        "button": "Prenesi vlasništvo",
+        "confirm": "Nakon prenosa postajete administrator. Ovu radnju ne možete poništiti bez novog vlasnika.",
+        "typeSlug": "Unesite „{{slug}}“ da potvrdite prenos"
+      },
+      "delete": {
+        "title": "Obriši organizaciju",
+        "warning": "Brisanje organizacije je trajno. Zajedno sa organizacijom brišu se njeni oglasi, objave i komentari, a članovi gube pristup.",
+        "button": "Obriši organizaciju"
+      }
+    },
+    "invite": {
+      "title": "Pozivnica za organizaciju",
+      "role": "Ponuđena uloga",
+      "authHint": "Pozvani ste u organizaciju {{name}}. Prijavite se ili napravite nalog da biste odgovorili na pozivnicu.",
+      "accept": "Prihvati",
+      "decline": "Odbij",
+      "later": "Kasnije",
+      "ok": "U redu",
+      "canceled": "Pozivnica je otkazana.",
+      "alreadyAccepted": "Već ste član ove organizacije.",
+      "declined": "Odbili ste ovu pozivnicu.",
+      "notFound": "Pozivnica ne postoji.",
+      "wrongAccount": "Ova pozivnica je poslata drugom nalogu.",
+      "logout": "Odjavi se"
+    },
+    "confirm": {
+      "question": "Da li ste sigurni?",
+      "typeSlug": "Unesite „{{slug}}“ da potvrdite"
+    },
+    "unsaved": {
+      "title": "Imate nesačuvane izmene.",
+      "body": "Ako odbacite izmene, one se ne mogu vratiti.",
+      "discard": "Odbaci izmene"
+    },
+    "roles": {
+      "OWNER": "Vlasnik",
+      "ADMIN": "Administrator",
+      "EDITOR": "Urednik",
+      "RECRUITER": "Regruter"
     }
   },
   "home": {

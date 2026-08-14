@@ -1,0 +1,171 @@
+@use '../../../../../shared/css/colors' as c;
+@use '../../../../../shared/css/mediaqueries' as mq;
+
+.organizations-section {
+  .organizations-invites {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .organizations-invite {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 12px;
+
+    @media #{mq.$m-phone} {
+      flex-wrap: wrap;
+    }
+  }
+
+  .organizations-invite-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1 1 auto;
+    min-width: 0;
+
+    .organizations-invite-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: c.$text-strong;
+      text-decoration: none;
+
+      &:hover {
+        color: c.$accent;
+      }
+    }
+
+    .organizations-invite-meta {
+      font-size: 0.78rem;
+      color: c.$text-muted;
+    }
+  }
+
+  .organizations-invite-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+
+    @media #{mq.$m-phone} {
+      width: 100%;
+
+      .btn {
+        flex: 1 1 auto;
+      }
+    }
+  }
+
+  .organizations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .organizations-card {
+    overflow: hidden;
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 12px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+
+    &.is-highlighted {
+      border-color: c.$accent;
+      background-color: c.$accent-wash;
+    }
+  }
+
+  .organizations-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    background-color: c.$surface-4;
+    border-bottom: 1px solid c.$border-line;
+
+    @media #{mq.$m-phone} {
+      flex-wrap: wrap;
+    }
+
+    .organizations-card-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: c.$text-strong;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      &:hover {
+        color: c.$accent;
+      }
+    }
+  }
+
+  .organizations-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+
+    @media #{mq.$m-phone} {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .organizations-card-note {
+      max-width: 18rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: c.$text-muted;
+    }
+  }
+
+  .organizations-card-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+    gap: 0.4rem 1rem;
+    margin: 0;
+    padding: 0.85rem 0.9rem;
+    font-size: 0.85rem;
+
+    @media #{mq.$m-phone} {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.15rem;
+    }
+
+    dt {
+      color: c.$text-muted;
+    }
+
+    dd {
+      margin: 0;
+      color: c.$text-strong;
+
+      @media #{mq.$m-phone} {
+        margin-bottom: 0.5rem;
+      }
+
+      a {
+        color: c.$text-primary;
+        text-decoration: none;
+
+        &:hover {
+          color: c.$accent;
+        }
+      }
+    }
+  }
+}

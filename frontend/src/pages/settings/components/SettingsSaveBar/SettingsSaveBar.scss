@@ -1,0 +1,17 @@
+@use '../../../../shared/css/colors' as c;
+
+.settings-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding-top: 0.8rem;
+  border-top: 1px solid c.$border-line;
+
+  .settings-save-bar-error {
+    flex: 1 1 12rem;
+    font-size: 0.8rem;
+    color: c.$danger-text;
+  }
+}

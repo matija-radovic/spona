@@ -75,6 +75,7 @@ export const buildOrgSchema = (t: Translate) =>
       .string()
       .max(200, t('errors.maxLength', { max: 200 }))
       .refine((value) => value === '' || /^https?:\/\/.+/.test(value), t('errors.invalidUrl')),
+    avatarUrl: z.string(),
     location: z.string().max(120, t('errors.maxLength', { max: 120 })),
     otherContactInfo: contactInfoSchema(t),
   })
@@ -99,6 +100,7 @@ export const ORG_DEFAULTS: OrgData = {
   legalName: '',
   description: '',
   website: '',
+  avatarUrl: '',
   location: '',
   otherContactInfo: [],
 }

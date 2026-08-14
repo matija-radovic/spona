@@ -1,6 +1,6 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { TextField, ContactInfoWidget } from '@shared/components'
+import { TextField, AvatarPicker, ContactInfoWidget } from '@shared/components'
 import { SLUG_MIN, SLUG_MAX } from '@utils/constants/validation'
 import type { OrgData } from '../schema'
 
@@ -18,6 +18,14 @@ const StageOrganization = ({ form }: StageOrganizationProps) => {
 
   return (
     <div className="register-fields">
+      <Controller
+        control={control}
+        name="avatarUrl"
+        render={({ field }) => (
+          <AvatarPicker label={t('auth.avatar')} value={field.value} onChange={field.onChange} />
+        )}
+      />
+
       <TextField
         label={t('auth.org.slug')}
         required

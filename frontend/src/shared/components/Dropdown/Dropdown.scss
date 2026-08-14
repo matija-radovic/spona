@@ -1,5 +1,15 @@
 @use '../../css/colors' as c;
 
+@keyframes dropdown-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
 .dropdown {
   position: relative;
   display: inline-flex;
@@ -9,9 +19,9 @@
     align-items: center;
     gap: 0.4rem;
     max-width: 15rem;
-    padding: 0.5rem 0.8rem;
+    padding: 0.55em 1.1em;
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: var(--control-line-height);
     color: c.$text-primary;
     background-color: c.$surface-4;
@@ -36,8 +46,7 @@
     }
   }
 
-  // Filled/accent capsule when a non-default value is applied, so the user
-  // can see it is active even when scrolled off or inside "More".
+  // Accent capsule while a non-default value is applied, visible even inside "More".
   &.is-active .dropdown-trigger {
     color: c.$text-on-accent;
     background-color: c.$accent;
@@ -51,7 +60,9 @@
     top: calc(100% + 0.35rem);
     left: 0;
     z-index: 40;
+    width: max-content;
     min-width: 12rem;
+    max-width: min(20rem, 90vw);
     max-height: 15rem;
     margin: 0;
     padding: 0.3rem;
@@ -94,6 +105,47 @@
 
     .dropdown-option-label {
       flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .dropdown-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.6rem;
+  }
+
+  .dropdown-placeholder-bar {
+    height: 0.7rem;
+    border-radius: 999px;
+    background-color: c.$fill-muted;
+    animation: dropdown-pulse 1.3s ease-in-out infinite;
+
+    &:nth-child(2) {
+      width: 80%;
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      width: 60%;
+      animation-delay: 0.3s;
+    }
+  }
+
+  .dropdown-empty {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dropdown-placeholder-bar {
+      animation: none;
     }
   }
 

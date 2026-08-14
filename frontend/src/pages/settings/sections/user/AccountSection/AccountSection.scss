@@ -1,0 +1,99 @@
+@use '../../../../../shared/css/colors' as c;
+@use '../../../../../shared/css/mediaqueries' as mq;
+
+.account-section {
+  .account-credentials {
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 12px;
+  }
+
+  .credential-row + .credential-row {
+    border-top: 1px solid c.$border-line;
+  }
+
+  .credential-row-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1.1rem;
+
+    .credential-row-icon {
+      display: inline-flex;
+      flex: 0 0 auto;
+      color: c.$text-muted;
+      transition: color 0.16s ease;
+    }
+
+    .credential-row-title {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: c.$text-strong;
+    }
+
+    .btn {
+      flex: 0 0 auto;
+    }
+
+    .credential-row-action-short {
+      display: none;
+    }
+
+    @media #{mq.$s-phone} {
+      .credential-row-action-full {
+        display: none;
+      }
+
+      .credential-row-action-short {
+        display: inline;
+      }
+    }
+  }
+
+  .credential-row.is-open .credential-row-icon {
+    color: c.$accent;
+  }
+
+  .credential-row-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0 1.1rem 1.1rem;
+  }
+
+  .credential-row-hint {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: c.$text-muted;
+  }
+
+  .credential-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .credential-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .credential-form-aside {
+    color: c.$text-muted;
+  }
+
+  .credential-form-status {
+    margin-right: auto;
+  }
+
+  .credential-form-error {
+    font-size: 0.8rem;
+    line-height: var(--control-line-height);
+    color: c.$danger-text;
+  }
+}

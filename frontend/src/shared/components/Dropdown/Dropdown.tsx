@@ -20,19 +20,16 @@ interface DropdownProps {
   /** shown as the trigger text when nothing is selected (the "none"/"all" case) */
   placeholder?: string
   disabled?: boolean
+  /** options are still on the wire: the trigger opens onto placeholder rows */
+  loading?: boolean
+  /** panel text once loading has finished and there is still nothing to pick */
+  emptyLabel?: string
   className?: string
 }
 
 /**
- * Controlled picker (single + multi), extracted/generalised from the
- * ContactInfoWidget type-selector. Pure `value`/`onChange` — drops into RHF via
- * `<Controller>` without this component depending on react-hook-form.
- *
- * Overflow caveat (job-filter.md §4.3): the panel is `position: absolute`, so an
- * `overflow: hidden/auto` ancestor would clip it. The filter menu that hosts
- * these dropdowns therefore keeps `overflow: visible` (option 1 — no portal).
- * Still absolute, so it also can't reposition itself — `usePopoverFlip` opens it
- * upward when the trigger sits too close to the bottom of the viewport.
+ * The panel is `position: absolute` and NOT portalled, so any host must keep
+ * `overflow: visible` or it gets clipped; `usePopoverFlip` handles the bottom edge.
  */
 const Dropdown = ({
   label,
@@ -42,6 +39,8 @@ const Dropdown = ({
   multiple = false,
   placeholder,
   disabled = false,
+  loading = false,
+  emptyLabel,
   className,
 }: DropdownProps) => {
   const [open, setOpen] = useState(false)
@@ -103,6 +102,48 @@ const Dropdown = ({
 
   const Chevron = open ? IconChevronUp : IconChevronDown
 
+  const panelBody = (() => {
+    if (loading) {
+      return (
+        <li className="dropdown-placeholder" role="presentation">
+          {[0, 1, 2].map((row) => (
+            <span key={row} className="dropdown-placeholder-bar" />
+          ))}
+        </li>
+      )
+    }
+    if (options.length === 0) {
+      return emptyLabel ? (
+        <li className="dropdown-empty" role="presentation">
+          {emptyLabel}
+        </li>
+      ) : null
+    }
+    return options.map((option) => {
+      const OptionIcon = option.icon
+      const active = isSelected(option.value)
+      return (
+        <li key={option.value}>
+          <button
+            type="button"
+            role="option"
+            aria-selected={active}
+            className={`dropdown-option${active ? ' is-selected' : ''}`}
+            onClick={() => handleSelect(option.value)}
+          >
+            {multiple && (
+              <span className={`dropdown-check${active ? ' is-checked' : ''}`} aria-hidden>
+                {active && <IconCheck />}
+              </span>
+            )}
+            {OptionIcon && <OptionIcon aria-hidden />}
+            <span className="dropdown-option-label">{option.label}</span>
+          </button>
+        </li>
+      )
+    })
+  })()
+
   return (
     <div className={rootClass} ref={rootRef}>
       <button
@@ -125,30 +166,9 @@ const Dropdown = ({
           role="listbox"
           aria-label={label}
           aria-multiselectable={multiple}
+          aria-busy={loading || undefined}
         >
-          {options.map((option) => {
-            const OptionIcon = option.icon
-            const active = isSelected(option.value)
-            return (
-              <li key={option.value}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  className={`dropdown-option${active ? ' is-selected' : ''}`}
-                  onClick={() => handleSelect(option.value)}
-                >
-                  {multiple && (
-                    <span className={`dropdown-check${active ? ' is-checked' : ''}`} aria-hidden>
-                      {active && <IconCheck />}
-                    </span>
-                  )}
-                  {OptionIcon && <OptionIcon aria-hidden />}
-                  <span className="dropdown-option-label">{option.label}</span>
-                </button>
-              </li>
-            )
-          })}
+          {panelBody}
         </ul>
       )}
     </div>

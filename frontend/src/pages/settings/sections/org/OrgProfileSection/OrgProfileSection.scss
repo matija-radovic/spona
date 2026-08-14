@@ -1,0 +1,53 @@
+@use '../../../../../shared/css/colors' as c;
+
+.org-profile-section {
+  .org-profile-avatar,
+  .org-profile-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .org-profile-avatar-label,
+  .org-profile-contacts-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: c.$text-primary;
+  }
+
+  .org-profile-contacts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .org-profile-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    background-color: c.$surface-2;
+    border: 1px solid c.$border-panel;
+    border-radius: 10px;
+
+    .org-profile-contact-desc {
+      flex: 0 0 auto;
+      color: c.$text-muted;
+    }
+
+    .org-profile-contact-value {
+      min-width: 0;
+      font-size: inherit;
+      color: c.$text-strong;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

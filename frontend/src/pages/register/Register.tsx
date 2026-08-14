@@ -15,6 +15,7 @@ import {
   type CreateUserPayload,
   type UserDto,
 } from '@utils/api/auth'
+import { invitePathAfterAuth } from '@utils/pendingInvite'
 import {
   buildOrgSchema,
   buildRegisterSchema,
@@ -54,6 +55,7 @@ const toOrgPayload = (data: OrgData): CreateOrganizationPayload => ({
   legalName: data.legalName.trim(),
   description: orNull(data.description),
   website: orNull(data.website),
+  avatarUrl: data.avatarUrl || null,
   location: orNull(data.location),
   otherContactInfo: data.otherContactInfo,
 })
@@ -91,9 +93,8 @@ const Register = () => {
     defaultValues: ORG_DEFAULTS,
   })
 
-  // Re-typing the username clears the "taken" state but keeps live format checks.
-  // Editing the password re-validates a previously-entered confirm field so its
-  // green check flips to invalid the instant the two diverge.
+  // Re-typing the username clears the "taken" state; editing the password
+  // re-validates confirmPassword so its green check flips the moment they diverge.
   useEffect(() => {
     return userForm.subscribe({
       formState: { values: true },
@@ -114,7 +115,7 @@ const Register = () => {
       email: user.email,
       avatarUrl: user.avatarUrl ?? '',
     })
-    navigate('/jobs')
+    navigate(invitePathAfterAuth(user.username) ?? '/jobs')
   }
 
   const handleAccountNext = async () => {
@@ -134,7 +135,7 @@ const Register = () => {
     }
   }
 
-  // Personal stage fields are all optional - finishing it issues the user-creation call.
+  // Every personal-stage field is optional, so there is nothing to validate first.
   const handlePersonalNext = async () => {
     setBusy(true)
     try {
@@ -206,10 +207,11 @@ const Register = () => {
         </AnimatePresence>
 
         <div className="register-actions">
+          {/* No Back out of Organization: the user account already exists by then. */}
           {stage > Stage.Account && stage < Stage.Organization && (
             <Button
               variant={ButtonVariant.GHOST}
-              onClick={() => setStage(Stage.Account)} // Can't go back from Organization to Profile creation since profile is now already created
+              onClick={() => setStage(Stage.Account)}
               disabled={busy}
             >
               {t('auth.back')}

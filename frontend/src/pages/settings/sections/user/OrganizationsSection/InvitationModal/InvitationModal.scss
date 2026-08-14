@@ -1,0 +1,43 @@
+@use '../../../../../../shared/css/colors' as c;
+
+.settings-modal {
+  .invitation-modal-org {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .invitation-modal-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+
+    .invitation-modal-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: c.$text-strong;
+      text-decoration: none;
+
+      &:hover {
+        color: c.$accent;
+      }
+    }
+
+    .invitation-modal-inviter {
+      font-size: 0.8rem;
+      color: c.$text-muted;
+    }
+  }
+
+  .invitation-modal-role {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .invitation-modal-role-label {
+      font-size: 0.8rem;
+      color: c.$text-muted;
+    }
+  }
+}

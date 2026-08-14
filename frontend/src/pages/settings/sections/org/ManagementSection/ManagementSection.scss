@@ -1,0 +1,38 @@
+.management-section {
+  .management-transfer {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+
+    .settings-inline-error {
+      order: 1;
+      flex: 1 1 14rem;
+    }
+
+    .management-transfer-actions {
+      width: max-content;
+      max-width: 100%;
+
+      .dropdown,
+      .btn {
+        flex: 1 1 auto;
+      }
+
+      .dropdown {
+        min-width: 0;
+      }
+
+      .dropdown-trigger {
+        width: 100%;
+        max-width: none;
+        justify-content: space-between;
+      }
+
+      .dropdown-option-label {
+        white-space: nowrap;
+      }
+    }
+  }
+}
