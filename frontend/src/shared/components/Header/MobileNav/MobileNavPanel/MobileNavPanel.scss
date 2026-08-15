@@ -1,5 +1,5 @@
-@use '../../../../css/colors' as c;
-@use '../../../../css/mediaqueries' as mq;
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
 
 $panel-width: 280px;
 $panel-max-width: calc(100dvw - 40px); // keep a 40px backdrop strip tappable on tiny screens

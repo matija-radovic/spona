@@ -1,5 +1,5 @@
-@use '../../../../shared/css/colors' as c;
-@use '../../../../shared/css/mediaqueries' as mq;
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
 
 $avatar-indent: 3.35rem; // SM avatar width (2.6rem) + actor-row-main gap (0.75rem)
 
