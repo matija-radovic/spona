@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { imagetools } from 'vite-imagetools'
 import react from '@vitejs/plugin-react'
@@ -6,6 +7,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      '@css': fileURLToPath(new URL('./src/shared/css', import.meta.url)),
+    },
   },
   plugins: [
     react(),
