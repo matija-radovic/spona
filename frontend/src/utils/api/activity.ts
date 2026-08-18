@@ -2,7 +2,7 @@
 // MOCK activity service (posts + comments for an actor's profile Activity pane).
 // The Spring Boot backend does not exist yet, so every call fakes a delayed
 // response; the real axios call is left commented above each mock body. DTOs are
-// separate from the DB model (types-ref.r3): each item ships a stripped,
+// separate from the DB model (new_docx/types.ts): each item ships a stripped,
 // discriminated `author` (== the profile owner here, generic for feed reuse).
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`.

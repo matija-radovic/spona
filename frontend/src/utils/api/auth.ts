@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // MOCK auth service: every call fakes a response, with the real axios call left
-// commented above each mock body. DTO shapes mirror app-info/types-ref.ts, and a
+// commented above each mock body. DTO shapes mirror new_docx/types.ts, and a
 // single-entry GET/POST returns the bare data object (no _links yet).
 // -----------------------------------------------------------------------------
 

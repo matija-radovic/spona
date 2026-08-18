@@ -70,7 +70,6 @@ export const useCvApply = (jobId: string): CvApply => {
 
   const handleSubmit = async () => {
     if (!file || submitting) return
-    // Code-level guard in addition to the disabled attribute (job-page.md §8.2).
     const error = validateCv(file)
     if (error) {
       setClientError(error)

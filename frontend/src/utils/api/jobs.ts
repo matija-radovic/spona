@@ -2,7 +2,7 @@
 // MOCK jobs service. The Spring Boot backend does not exist yet, so every call
 // fakes a delayed response instead of hitting the network. The real axios call
 // is left commented above each mock body. DTO shapes are separate from the DB
-// model (types-ref.r1): user-facing DTOs OMIT `createdBy` and ship a stripped,
+// model (new_docx/types.ts): user-facing DTOs OMIT `createdBy` and ship a stripped,
 // discriminated `createdFor`. Transport envelopes come from `./types`.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
@@ -12,7 +12,8 @@
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
 //
-// Saved jobs no longer live here (types-ref.r3 [C9]); they are browser
+// Saved jobs no longer live here (new_docx/types.ts, end of the Jobs block —
+// there is no FavoriteJob table); they are browser
 // localStorage (utils/savedJobs.ts). `fetchJobsByIds` only HYDRATES an id set.
 // -----------------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ export interface Salary {
   max: number | null
   currency: string
   period: SalaryPeriod
-  displayText?: string | null
+  displayText: string | null
 }
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
@@ -160,6 +161,7 @@ const mockSalary = (seed: number): Salary => {
     max: isRange ? min + (period === 'HOUR' ? 10 : 900) : null,
     currency: seed % 3 === 0 ? 'RSD' : 'EUR',
     period,
+    displayText: null,
   }
 }
 

@@ -48,7 +48,7 @@ const ActorSearchRow = ({ item }: ActorSearchRowProps) => {
       </Link>
 
       <FollowButton
-        actorId={item.handle}
+        actorId={item.id}
         following={following}
         onChange={setFollowing}
         className="actor-row-follow"

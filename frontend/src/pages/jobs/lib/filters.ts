@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // Jobs filter state <-> URL. The golden rule: filter state lives in the URL query
-// string (job-filter.md). This is the single canonical serialisation - the page
+// string. This is the single canonical serialisation - the page
 // and the service both go through here; never hand-roll `?a=b` at call sites.
 //
 // Pagination (`page`/`size`) is deliberately NOT part of these params - the
@@ -57,8 +57,8 @@ const WORKPLACE_OPTIONS: readonly FilterOption[] = [
   { value: 'ONSITE', labelKey: 'jobs.workplace.ONSITE' },
 ]
 
-// The "Ugovor / Honorarno" bucket is ONE UI choice that expands to two enum
-// values (types-ref.r1 [C2]); its compound value round-trips through the URL.
+// The "Ugovor / Honorarno" bucket is ONE UI choice that expands to two JobType
+// values (new_docx/types.ts); its compound value round-trips through the URL.
 const EMPLOYMENT_OPTIONS: readonly FilterOption[] = [
   { value: 'PART_TIME', labelKey: 'jobs.type.PART_TIME' },
   { value: 'CONTRACT,GIG', labelKey: 'jobs.filters.employmentOpt.contractGig' },
@@ -79,7 +79,7 @@ const EXPERIENCE_OPTIONS: readonly FilterOption[] = [
 
 /**
  * Config-driven filters - adding a seventh is a one-liner here, and the
- * "primary vs. More" split (job-filter.md §1.1) is just `slice(0, N)`.
+ * "primary vs. More" split is just `slice(0, N)`.
  */
 export const FILTERS: readonly FilterConfig[] = [
   { key: 'posted', labelKey: 'jobs.filters.posted', kind: 'single', options: POSTED_OPTIONS },

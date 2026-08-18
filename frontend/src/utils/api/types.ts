@@ -1,5 +1,6 @@
 // -----------------------------------------------------------------------------
-// Shared backend transport shapes + helpers (types-ref.r1 [C7]).
+// Shared backend transport shapes + helpers. Mirrors the transport envelopes at
+// the end of new_docx/types.ts verbatim.
 //
 // These are app-wide, not jobs-specific: the same envelopes back companies/feed
 // later. Three response scenarios the (future) Spring Boot API uses:

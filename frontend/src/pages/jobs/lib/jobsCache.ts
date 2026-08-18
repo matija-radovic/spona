@@ -1,7 +1,7 @@
 // Module-level cache keyed by the filter querystring. Lets JobsLayout restore a
 // previous search (accumulated pages + scroll position) instead of refetching,
 // which is what makes browser Back land on the exact prior result set with no
-// render storm (job-page.md §7.1). Lives outside React so it survives unmounts.
+// render storm. Lives outside React so it survives unmounts.
 
 import type { JobListItemDto } from '@utils/api/jobs'
 

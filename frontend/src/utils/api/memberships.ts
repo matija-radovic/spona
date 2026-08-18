@@ -84,8 +84,11 @@ const MAGIC_TOKEN_STATUS: Readonly<Record<string, InvitationPreviewDto['status']
 }
 const MAGIC_OTHER_ACCOUNT_TOKEN = 'tudja'
 
+// Mock actor ids are derived from the handle so a given handle always refers to
+// the same actor across this module. The real backend supplies UUIDs.
 const org = (handle: string, name: string): ActorRefDto => ({
   actorType: 'org',
+  id: `org-${handle}`,
   name,
   handle,
   avatarUrl: null,
@@ -93,6 +96,7 @@ const org = (handle: string, name: string): ActorRefDto => ({
 
 const person = (handle: string, name: string): ActorRefDto => ({
   actorType: 'user',
+  id: `user-${handle}`,
   name,
   handle,
   avatarUrl: null,

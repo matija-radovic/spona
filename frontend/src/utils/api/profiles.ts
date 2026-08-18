@@ -2,9 +2,10 @@
 // MOCK profiles service. The Spring Boot backend does not exist yet, so every
 // call fakes a delayed response instead of hitting the network. The real axios
 // call is left commented above each mock body. DTO shapes are separate from the
-// DB model (types-ref.r3): user-facing DTOs OMIT `createdBy`, ship a stripped
-// discriminated actor reference, and NEVER carry the private email or any
-// privacy flag (job-posting visibility is enforced entirely backend-side, §9).
+// DB model (new_docx/types.ts): user-facing DTOs OMIT `createdBy`, ship a
+// stripped discriminated actor reference, and NEVER carry the private email or
+// any privacy flag (job-posting visibility is enforced entirely backend-side,
+// backend-contract.md §8 rule 8).
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
 // uniformly. Magic inputs make the failure/empty paths reachable:
@@ -23,6 +24,9 @@ import type { PagedResponse, ProblemDetail } from './types'
 /** Stripped actor reference used everywhere an author/identity renders. */
 export interface ActorRefDto {
   actorType: 'user' | 'org'
+  /** The only globally unique address, and what the `/actors/{actorId}/…`
+   *  routes take. A handle is unique only within its own subtype. */
+  id: string
   /** fullName (user) or displayName (org). */
   name: string
   /** username (user) or org slug - builds the profile URL. */
@@ -61,19 +65,21 @@ export type ProfileDto =
       location: string | null
       otherContactInfo: ContactEntry[]
       followers: number
-      following: number
       createdAt: string
       isFollowedByViewer?: boolean
       viewerCanEdit?: boolean
     }
 
 /** Actor search-result summary. Stripped down from `ProfileDto` to the fields
- *  a search row can plausibly need (no id/location/contact/createdAt/
+ *  a search row can plausibly need (no location/contact/createdAt/
  *  viewerCanEdit) - but, unlike `ActorRefDto`, still a real per-type summary
- *  (bio/description + follower counts), not just an identity reference. */
+ *  (bio/description + follower counts), not just an identity reference. `id` is
+ *  here because the row's FollowButton calls an actor-id route; the handle is
+ *  unique only within a subtype. */
 export type ActorSearchItemDto =
   | {
       actorType: 'user'
+      id: string
       name: string
       handle: string
       avatarUrl: string | null
@@ -84,12 +90,12 @@ export type ActorSearchItemDto =
     }
   | {
       actorType: 'org'
+      id: string
       name: string
       handle: string
       avatarUrl: string | null
       description: string | null
       followers: number
-      following: number
       isFollowedByViewer?: boolean
     }
 
@@ -197,7 +203,6 @@ const ORG_PROFILES: Record<string, ProfileDto> = {
     location: 'Beograd',
     otherContactInfo: CONTACTS_FULL.slice(0, 3),
     followers: 3400,
-    following: 12,
     createdAt: iso(1500),
     isFollowedByViewer: false,
   },
@@ -212,7 +217,6 @@ const ORG_PROFILES: Record<string, ProfileDto> = {
     location: 'Beograd',
     otherContactInfo: CONTACTS_FULL.slice(0, 1),
     followers: 96,
-    following: 20,
     createdAt: iso(300),
     viewerCanEdit: true,
   },
@@ -227,7 +231,6 @@ const ORG_PROFILES: Record<string, ProfileDto> = {
     location: 'Novi Sad',
     otherContactInfo: [], // Contact tab hidden
     followers: 1800,
-    following: 40,
     createdAt: iso(2000),
     isFollowedByViewer: true,
   },
@@ -253,7 +256,6 @@ const fallbackProfile = (actorType: 'user' | 'org', handle: string): ProfileDto 
     location: locations[seed % locations.length],
     otherContactInfo: seed % 2 === 0 ? CONTACTS_FULL.slice(0, 2) : [],
     followers: 20 + (seed % 900),
-    following: 5 + (seed % 300),
     createdAt: iso(30 + (seed % 900)),
     isFollowedByViewer: seed % 3 === 0,
   }
@@ -274,6 +276,7 @@ const fallbackProfile = (actorType: 'user' | 'org', handle: string): ProfileDto 
     username: handle,
     fullName: name,
     bio: seed % 2 === 0 ? 'Korisnik platforme Spona.' : null,
+    following: 5 + (seed % 300),
     ...shared,
   }
 }
@@ -286,7 +289,10 @@ const resolveProfile = (actorType: 'user' | 'org', handle: string): ProfileDto =
   fallbackProfile(actorType, handle)
 
 /**
- * MOCK - would be: const { data } = await api.get(`/${actorType}s/${handle}`)
+ * MOCK - would be: const { data } = await api.get(
+ *   actorType === 'org' ? `/organizations/${handle}` : `/users/${handle}`)
+ * The two collections are spelled out because the handle routes are TYPED:
+ * `/users/{username}` and `/organizations/{slug}`, never `/orgs` or `/companies`.
  * Single-entry: resolves the bare DTO (no wrapper). Unknown magic handle -> 404.
  */
 export const fetchProfile = async (
@@ -339,17 +345,18 @@ const buildSearchItem = (type: 'org' | 'user', index: number): ActorSearchItemDt
   if (profile.actorType === 'org') {
     return {
       actorType: 'org',
+      id: profile.id,
       name,
       handle,
       avatarUrl: profile.avatarUrl,
       followers: profile.followers,
-      following: profile.following,
       isFollowedByViewer: profile.isFollowedByViewer,
       description: profile.description,
     }
   }
   return {
     actorType: 'user',
+    id: profile.id,
     name,
     handle,
     avatarUrl: profile.avatarUrl,

@@ -30,7 +30,7 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   const owner = useMemo<ActorRefDto>(() => {
     const name = profile.actorType === 'user' ? profile.fullName : profile.displayName
     const handle = profile.actorType === 'user' ? profile.username : profile.slug
-    return { actorType: profile.actorType, name, handle, avatarUrl: profile.avatarUrl }
+    return { actorType: profile.actorType, id: profile.id, name, handle, avatarUrl: profile.avatarUrl }
   }, [profile])
 
   const tabs: ProfileTabItem[] = [{ key: ProfileTab.ACTIVITY, label: t('profile.tabs.activity') }]
@@ -48,8 +48,7 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
     <div className="profile container">
       <ProfileHeader profile={profile} />
 
-      {/* TODO(org-members): specialized member action row goes here — see
-          random/frontend/profile-page.r1.md §17.1 */}
+      {/* TODO(org-members): specialized member action row goes here.*/}
 
       <ProfileTabs tabs={tabs} active={active} onChange={setActive} />
 

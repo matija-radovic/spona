@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------------------
-// Saved jobs live in the browser, not the backend (types-ref.r3 [C9] retired the
-// FavoriteJob table). This is the single source of truth for the "hearted" set:
+// Saved jobs live in the browser, not the backend (new_docx/types.ts: saved jobs
+// are deliberately not a table). This is the single source of truth for the
+// "hearted" set:
 // synchronous localStorage reads/writes, guarded so malformed JSON degrades to an
 // empty list instead of throwing. The profile Saved-jobs pane hydrates these ids
 // against the jobs service; the JobDetail heart reads/writes them directly.

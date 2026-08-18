@@ -77,8 +77,12 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
 
         <div className="profile-head-follows">
           <span>{t('profile.followersCount', { count: followers })}</span>
-          <span className="profile-head-dot" aria-hidden>•</span>
-          <span>{t('profile.followingCount', { count: profile.following })}</span>
+          {isUser && (
+            <>
+              <span className="profile-head-dot" aria-hidden>•</span>
+              <span>{t('profile.followingCount', { count: profile.following })}</span>
+            </>
+          )}
         </div>
 
         {bio && <p className="profile-head-bio">{bio}</p>}
