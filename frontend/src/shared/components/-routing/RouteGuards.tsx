@@ -1,7 +1,9 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useUser } from '@shared/contexts'
 import { getLastSection, isInitialLanding } from '@shared/hooks/useLastSection'
 import Main from '@pages/main'
+import { afterAuthPath, forgetAfterAuth, rememberAfterAuth } from '@utils/afterAuth'
 
 /**
  * The remembered-tab redirect only fires on the initial page load; once in a
@@ -27,11 +29,24 @@ export const IndexGate = () => {
 /** Routes that require an authenticated user. */
 export const ProtectedRoute = () => {
   const { isAuthenticated } = useUser()
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
+  const location = useLocation()
+
+  if (isAuthenticated) return <Outlet />
+
+  rememberAfterAuth(`${location.pathname}${location.search}`)
+  return <Navigate to="/login" replace />
 }
 
 /** Routes only for logged-out visitors (login, register). */
 export const GuestRoute = () => {
   const { isAuthenticated } = useUser()
-  return isAuthenticated ? <Navigate to="/jobs" replace /> : <Outlet />
+  const target = afterAuthPath()
+
+  useEffect(() => {
+    if (isAuthenticated) forgetAfterAuth()
+  }, [isAuthenticated])
+
+  if (!isAuthenticated) return <Outlet />
+
+  return <Navigate to={target ?? '/jobs'} replace />
 }

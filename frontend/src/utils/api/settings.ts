@@ -136,11 +136,13 @@ export const changeUsername = async (payload: ChangeUsernamePayload): Promise<Us
 }
 
 /**
- * MOCK - would be: const { data } = await api.put(`/users/${username}/email`, payload)
- * On success the backend emails the OLD address - the tripwire that makes a
- * session-theft takeover visible (backend spec §6).
+ * MOCK - would be: await api.post(`/users/${username}/email`, payload)
+ * A REQUEST, not a write: `204`, and the address is mailed a confirmation link. It
+ * reaches `User.email` only when `/auth/email-change/confirm` consumes that link,
+ * which is also when the OLD address is notified - the tripwire that makes a
+ * session-theft takeover visible (backend contract §2).
  */
-export const changeEmail = async (payload: ChangeEmailPayload): Promise<UserSettingsDto> => {
+export const changeEmail = async (payload: ChangeEmailPayload): Promise<void> => {
   await delay(500)
   if (payload.currentPassword === MAGIC_WRONG_PASSWORD) {
     return rejectProblem(403, 'Pogrešna trenutna lozinka.', 'Forbidden')
@@ -148,9 +150,6 @@ export const changeEmail = async (payload: ChangeEmailPayload): Promise<UserSett
   if (payload.email.trim().toLowerCase() === MAGIC_TAKEN_EMAIL) {
     return rejectProblem(409, 'Email adresa je već u upotrebi.', 'Conflict')
   }
-  const current = seedAccount('ja')
-  account = { ...current, email: payload.email }
-  return { ...account }
 }
 
 /** MOCK - would be: await api.put(`/users/${username}/password`, payload) */

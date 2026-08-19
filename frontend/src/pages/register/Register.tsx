@@ -1,6 +1,6 @@
 import './Register.scss'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +15,6 @@ import {
   type CreateUserPayload,
   type UserDto,
 } from '@utils/api/auth'
-import { invitePathAfterAuth } from '@utils/pendingInvite'
 import {
   buildOrgSchema,
   buildRegisterSchema,
@@ -70,7 +69,6 @@ const slide = {
 
 const Register = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { login } = useUser()
   const orgMode = useSearchParams()[0].get('org') === '1'  // Stage.Organization only exists when arriving via the Main.tsx employer button.
 
@@ -115,7 +113,6 @@ const Register = () => {
       email: user.email,
       avatarUrl: user.avatarUrl ?? '',
     })
-    navigate(invitePathAfterAuth(user.username) ?? '/jobs')
   }
 
   const handleAccountNext = async () => {

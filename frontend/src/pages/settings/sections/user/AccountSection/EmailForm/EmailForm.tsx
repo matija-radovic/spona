@@ -3,7 +3,6 @@ import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { TextField } from '@shared/components'
-import { useUser } from '@shared/contexts'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
 import { changeEmail, type UserSettingsDto } from '@utils/api/settings'
@@ -12,13 +11,11 @@ import { buildEmailSchema, type EmailData } from '../schema'
 
 interface EmailFormProps {
   settings: UserSettingsDto
-  refetch: () => Promise<void>
 }
 
-const EmailForm = ({ settings, refetch }: EmailFormProps) => {
+const EmailForm = ({ settings }: EmailFormProps) => {
   const { t } = useTranslation()
-  const { user, login } = useUser()
-  const { active: justSaved, raise: markSaved } = useTimedFlag()
+  const { active: justRequested, raise: markRequested } = useTimedFlag()
 
   const schema = useMemo(() => buildEmailSchema(t), [t])
   const {
@@ -39,11 +36,9 @@ const EmailForm = ({ settings, refetch }: EmailFormProps) => {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      const updated = await changeEmail(values)
-      reset({ email: updated.email, currentPassword: '' })
-      markSaved()
-      if (user) login({ ...user, email: updated.email })
-      await refetch()
+      await changeEmail(values)
+      reset({ email: values.email, currentPassword: '' })
+      markRequested()
     } catch (caught) {
       const problem = parseProblem(caught)
       const message = problem.detail || t('errors.serverError')
@@ -59,7 +54,7 @@ const EmailForm = ({ settings, refetch }: EmailFormProps) => {
       busy={isSubmitting}
       disabled={!canSubmit}
       error={errors.root?.message}
-      success={justSaved ? t('settings.account.email.success') : undefined}
+      success={justRequested ? t('settings.account.email.success') : undefined}
     >
       <TextField
         label={t('auth.email')}

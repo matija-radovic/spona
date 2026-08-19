@@ -43,7 +43,7 @@ const AccountSection = () => {
           isOpen={openRow === 'email'}
           onToggle={() => toggle('email')}
         >
-          <EmailForm settings={settings} refetch={refetch} />
+          <EmailForm settings={settings} />
         </CredentialRow>
 
         <CredentialRow

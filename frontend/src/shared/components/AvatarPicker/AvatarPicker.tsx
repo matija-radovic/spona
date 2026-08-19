@@ -1,14 +1,13 @@
 import './AvatarPicker.scss'
 import { useRef, useState, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { IconPencil, IconUser } from '@tabler/icons-react'
 
 interface AvatarPickerProps {
   label: string
-  /** Processed 256×256 data URL, or '' when none picked. */
+  /** The stored avatar URL, or '' when none picked. */
   value: string
-  onChange: (dataUrl: string) => void
+  onChange: (file: File) => Promise<void>
 }
 
 const AvatarPicker = ({ label, value, onChange }: AvatarPickerProps) => {
@@ -22,7 +21,7 @@ const AvatarPicker = ({ label, value, onChange }: AvatarPickerProps) => {
     if (!file) return
     setBusy(true)
     try {
-      onChange(await resizeImageToSquare(file))
+      await onChange(file)
     } finally {
       setBusy(false)
     }

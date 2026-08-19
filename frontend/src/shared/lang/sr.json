@@ -57,6 +57,7 @@
     "fullName": "Puno ime",
     "usernameOrEmail": "Korisničko ime ili email",
     "forgotPassword": "Zaboravili ste lozinku?",
+    "continueHint": "Prijavite se ili napravite nalog da biste nastavili tamo gde ste stali.",
     "alreadyHaveAccount": "Već imate nalog?",
     "dontHaveAccount": "Nemate nalog?",
     "signInCta": "Prijavite se",
@@ -358,7 +359,7 @@
         "current": "Trenutna lozinka",
         "action": "Promeni email adresu",
         "submit": "Ažuriraj email adresu",
-        "success": "Email adresa je ažurirana."
+        "success": "Proverite novu adresu, poslali smo Vam link za potvrdu."
       },
       "password": {
         "title": "Lozinka",
@@ -393,7 +394,8 @@
       "ownerCannotLeave": "Vlasnik ne može napustiti organizaciju. Prvo prenesite vlasništvo.",
       "accept": "Prihvati",
       "decline": "Odbij",
-      "invitedYou": "pozvao/la vas je {{name}}"
+      "invitedYou": "pozvao/la vas je {{name}}",
+      "authHint": "Pozvani ste u organizaciju. Prijavite se ili napravite nalog sa email-om odakle vam je stigla pozivnica kako bi ste videli i odgovorili na nju."
     },
     "members": {
       "title": "Upravljanje članovima",
@@ -439,21 +441,6 @@
         "warning": "Brisanje organizacije je trajno. Zajedno sa organizacijom brišu se njeni oglasi, objave i komentari, a članovi gube pristup.",
         "button": "Obriši organizaciju"
       }
-    },
-    "invite": {
-      "title": "Pozivnica za organizaciju",
-      "role": "Ponuđena uloga",
-      "authHint": "Pozvani ste u organizaciju {{name}}. Prijavite se ili napravite nalog da biste odgovorili na pozivnicu.",
-      "accept": "Prihvati",
-      "decline": "Odbij",
-      "later": "Kasnije",
-      "ok": "U redu",
-      "canceled": "Pozivnica je otkazana.",
-      "alreadyAccepted": "Već ste član ove organizacije.",
-      "declined": "Odbili ste ovu pozivnicu.",
-      "notFound": "Pozivnica ne postoji.",
-      "wrongAccount": "Ova pozivnica je poslata drugom nalogu.",
-      "logout": "Odjavi se"
     },
     "confirm": {
       "question": "Da li ste sigurni?",

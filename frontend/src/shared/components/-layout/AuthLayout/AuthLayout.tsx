@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Footer } from '@shared/components/Footer'
 import { markInitialLoadDone } from '@shared/hooks/useLastSection'
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
-import { peekPendingInvite } from '@utils/pendingInvite'
+import { afterAuthPath } from '@utils/afterAuth'
 
 const AuthLayout = () => {
   const { t } = useTranslation()
@@ -16,17 +16,17 @@ const AuthLayout = () => {
     markInitialLoadDone()
   }, [])
 
-  const pendingInvite = peekPendingInvite()
+  // The invitation deep link gets its own line: it matters that they sign in with the
+  // account the invitation was addressed to, or their invites page shows nothing.
+  const target = afterAuthPath()
+  const hintKey =
+    target === '/invitations' ? 'settings.organizations.authHint' : 'auth.continueHint'
 
   return (
     <div className="auth-layout">
       <main ref={mainRef} className="auth-layout-main scroll-container">
         <div className="auth-layout-content">
-          {pendingInvite && (
-            <p className="auth-layout-invite-hint">
-              {t('settings.invite.authHint', { name: pendingInvite.orgName })}
-            </p>
-          )}
+          {target && <p className="auth-layout-continue-hint">{t(hintKey)}</p>}
           <Outlet />
         </div>
         <Footer />

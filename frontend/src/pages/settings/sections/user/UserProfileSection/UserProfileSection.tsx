@@ -6,6 +6,7 @@ import { AvatarPicker, ContactInfoWidget, TextField } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
 import { updateProfile } from '@utils/api/settings'
+import { uploadAvatar } from '@utils/api/uploads'
 import { SettingsSaveBar } from '../../../components/SettingsSaveBar'
 import { SettingsSection } from '../../../components/SettingsSection'
 import { UnsavedChangesModal } from '../../../components/UnsavedChangesModal'
@@ -71,7 +72,11 @@ const UserProfileSection = () => {
           control={control}
           name="avatarUrl"
           render={({ field }) => (
-            <AvatarPicker label={t('auth.avatar')} value={field.value} onChange={field.onChange} />
+            <AvatarPicker
+              label={t('auth.avatar')}
+              value={field.value}
+              onChange={async (file) => field.onChange(await uploadAvatar(file))}
+            />
           )}
         />
 

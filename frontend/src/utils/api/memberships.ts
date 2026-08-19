@@ -1,15 +1,8 @@
 // -----------------------------------------------------------------------------
 // MOCK "my memberships & my invitations" service (backend spec §3.3); the real
 // axios call is left commented above each mock body. Rejections are
-// `ProblemDetail` shapes, and these magic inputs reach every branch:
-//   - leaveOrganization      : the OWNER row's slug -> 409 "Prenesite vlasništvo…"
-//   - resolveInvitationToken : "otkazana"    -> CANCELED
-//                              "prihvacena"  -> ACCEPTED
-//                              "odbijena"    -> DECLINED
-//                              "tudja"       -> WAITING, targetsCurrentUser false
-//                              "nepostojeci" -> 404
-//                              anything else -> a healthy WAITING preview, bound
-//                                               to a real row in "my invitations"
+// `ProblemDetail` shapes, and one magic input reaches the error branch:
+//   - leaveOrganization : the OWNER row's slug -> 409 "Prenesite vlasništvo…"
 //
 // The lists are MUTABLE module state so an accept produces the membership card the
 // UI highlights and a refetch after leave/decline does not resurrect the row.
@@ -47,17 +40,6 @@ export interface MyInvitationDto {
   createdAt: string
 }
 
-/** What `/i/:token` resolves to, before the viewer is necessarily logged in. */
-export interface InvitationPreviewDto {
-  id: string
-  status: 'WAITING' | 'ACCEPTED' | 'DECLINED' | 'CANCELED'
-  organization: ActorRefDto
-  role: OrganizationRole
-  invitedBy: ActorRefDto | null
-  /** Authenticated callers only: false means the invitation went to a different account. */
-  targetsCurrentUser?: boolean
-}
-
 // ── Mock plumbing ─────────────────────────────────────────────────────────────
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -75,14 +57,6 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 
 const iso = (daysAgo: number): string =>
   new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
-
-const MAGIC_NOT_FOUND_TOKEN = 'nepostojeci'
-const MAGIC_TOKEN_STATUS: Readonly<Record<string, InvitationPreviewDto['status']>> = {
-  otkazana: 'CANCELED',
-  prihvacena: 'ACCEPTED',
-  odbijena: 'DECLINED',
-}
-const MAGIC_OTHER_ACCOUNT_TOKEN = 'tudja'
 
 // Mock actor ids are derived from the handle so a given handle always refers to
 // the same actor across this module. The real backend supplies UUIDs.
@@ -211,68 +185,9 @@ export const fetchMyInvitations = async (username: string): Promise<MyInvitation
 }
 
 /**
- * MOCK - would be: const { data } = await api.get(`/invitations/by-token/${token}`)
- * PUBLIC, so the preview carries only what the email already said, plus
- * `targetsCurrentUser` for an authenticated caller. A healthy token always resolves
- * to a REAL waiting row - one is created if none is left, so the link never dead-ends.
- */
-export const resolveInvitationToken = async (token: string): Promise<InvitationPreviewDto> => {
-  await delay(450)
-
-  if (token === MAGIC_NOT_FOUND_TOKEN) {
-    return rejectProblem(404, 'Pozivnica ne postoji.', 'Not Found')
-  }
-
-  const terminal = MAGIC_TOKEN_STATUS[token]
-  if (terminal) {
-    return {
-      id: `inv-token-${token}`,
-      status: terminal,
-      organization: org('nordeus', 'Nordeus'),
-      role: 'EDITOR',
-      invitedBy: person('jelena', 'Jelena Petrović'),
-      targetsCurrentUser: true,
-    }
-  }
-
-  if (token === MAGIC_OTHER_ACCOUNT_TOKEN) {
-    return {
-      id: `inv-token-${token}`,
-      status: 'WAITING',
-      organization: org('vega-it', 'Vega IT'),
-      role: 'ADMIN',
-      invitedBy: person('marko', 'Marko Marković'),
-      targetsCurrentUser: false,
-    }
-  }
-
-  const waiting = seedInvitations()
-  if (waiting.length === 0) {
-    const revived: MyInvitationDto = {
-      id: `my-inv-${Date.now()}`,
-      organization: org('nordeus', 'Nordeus'),
-      role: 'EDITOR',
-      invitedBy: person('jelena', 'Jelena Petrović'),
-      createdAt: new Date().toISOString(),
-    }
-    myInvitations = [revived]
-    return { ...revived, status: 'WAITING', targetsCurrentUser: true }
-  }
-
-  const row = waiting[0]
-  return {
-    id: row.id,
-    status: 'WAITING',
-    organization: row.organization,
-    role: row.role,
-    invitedBy: row.invitedBy,
-    targetsCurrentUser: true,
-  }
-}
-
-/**
  * MOCK - would be: await api.post(`/invitations/${id}/accept`)
- * Addressed by row ID, never the token, keeping it out of history and `Referer` headers.
+ * The id is not a capability: the server also requires that the invitation targets
+ * the caller, so a guessed id is a 403.
  */
 export const acceptInvitation = async (id: string): Promise<void> => {
   await delay(520)

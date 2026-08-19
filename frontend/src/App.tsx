@@ -20,7 +20,7 @@ import {
   ManagementSection,
   PrivacySection,
 } from '@pages/settings'
-import InviteCapture from '@pages/invite'
+import Invitations from '@pages/invitations'
 import Login from '@pages/login'
 import Register from '@pages/register'
 
@@ -69,12 +69,11 @@ const router = createBrowserRouter(
 
         <Route path='posts/:postId' element={<Post />} />
 
-        <Route path='i/:token' element={<InviteCapture />} />
-
         {/* `jobs/new` is a flat static route so it wins over `jobs/:slug`. */}
         <Route element={<ProtectedRoute />}>
           <Route path='feed' element={<Feed />} />
           <Route path='jobs/new' element={<JobCreate />} />
+          <Route path='invitations' element={<Invitations />} />
         </Route>
 
         {TestRoute && (

@@ -1,6 +1,6 @@
 import './Login.scss'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -10,7 +10,6 @@ import { TextField } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/Button'
 import { useUser } from '@shared/contexts'
 import { loginRequest } from '@utils/api/auth'
-import { invitePathAfterAuth } from '@utils/pendingInvite'
 
 const buildSchema = (t: (key: string) => string) =>
   z.object({
@@ -22,7 +21,6 @@ type LoginData = z.infer<ReturnType<typeof buildSchema>>
 
 const Login = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { login } = useUser()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -44,7 +42,6 @@ const Login = () => {
         email: user.email,
         avatarUrl: user.avatarUrl ?? '',
       })
-      navigate(invitePathAfterAuth(user.username) ?? '/jobs')
     } catch {
       setServerError(t('errors.loginFailed'))
     }

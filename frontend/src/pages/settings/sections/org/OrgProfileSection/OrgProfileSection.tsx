@@ -14,6 +14,7 @@ import {
 } from '@shared/components'
 import { parseProblem } from '@utils/api/types'
 import { updateOrgProfile } from '@utils/api/organizations'
+import { uploadAvatar } from '@utils/api/uploads'
 import { SettingsSaveBar } from '../../../components/SettingsSaveBar'
 import { SettingsSection } from '../../../components/SettingsSection'
 import { UnsavedChangesModal } from '../../../components/UnsavedChangesModal'
@@ -89,7 +90,11 @@ const OrgProfileSection = () => {
             control={control}
             name="avatarUrl"
             render={({ field }) => (
-              <AvatarPicker label={t('auth.avatar')} value={field.value} onChange={field.onChange} />
+              <AvatarPicker
+                label={t('auth.avatar')}
+                value={field.value}
+                onChange={async (file) => field.onChange(await uploadAvatar(file))}
+              />
             )}
           />
         ) : (
