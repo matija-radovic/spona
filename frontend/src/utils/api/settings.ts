@@ -138,8 +138,8 @@ export const changeUsername = async (payload: ChangeUsernamePayload): Promise<Us
 /**
  * MOCK - would be: await api.post(`/users/${username}/email`, payload)
  * A REQUEST, not a write: `204`, and the address is mailed a confirmation link. It
- * reaches `User.email` only when `/auth/email-change/confirm` consumes that link,
- * which is also when the OLD address is notified - the tripwire that makes a
+ * reaches `User.email` only when `/auth/verify` consumes that link (a CHANGE-purpose
+ * token), which is also when the OLD address is notified - the tripwire that makes a
  * session-theft takeover visible (backend contract §2).
  */
 export const changeEmail = async (payload: ChangeEmailPayload): Promise<void> => {

@@ -5,32 +5,22 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
+import { IconMail } from '@tabler/icons-react'
 import { Button, ButtonVariant } from '@shared/components/Button'
-import { useUser } from '@shared/contexts'
 import {
   checkUsernameAvailable,
-  createOrganization,
-  createUser,
-  type CreateOrganizationPayload,
+  registerUser,
+  resendVerification,
   type CreateUserPayload,
-  type UserDto,
 } from '@utils/api/auth'
-import {
-  buildOrgSchema,
-  buildRegisterSchema,
-  ORG_DEFAULTS,
-  REGISTER_DEFAULTS,
-  type OrgData,
-  type RegisterData,
-} from './schema'
+import { rememberAfterAuth } from '@utils/afterAuth'
+import { buildRegisterSchema, REGISTER_DEFAULTS, type RegisterData } from './schema'
 import StageAccount from './stages/StageAccount'
 import StagePersonal from './stages/StagePersonal'
-import StageOrganization from './stages/StageOrganization'
 
 const Stage = {
   Account: 1,
   Personal: 2,
-  Organization: 3,
 } as const
 type Stage = (typeof Stage)[keyof typeof Stage]
 
@@ -48,17 +38,6 @@ const toUserPayload = (data: RegisterData): CreateUserPayload => ({
   otherContactInfo: data.otherContactInfo,
 })
 
-const toOrgPayload = (data: OrgData): CreateOrganizationPayload => ({
-  slug: data.slug,
-  displayName: data.displayName.trim(),
-  legalName: data.legalName.trim(),
-  description: orNull(data.description),
-  website: orNull(data.website),
-  avatarUrl: data.avatarUrl || null,
-  location: orNull(data.location),
-  otherContactInfo: data.otherContactInfo,
-})
-
 const slide = {
   initial: { opacity: 0, x: 28 },
   animate: { opacity: 1, x: 0 },
@@ -69,27 +48,26 @@ const slide = {
 
 const Register = () => {
   const { t } = useTranslation()
-  const { login } = useUser()
-  const orgMode = useSearchParams()[0].get('org') === '1'  // Stage.Organization only exists when arriving via the Main.tsx employer button.
+  const orgMode = useSearchParams()[0].get('org') === '1'
 
   const [stage, setStage] = useState<Stage>(Stage.Account)
   const [usernameTaken, setUsernameTaken] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [createdUser, setCreatedUser] = useState<UserDto | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [resend, setResend] = useState<'idle' | 'sending' | 'sent'>('idle')
 
   const registerSchema = useMemo(() => buildRegisterSchema(t), [t])
-  const orgSchema = useMemo(() => buildOrgSchema(t), [t])
 
   const userForm = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
     defaultValues: REGISTER_DEFAULTS,
   })
-  const orgForm = useForm<OrgData>({
-    resolver: zodResolver(orgSchema),
-    mode: 'onChange',
-    defaultValues: ORG_DEFAULTS,
-  })
+
+  useEffect(() => {
+    if (orgMode) rememberAfterAuth('/companies/new')
+  }, [orgMode])
 
   // Re-typing the username clears the "taken" state; editing the password
   // re-validates confirmPassword so its green check flips the moment they diverge.
@@ -104,16 +82,6 @@ const Register = () => {
       },
     })
   }, [userForm])
-
-  const finishUser = (user: UserDto) => {
-    login({
-      id: user.id,
-      username: user.username,
-      fullName: user.fullName,
-      email: user.email,
-      avatarUrl: user.avatarUrl ?? '',
-    })
-  }
 
   const handleAccountNext = async () => {
     const valid = await userForm.trigger(['username', 'email', 'password', 'confirmPassword'])
@@ -135,49 +103,69 @@ const Register = () => {
   // Every personal-stage field is optional, so there is nothing to validate first.
   const handlePersonalNext = async () => {
     setBusy(true)
+    setSubmitError(null)
     try {
-      const user = await createUser(toUserPayload(userForm.getValues()))
-      setCreatedUser(user)
-      if (orgMode) {
-        setStage(Stage.Organization)
-      } else {
-        finishUser(user)
-      }
+      const values = userForm.getValues()
+      await registerUser(toUserPayload(values))
+      setSentTo(values.email)
+    } catch {
+      setSubmitError(t('errors.serverError'))
     } finally {
       setBusy(false)
     }
   }
 
-  const handleCreateOrg = async () => {
-    const valid = await orgForm.trigger()
-    if (!valid || !createdUser) return
-
-    setBusy(true)
+  const onResend = async () => {
+    if (!sentTo) return
+    setResend('sending')
     try {
-      await createOrganization(toOrgPayload(orgForm.getValues()))
-      finishUser(createdUser)
+      await resendVerification(sentTo)
     } finally {
-      setBusy(false)
+      setResend('sent')
     }
   }
 
-  const handleCreateLater = () => {
-    if (createdUser) finishUser(createdUser)
-  }
+  const steps = ['auth.steps.account', 'auth.steps.personal']
 
-  const steps = orgMode
-    ? ['auth.steps.account', 'auth.steps.personal', 'auth.steps.organization']
-    : ['auth.steps.account', 'auth.steps.personal']
+  if (sentTo) {
+    return (
+      <div className="register">
+        <div className="register-card register-done">
+          <div className="register-done-icon">
+            <IconMail aria-hidden />
+          </div>
+          <h2>{t('auth.registerDone.title')}</h2>
+          <p className="register-done-body">{t('auth.registerDone.body', { email: sentTo })}</p>
+          <Button to="/login" variant={ButtonVariant.PRIMARY} fullWidth>
+            {t('auth.registerDone.toLogin')}
+          </Button>
+          <div className="register-done-resend">
+            <span>{t('auth.registerDone.noEmail')}</span>
+            <button
+              type="button"
+              className="register-done-resend-btn"
+              onClick={onResend}
+              disabled={resend !== 'idle'}
+            >
+              {resend === 'sending' ? t('auth.notVerified.sending') : t('auth.registerDone.resend')}
+            </button>
+          </div>
+          {resend === 'sent' && (
+            <p className="register-done-sent">{t('auth.notVerified.sent')}</p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="register">
       <div className="register-card">
         <header className="register-head">
-          <h2>{stage === Stage.Organization ? t('auth.org.title') : t('auth.registerTitle')}</h2>
+          <h2>{t('auth.registerTitle')}</h2>
           <p className="register-sub">
             {stage === Stage.Account && t('auth.registerSubtitle')}
             {stage === Stage.Personal && t('auth.personalSubtitle')}
-            {stage === Stage.Organization && t('auth.org.subtitle')}
           </p>
         </header>
 
@@ -199,13 +187,13 @@ const Register = () => {
           <motion.div key={stage} {...slide}>
             {stage === Stage.Account && <StageAccount form={userForm} usernameTaken={usernameTaken} />}
             {stage === Stage.Personal && <StagePersonal form={userForm} />}
-            {stage === Stage.Organization && <StageOrganization form={orgForm} />}
           </motion.div>
         </AnimatePresence>
 
+        {submitError && <p className="register-error">{submitError}</p>}
+
         <div className="register-actions">
-          {/* No Back out of Organization: the user account already exists by then. */}
-          {stage > Stage.Account && stage < Stage.Organization && (
+          {stage > Stage.Account && (
             <Button
               variant={ButtonVariant.GHOST}
               onClick={() => setStage(Stage.Account)}
@@ -227,32 +215,9 @@ const Register = () => {
           )}
 
           {stage === Stage.Personal && (
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={handlePersonalNext}
-              disabled={busy}
-            >
-              {busy ? t('auth.creating') : orgMode ? t('auth.next') : t('common.confirm')}
+            <Button variant={ButtonVariant.PRIMARY} onClick={handlePersonalNext} disabled={busy}>
+              {busy ? t('auth.creating') : t('common.confirm')}
             </Button>
-          )}
-
-          {stage === Stage.Organization && (
-            <div className="register-actions-org">
-              <Button
-                variant={ButtonVariant.GHOST}
-                onClick={handleCreateLater}
-                disabled={busy}
-              >
-                {t('auth.org.createLater')}
-              </Button>
-              <Button
-                variant={ButtonVariant.PRIMARY}
-                onClick={handleCreateOrg}
-                disabled={busy}
-              >
-                {busy ? t('auth.creating') : t('auth.org.create')}
-              </Button>
-            </div>
           )}
         </div>
 

@@ -8,6 +8,7 @@ export { Header } from './Header'
 export { Footer } from './Footer'
 export { Logo } from './Logo'
 export { Button, ButtonVariant, ButtonSize } from './Button'
+export { AuthCard } from './AuthCard'
 export { TextField } from './TextField'
 export { AvatarPicker } from './AvatarPicker'
 export {

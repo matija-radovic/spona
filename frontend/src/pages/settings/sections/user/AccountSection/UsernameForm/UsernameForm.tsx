@@ -20,7 +20,7 @@ interface UsernameFormProps {
 const UsernameForm = ({ settings, refetch }: UsernameFormProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { user, login } = useUser()
+  const { user, updateUser } = useUser()
   const { active: justSaved, raise: markSaved } = useTimedFlag()
 
   const schema = useMemo(() => buildUsernameSchema(t), [t])
@@ -40,7 +40,7 @@ const UsernameForm = ({ settings, refetch }: UsernameFormProps) => {
       const updated = await changeUsername(values)
       reset({ username: updated.username })
       markSaved()
-      if (user) login({ ...user, username: updated.username })
+      if (user) updateUser({ ...user, username: updated.username })
       await refetch()
       navigate(`/users/${updated.username}/settings/account`, { replace: true })
     } catch (caught) {

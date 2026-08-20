@@ -1,0 +1,78 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+
+.auth-card-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2.5rem 1rem;
+
+  @media #{mq.$m-phone} {
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 26rem;
+    padding: 2rem;
+    background-color: c.$surface-1;
+    border: 1px solid c.$border-panel;
+    border-radius: 16px;
+    box-shadow: c.$shadow-card;
+
+    @media #{mq.$m-phone} {
+      padding: 1.5rem;
+    }
+  }
+
+  .auth-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    h2 {
+      margin: 0;
+    }
+
+    .auth-card-sub {
+      margin: 0;
+      color: c.$text-muted;
+      font-size: 0.85rem;
+    }
+  }
+
+  .auth-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  .auth-card-actions,
+  .auth-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap-reverse;
+    gap: 0.6rem;
+
+    .btn-ghost:not(:only-child) {
+      margin-right: auto;
+    }
+
+    @media #{mq.$s-phone} {
+        > * {
+        flex: 1 1 100%;
+      }
+    }
+  }
+}

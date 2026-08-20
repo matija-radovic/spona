@@ -9,7 +9,8 @@ import { motion } from 'motion/react'
 import { TextField } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/Button'
 import { useUser } from '@shared/contexts'
-import { loginRequest } from '@utils/api/auth'
+import { loginRequest, resendVerification } from '@utils/api/auth'
+import { parseProblem } from '@utils/api/types'
 
 const buildSchema = (t: (key: string) => string) =>
   z.object({
@@ -19,33 +20,56 @@ const buildSchema = (t: (key: string) => string) =>
 
 type LoginData = z.infer<ReturnType<typeof buildSchema>>
 
+type ResendState = 'idle' | 'sending' | 'sent'
+
 const Login = () => {
   const { t } = useTranslation()
   const { login } = useUser()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [notVerified, setNotVerified] = useState(false)
+  const [resend, setResend] = useState<ResendState>('idle')
 
   const schema = useMemo(() => buildSchema(t), [t])
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, dirtyFields, isSubmitting },
   } = useForm<LoginData>({ resolver: zodResolver(schema), mode: 'onChange' })
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null)
+    setNotVerified(false)
+    setResend('idle')
     try {
-      const user = await loginRequest(values)
-      login({
-        id: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        email: user.email,
-        avatarUrl: user.avatarUrl ?? '',
-      })
-    } catch {
-      setServerError(t('errors.loginFailed'))
+      const { token, user } = await loginRequest(values)
+      login(
+        {
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          avatarUrl: user.avatarUrl ?? '',
+        },
+        token,
+      )
+    } catch (caught) {
+      if (parseProblem(caught).type === '/problems/email-not-verified') {
+        setNotVerified(true)
+      } else {
+        setServerError(t('errors.loginFailed'))
+      }
     }
   })
+
+  const onResend = async () => {
+    setResend('sending')
+    try {
+      await resendVerification(getValues('identifier'))
+    } finally {
+      setResend('sent')
+    }
+  }
 
   return (
     <div className="login">
@@ -81,7 +105,28 @@ const Login = () => {
           {...register('password')}
         />
 
-        {serverError && <p className="login-error">{serverError}</p>}
+        <div className="login-forgot-row">
+          <Link to="/reset" className="login-forgot">
+            {t('auth.forgotPassword')}
+          </Link>
+        </div>
+
+        {notVerified ? (
+          <div className="login-notice">
+            <p className="login-notice-text">{t('auth.notVerified.body')}</p>
+            <Button
+              type="button"
+              variant={ButtonVariant.SECONDARY}
+              onClick={onResend}
+              disabled={resend === 'sending'}
+            >
+              {resend === 'sending' ? t('auth.notVerified.sending') : t('auth.notVerified.resend')}
+            </Button>
+            {resend === 'sent' && <p className="login-notice-sent">{t('auth.notVerified.sent')}</p>}
+          </div>
+        ) : (
+          serverError && <p className="login-error">{serverError}</p>
+        )}
 
         <Button type="submit" fullWidth variant={ButtonVariant.PRIMARY} disabled={isSubmitting}>
           {isSubmitting ? t('common.loading') : t('auth.loginSubmit')}

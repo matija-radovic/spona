@@ -57,7 +57,6 @@
     "fullName": "Puno ime",
     "usernameOrEmail": "Korisničko ime ili email",
     "forgotPassword": "Zaboravili ste lozinku?",
-    "continueHint": "Prijavite se ili napravite nalog da biste nastavili tamo gde ste stali.",
     "alreadyHaveAccount": "Već imate nalog?",
     "dontHaveAccount": "Nemate nalog?",
     "signInCta": "Prijavite se",
@@ -125,7 +124,46 @@
       "slugHelper": "Od {{min}} do {{max}} karaktera. Dozvoljena su mala slova, brojevi, '-' i '_'.",
       "create": "Napravi organizaciju",
       "createLater": "Napravi kasnije"
+    },
+    "notVerified": {
+      "body": "Vaš nalog još nije verifikovan. Otvorite link koji smo poslali na vašu email adresu.",
+      "resend": "Pošalji link ponovo",
+      "sending": "Slanje...",
+      "sent": "Link je poslat. Proverite email."
+    },
+    "registerDone": {
+      "title": "Proverite email",
+      "body": "Poslali smo link za potvrdu na {{email}}. Otvorite ga da aktivirate nalog, a zatim se prijavite.",
+      "toLogin": "Idi na prijavu",
+      "noEmail": "Niste dobili email?",
+      "resend": "Pošalji ponovo"
     }
+  },
+  "verify": {
+    "verifying": "Potvrđujemo email adresu...",
+    "successTitle": "Email potvrđen",
+    "successBody": "Vaša email adresa je uspešno potvrđena.",
+    "toLogin": "Prijavite se",
+    "errorTitle": "Potvrda nije uspela",
+    "errorBody": "Link je nevažeći ili je istekao."
+  },
+  "reset": {
+    "requestTitle": "Zaboravljena lozinka",
+    "requestSubtitle": "Unesite email adresu naloga i poslaćemo vam link za promenu lozinke.",
+    "requestSubmit": "Pošalji link",
+    "requestSentTitle": "Proverite email",
+    "requestSentBody": "Ako postoji nalog sa ovom adresom, poslali smo link za promenu lozinke.",
+    "confirmTitle": "Nova lozinka",
+    "confirmSubtitle": "Unesite novu lozinku za vaš nalog.",
+    "confirmSubmit": "Sačuvaj lozinku",
+    "successTitle": "Lozinka je promenjena",
+    "successBody": "Vaša lozinka je uspešno promenjena. Sada se možete prijaviti.",
+    "errorTitle": "Link nije važeći",
+    "errorBody": "Link za promenu lozinke je nevažeći ili je istekao.",
+    "requestAgain": "Zatraži novi link",
+    "backToLogin": "Nazad na prijavu",
+    "newPassword": "Nova lozinka",
+    "confirmPassword": "Potvrdi novu lozinku"
   },
   "feed": {
     "newPost": "Nova objava",
@@ -394,8 +432,7 @@
       "ownerCannotLeave": "Vlasnik ne može napustiti organizaciju. Prvo prenesite vlasništvo.",
       "accept": "Prihvati",
       "decline": "Odbij",
-      "invitedYou": "pozvao/la vas je {{name}}",
-      "authHint": "Pozvani ste u organizaciju. Prijavite se ili napravite nalog sa email-om odakle vam je stigla pozivnica kako bi ste videli i odgovorili na nju."
+      "invitedYou": "pozvao/la vas je {{name}}"
     },
     "members": {
       "title": "Upravljanje članovima",

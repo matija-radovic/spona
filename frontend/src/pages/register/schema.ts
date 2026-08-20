@@ -4,8 +4,6 @@ import {
   USERNAME_MAX,
   PASSWORD_MIN,
   PASSWORD_MAX,
-  SLUG_MIN,
-  SLUG_MAX,
   SLUG_REGEX,
   PASSWORD_REGEX,
   CONTACT_DESC_MAX,
@@ -60,28 +58,6 @@ export const buildRegisterSchema = (t: Translate) =>
 
 export type RegisterData = z.infer<ReturnType<typeof buildRegisterSchema>>
 
-/** Organization form (Organization stage, org mode only). */
-export const buildOrgSchema = (t: Translate) =>
-  z.object({
-    slug: z
-      .string()
-      .min(SLUG_MIN, t('errors.rangeLength', { min: SLUG_MIN, max: SLUG_MAX }))
-      .max(SLUG_MAX, t('errors.rangeLength', { min: SLUG_MIN, max: SLUG_MAX }))
-      .regex(SLUG_REGEX, t('errors.slugFormat')),
-    displayName: z.string().min(1, t('errors.required')).max(120, t('errors.maxLength', { max: 120 })),
-    legalName: z.string().min(1, t('errors.required')).max(160, t('errors.maxLength', { max: 160 })),
-    description: z.string().max(1000, t('errors.maxLength', { max: 1000 })),
-    website: z
-      .string()
-      .max(200, t('errors.maxLength', { max: 200 }))
-      .refine((value) => value === '' || /^https?:\/\/.+/.test(value), t('errors.invalidUrl')),
-    avatarUrl: z.string(),
-    location: z.string().max(120, t('errors.maxLength', { max: 120 })),
-    otherContactInfo: contactInfoSchema(t),
-  })
-
-export type OrgData = z.infer<ReturnType<typeof buildOrgSchema>>
-
 export const REGISTER_DEFAULTS: RegisterData = {
   username: '',
   email: '',
@@ -89,17 +65,6 @@ export const REGISTER_DEFAULTS: RegisterData = {
   confirmPassword: '',
   fullName: '',
   bio: '',
-  avatarUrl: '',
-  location: '',
-  otherContactInfo: [],
-}
-
-export const ORG_DEFAULTS: OrgData = {
-  slug: '',
-  displayName: '',
-  legalName: '',
-  description: '',
-  website: '',
   avatarUrl: '',
   location: '',
   otherContactInfo: [],

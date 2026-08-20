@@ -8,7 +8,7 @@ import type { OrgSettingsDto, UpdateOrgProfilePayload } from '@utils/api/organiz
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
 
-/** The `buildOrgSchema` bounds from registration, reused verbatim. */
+/** Organization field bounds, matching the create-organization form. */
 export const DISPLAY_NAME_MAX = 120
 export const LEGAL_NAME_MAX = 160
 export const DESCRIPTION_MAX = 1000

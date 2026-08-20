@@ -55,6 +55,45 @@
     border-radius: 8px;
   }
 
+  .login-forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.4rem;
+
+    .login-forgot {
+      font-size: 0.8rem;
+      color: c.$text-muted;
+      text-decoration: none;
+
+      &:hover {
+        color: c.$accent;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .login-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem 0.8rem;
+    background-color: c.$fill-muted;
+    border: 1px solid c.$border-panel;
+    border-radius: 8px;
+
+    .login-notice-text {
+      margin: 0;
+      font-size: 0.82rem;
+      color: c.$text-primary;
+    }
+
+    .login-notice-sent {
+      margin: 0;
+      font-size: 0.8rem;
+      color: c.$success;
+    }
+  }
+
   .login-switch {
     margin: 0;
     text-align: center;

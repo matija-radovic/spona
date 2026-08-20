@@ -22,7 +22,7 @@ import {
 const UserProfileSection = () => {
   const { t } = useTranslation()
   const { settings, refetch } = useUserSettingsContext()
-  const { user, login } = useUser()
+  const { user, updateUser } = useUser()
 
   const [error, setError] = useState<string | null>(null)
 
@@ -49,7 +49,7 @@ const UserProfileSection = () => {
       const updated = await updateProfile(toUpdateProfilePayload(values))
       reset(toUserProfileData(updated))
       if (user) {
-        login({ ...user, fullName: updated.fullName, avatarUrl: updated.avatarUrl ?? '' })
+        updateUser({ ...user, fullName: updated.fullName, avatarUrl: updated.avatarUrl ?? '' })
       }
       await refetch()
       return true

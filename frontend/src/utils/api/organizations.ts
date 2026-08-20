@@ -62,6 +62,33 @@ export interface UpdateOrgProfilePayload {
   otherContactInfo: ContactEntry[]
 }
 
+/** The public org shape returned when a new organization is created. */
+export interface OrganizationDto {
+  id: string
+  actorType: 'org'
+  createdAt: string
+  slug: string
+  displayName: string
+  legalName: string
+  description: string | null
+  website: string | null
+  avatarUrl: string | null
+  location: string | null
+  otherContactInfo: ContactEntry[]
+}
+
+export interface CreateOrganizationPayload {
+  slug: string
+  displayName: string
+  legalName: string
+  description: string | null
+  website: string | null
+  /** Set from the create form's AvatarPicker; settings edits it later. */
+  avatarUrl: string | null
+  location: string | null
+  otherContactInfo: ContactEntry[]
+}
+
 export interface OrgMemberDto {
   userId: string
   username: string
@@ -267,6 +294,33 @@ const store = (slug: string, next: OrgSettingsDto): OrgSettingsDto => {
 }
 
 // ── Organization ──────────────────────────────────────────────────────────────
+
+/**
+ * MOCK - would be: const { data } = await api.post('/organizations', payload)
+ * Authenticated (backend-contract §2): the caller becomes the OWNER. Slug
+ * `zauzeto` reaches the taken-slug path.
+ */
+export const createOrganization = async (
+  payload: CreateOrganizationPayload,
+): Promise<OrganizationDto> => {
+  await delay(600)
+  if (payload.slug.trim().toLowerCase() === MAGIC_TAKEN_SLUG) {
+    return rejectProblem(409, 'Adresa organizacije je već zauzeta.', 'Conflict')
+  }
+  return {
+    id: `org-${payload.slug}`,
+    actorType: 'org',
+    createdAt: new Date().toISOString(),
+    slug: payload.slug,
+    displayName: payload.displayName,
+    legalName: payload.legalName,
+    description: payload.description,
+    website: payload.website,
+    avatarUrl: payload.avatarUrl,
+    location: payload.location,
+    otherContactInfo: payload.otherContactInfo,
+  }
+}
 
 /** MOCK - would be: const { data } = await api.get(`/organizations/${slug}/settings`) */
 export const fetchOrgSettings = async (slug: string): Promise<OrgSettingsDto> => {

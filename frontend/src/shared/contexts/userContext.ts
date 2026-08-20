@@ -11,7 +11,13 @@ export interface User {
 export interface UserContextValue {
   user: User | null
   isAuthenticated: boolean
-  login: (user: User) => void
+  /** True while the boot phase restores a stored session; guards wait for it
+   *  instead of reading "not yet known" as "not authenticated". */
+  isBootstrapping: boolean
+  login: (user: User, token: string) => void
+  /** Patches the signed-in user in place (e.g. after a settings save), leaving
+   *  the session token untouched. */
+  updateUser: (user: User) => void
   logout: () => void
 }
 

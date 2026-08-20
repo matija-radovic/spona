@@ -103,6 +103,77 @@
     gap: 1rem;
   }
 
+  .register-error {
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    color: c.$danger-text;
+    background-color: c.$danger-wash;
+    border: 1px solid c.$danger-border;
+    border-radius: 8px;
+  }
+
+  .register-done {
+    align-items: center;
+    text-align: center;
+
+    h2 {
+      margin: 0;
+    }
+
+    .register-done-icon {
+      --icon-size: 2.4rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.6rem;
+      height: 3.6rem;
+      border-radius: 50%;
+      background-color: c.$accent-wash;
+      color: c.$accent;
+    }
+
+    .register-done-body {
+      margin: 0;
+      color: c.$text-muted;
+      font-size: 0.9rem;
+    }
+
+    .register-done-resend {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: c.$text-muted;
+    }
+
+    .register-done-resend-btn {
+      padding: 0;
+      font: inherit;
+      color: c.$accent;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        text-decoration: underline;
+      }
+
+      &:disabled {
+        color: c.$text-muted;
+        cursor: default;
+      }
+    }
+
+    .register-done-sent {
+      margin: 0;
+      font-size: 0.8rem;
+      color: c.$success;
+    }
+  }
+
   .register-actions {
     display: flex;
     align-items: center;
