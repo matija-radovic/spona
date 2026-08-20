@@ -9,6 +9,7 @@
 // uniformly. Magic inputs make the failure/empty paths reachable:
 //   - fetchJobs   : q === "prazno"            -> empty page (0 results)
 //   - fetchJobBySlug : slug === "nepostojeci" -> 404 Not Found
+//   - fetchJobBySlug : slug hashing onto VIEWER_ORG_SLUG -> viewerCan* true
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
 //
@@ -74,6 +75,16 @@ export interface JobDetailDto extends JobListItemDto {
   contactInformation: ContactEntry[] | null
   externalUrl: string | null
   description: string
+  /** Management authority, computed server-side from the caller's token: the
+   *  client cannot derive it, because user-facing DTOs omit `createdBy`
+   *  (backend-contract.md §8 rule 7). Two independent booleans, never collapsed
+   *  into one - the backend grants them together today, but an ADMIN allowed to
+   *  delete a posting they may not edit is a plausible split. Absent = false: a
+   *  guest, or a viewer with no authority over this posting. Detail only - a
+   *  list row (`JobListItemDto`, `SavedJobItemDto`, the search results) renders
+   *  no management affordance, so it has no use for either flag. */
+  viewerCanEdit?: boolean
+  viewerCanDelete?: boolean
 }
 
 /** JobListItemDto + status, so the profile Saved-jobs pane filters client-side. */
@@ -105,6 +116,11 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 
 const MAGIC_EMPTY_QUERY = 'prazno'
 const MAGIC_NOT_FOUND_SLUG = 'nepostojeci'
+/** The org behind the editable `moja-kompanija` profile in profiles.ts. A job
+ *  posted for it is the one case the mock can call the viewer's own, which is
+ *  what makes the authority flags reachable; the real API reads them off the
+ *  JWT and never off the poster's slug. */
+const VIEWER_ORG_SLUG = 'moja-kompanija'
 const MAX_MOCK_PAGES = 3
 
 const TITLES = [
@@ -124,6 +140,7 @@ const ORGS: readonly { displayName: string; slug: string; avatarUrl: string | nu
   { displayName: 'HTEC Group', slug: 'htec-group', avatarUrl: null },
   { displayName: 'Levi9', slug: 'levi9', avatarUrl: null },
   { displayName: 'Zühlke', slug: 'zuhlke', avatarUrl: null },
+  { displayName: 'Moja Kompanija', slug: VIEWER_ORG_SLUG, avatarUrl: null },
 ]
 
 const LOCATIONS: readonly (string | null)[] = ['Beograd', 'Novi Sad', 'Niš', null, 'Kragujevac']
@@ -253,6 +270,8 @@ export const fetchJobs = async (
 /**
  * MOCK - would be: const { data } = await api.get(`/jobs/${slug}`)
  * Single-entry: resolves the bare DTO (no wrapper). Unknown slug -> 404.
+ * A posting whose slug hashes onto VIEWER_ORG_SLUG comes back with both
+ * authority flags set - the real API reads them off the JWT.
  */
 export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   await delay(400)
@@ -264,12 +283,16 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   const title = titleFromSlug(slug)
   const applicationType = APPLICATION_TYPES[seed % APPLICATION_TYPES.length]
   const isUser = seed % 4 === 0
-  
+  const createdFor: JobPosterDto = isUser
+    ? { actorType: 'user' }
+    : { actorType: 'org', ...ORGS[seed % ORGS.length] }
+  const viewerOwns = createdFor.actorType === 'org' && createdFor.slug === VIEWER_ORG_SLUG
+
   return {
     id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
     slug,
     title,
-    createdFor: isUser ? { actorType: 'user' } : { actorType: 'org', ...ORGS[seed % ORGS.length] },
+    createdFor,
     location: LOCATIONS[seed % LOCATIONS.length],
     salary: seed % 2 === 0 ? mockSalary(seed) : null,
     createdAt: new Date(Date.now() - (seed % 30) * 24 * 60 * 60 * 1000).toISOString(),
@@ -281,6 +304,7 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
     contactInformation: applicationType === 'CONTACT_ONLY' ? mockContact() : null,
     externalUrl: applicationType === 'EXTERNAL_URL' ? 'https://primer.rs/karijera/oglas' : null,
     description: mockDescription(title),
+    ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }
 

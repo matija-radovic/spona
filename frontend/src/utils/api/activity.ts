@@ -6,8 +6,9 @@
 // discriminated `author` (== the profile owner here, generic for feed reuse).
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`.
-// Magic input:
-//   - fetchActorActivity : actorId === "user-marko" -> empty page (no activity)
+// Magic inputs:
+//   - fetchActorActivity : actorId === "user-marko"  -> empty page (no activity)
+//   - fetchActorActivity : actorId in OWN_ACTOR_IDS  -> viewerCan* true on every item
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -35,6 +36,14 @@ export interface ActivityPostDto {
   createdAt: string
   commentCount: number
   reactions: ReactionSummaryDto
+  /** Management authority, computed server-side from the caller's token: the
+   *  client cannot derive it, because user-facing DTOs omit `createdBy`
+   *  (backend-contract.md §8 rule 7). Two independent booleans, never collapsed
+   *  into one - the backend grants them together today, but an ADMIN allowed to
+   *  delete a post they may not edit is a plausible split. Absent = false: a
+   *  guest, or a viewer with no authority over this item. */
+  viewerCanEdit?: boolean
+  viewerCanDelete?: boolean
 }
 
 export interface ActivityCommentDto {
@@ -48,6 +57,10 @@ export interface ActivityCommentDto {
   content: string
   createdAt: string
   reactions: ReactionSummaryDto
+  /** As on `ActivityPostDto`: server-computed, mutually independent, and absent
+   *  = false. */
+  viewerCanEdit?: boolean
+  viewerCanDelete?: boolean
 }
 
 export type ActivityItemDto = ActivityPostDto | ActivityCommentDto
@@ -69,6 +82,11 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
   Promise.reject(makeProblem(status, detail, title))
 
 const MAGIC_EMPTY_ACTOR = 'user-marko'
+/** The actor ids behind the `ja` / `moja-kompanija` handles in profiles.ts - the
+ *  two editable "own" profiles. Browsing either one's activity is how the
+ *  viewerCanEdit / viewerCanDelete affordances become reachable in the mock; the
+ *  real API computes both from the JWT, never from the requested actor. */
+const OWN_ACTOR_IDS: readonly string[] = ['user-ja', 'org-moja']
 const MAX_MOCK_PAGES = 3
 const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮'] as const
 
@@ -110,7 +128,9 @@ const mockReactions = (seed: number): ReactionSummaryDto => {
 const makeId = (): string =>
   crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`
 
-const buildPost = (author: ActorRefDto, index: number): ActivityPostDto => ({
+/** `viewerOwns` grants both authority flags; false leaves them off entirely,
+ *  which is the wire shape a guest or a non-author gets. */
+const buildPost = (author: ActorRefDto, index: number, viewerOwns: boolean): ActivityPostDto => ({
   kind: 'post',
   id: makeId(),
   author,
@@ -118,9 +138,14 @@ const buildPost = (author: ActorRefDto, index: number): ActivityPostDto => ({
   createdAt: iso(index * 7 + 2),
   commentCount: index % 3 === 0 ? 0 : (index * 2) % 9,
   reactions: mockReactions(index + 1),
+  ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
 })
 
-const buildComment = (author: ActorRefDto, index: number): ActivityCommentDto => ({
+const buildComment = (
+  author: ActorRefDto,
+  index: number,
+  viewerOwns: boolean,
+): ActivityCommentDto => ({
   kind: 'comment',
   id: makeId(),
   postId: `post-${(index % 4) + 1}`,
@@ -129,6 +154,7 @@ const buildComment = (author: ActorRefDto, index: number): ActivityCommentDto =>
   content: COMMENT_BODIES[index % COMMENT_BODIES.length],
   createdAt: iso(index * 9 + 5),
   reactions: mockReactions(index),
+  ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
 })
 
 /** Interleaves posts and comments for the `all` feed; single-kind otherwise. */
@@ -137,13 +163,14 @@ const buildPage = (
   kind: ActivityKind,
   page: number,
   size: number,
+  viewerOwns: boolean,
 ): ActivityItemDto[] => {
   const base = (page - 1) * size
   return Array.from({ length: size }, (_, i) => {
     const n = base + i
-    if (kind === 'posts') return buildPost(author, n)
-    if (kind === 'comments') return buildComment(author, n)
-    return n % 2 === 0 ? buildPost(author, n) : buildComment(author, n)
+    if (kind === 'posts') return buildPost(author, n, viewerOwns)
+    if (kind === 'comments') return buildComment(author, n, viewerOwns)
+    return n % 2 === 0 ? buildPost(author, n, viewerOwns) : buildComment(author, n, viewerOwns)
   })
 }
 
@@ -155,6 +182,8 @@ const hrefFor = (actorId: string, kind: string, page: number, size: number): str
  *   const { data } = await api.get(`/actors/${actorId}/activity`, { params: { kind, page, size } })
  * Results are capped at MAX_MOCK_PAGES so infinite scroll terminates. The `owner`
  * ref is stamped as each item's author (the real API embeds it server-side).
+ * Items on an OWN_ACTOR_IDS profile come back with both authority flags set -
+ * the real API reads them off the JWT, so no request parameter selects this.
  */
 export const fetchActorActivity = async (
   actorId: string,
@@ -171,7 +200,7 @@ export const fetchActorActivity = async (
   const last = page >= totalPages
   const count = totalElements === 0 || page > totalPages ? 0 : last ? totalElements - (page - 1) * size : size
 
-  const content = buildPage(owner, kind, page, size).slice(0, count)
+  const content = buildPage(owner, kind, page, size, OWN_ACTOR_IDS.includes(actorId)).slice(0, count)
 
   return {
     _links: {
