@@ -419,6 +419,7 @@
     "organizations": {
       "title": "Organizacije",
       "mine": "Vaše organizacije",
+      "create": "Napravi organizaciju",
       "empty": "Niste član nijedne organizacije.",
       "invitations": "Pozivnice",
       "role": "Uloga",

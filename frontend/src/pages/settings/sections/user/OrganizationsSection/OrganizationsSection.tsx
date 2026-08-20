@@ -2,6 +2,7 @@ import './OrganizationsSection.scss'
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { IconPlus } from '@tabler/icons-react'
 import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant } from '@shared/components'
 import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
@@ -107,6 +108,13 @@ const OrganizationsSection = () => {
     }
   }
 
+  const createButton = (
+    <Button variant={ButtonVariant.PRIMARY} to="/companies/new">
+      <IconPlus aria-hidden />
+      {t('settings.organizations.create')}
+    </Button>
+  )
+
   return (
     <SettingsSection title={t('settings.organizations.title')} className="organizations-section">
       {error && <p className="settings-inline-error">{error}</p>}
@@ -173,10 +181,25 @@ const OrganizationsSection = () => {
         <div className="settings-block">
           <div className="settings-block-head">
             <h5 className="settings-block-title">{t('settings.organizations.mine')}</h5>
+            {organizations.length > 0 && (
+              <Button
+                variant={ButtonVariant.TERTIARY}
+                to="/companies/new"
+                className="organizations-create-icon"
+              >
+                <IconPlus aria-hidden />
+                <span className="organizations-create-label">
+                  {t('settings.organizations.create')}
+                </span>
+              </Button>
+            )}
           </div>
 
           {organizations.length === 0 ? (
-            <p className="settings-empty">{t('settings.organizations.empty')}</p>
+            <div className="organizations-empty">
+              <p>{t('settings.organizations.empty')}</p>
+              {createButton}
+            </div>
           ) : (
             <ul className="organizations-list">
               {organizations.map((membership) => {
