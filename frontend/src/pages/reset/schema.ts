@@ -6,7 +6,7 @@ type Translate = (key: string, opts?: Record<string, unknown>) => string
 /** "Forgot password" request: just the address the link is mailed to. */
 export const buildRequestResetSchema = (t: Translate) =>
   z.object({
-    email: z.string().min(1, t('errors.required')).email(t('errors.invalidEmail')),
+    email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
   })
 
 export type RequestResetData = z.infer<ReturnType<typeof buildRequestResetSchema>>

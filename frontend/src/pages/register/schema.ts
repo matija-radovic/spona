@@ -37,7 +37,7 @@ export const buildRegisterSchema = (t: Translate) =>
         .min(USERNAME_MIN, t('errors.rangeLength', { min: USERNAME_MIN, max: USERNAME_MAX }))
         .max(USERNAME_MAX, t('errors.rangeLength', { min: USERNAME_MIN, max: USERNAME_MAX }))
         .regex(SLUG_REGEX, t('errors.usernameFormat')),
-      email: z.string().min(1, t('errors.required')).email(t('errors.invalidEmail')),
+      email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
       password: z
         .string()
         .min(PASSWORD_MIN, t('errors.rangeLength', { min: PASSWORD_MIN, max: PASSWORD_MAX }))

@@ -23,7 +23,7 @@ export type UsernameData = z.infer<ReturnType<typeof buildUsernameSchema>>
 
 export const buildEmailSchema = (t: Translate) =>
   z.object({
-    email: z.string().min(1, t('errors.required')).email(t('errors.invalidEmail')),
+    email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
     currentPassword: z.string().min(1, t('errors.required')),
   })
 
