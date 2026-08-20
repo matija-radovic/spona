@@ -1,0 +1,81 @@
+@use '@css/colors' as c;
+
+.tooltip-anchor {
+  position: relative;
+  display: inline-flex;
+
+  // A disabled control swallows pointer events in every engine, which would
+  // leave the anchor deaf to the hover that reveals the bubble. Events pass
+  // through to the anchor, which carries the inert cursor for it.
+  > :disabled {
+    pointer-events: none;
+  }
+
+  &:has(> :disabled) {
+    cursor: not-allowed;
+  }
+
+  .tooltip-bubble {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    z-index: 5;
+    width: max-content;
+    max-width: min(15rem, calc(100vw - 2rem));
+    padding: 0.5rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    color: c.$text-primary;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
+    border-radius: 8px;
+    box-shadow: c.$shadow-tooltip;
+    // The bubble must never eat the hover that opened it.
+    pointer-events: none;
+
+    // Arrow
+    &::after {
+      content: '';
+      position: absolute;
+      top: -0.25rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      background-color: c.$surface-4;
+      border: 1px solid transparent;
+      border-top-color: c.$border-panel;
+      border-left-color: c.$border-panel;
+      transform: rotate(45deg);
+    }
+
+    &.tooltip-bubble-right {
+      right: 0;
+
+      &::after {
+        right: 0.7rem;
+      }
+    }
+
+    &.tooltip-bubble-left {
+      left: 0;
+
+      &::after {
+        left: 0.7rem;
+      }
+    }
+
+    &.is-above {
+      top: auto;
+      bottom: calc(100% + 0.5rem);
+
+      &::after {
+        top: auto;
+        bottom: -0.25rem;
+        border-top-color: transparent;
+        border-left-color: transparent;
+        border-right-color: c.$border-panel;
+        border-bottom-color: c.$border-panel;
+      }
+    }
+  }
+}

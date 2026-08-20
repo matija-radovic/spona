@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconPlus } from '@tabler/icons-react'
-import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant } from '@shared/components'
+import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant, Tooltip } from '@shared/components'
 import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
 import { parseProblem } from '@utils/api/types'
@@ -235,9 +235,11 @@ const OrganizationsSection = () => {
                         )}
 
                         {membership.role === 'OWNER' ? (
-                          <span className="organizations-card-note">
-                            {t('settings.organizations.ownerCannotLeave')}
-                          </span>
+                          <Tooltip label={t('settings.organizations.ownerCannotLeave')}>
+                            <Button variant={ButtonVariant.DANGER} disabled>
+                              {t('settings.organizations.leave')}
+                            </Button>
+                          </Tooltip>
                         ) : (
                           <Button
                             variant={ButtonVariant.DANGER}

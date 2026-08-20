@@ -101,7 +101,6 @@
   }
 
   .organizations-card {
-    overflow: hidden;
     background-color: c.$surface-2;
     border: 1px solid c.$border-panel;
     border-radius: 12px;
@@ -120,6 +119,7 @@
     padding: 0.75rem 0.9rem;
     background-color: c.$surface-4;
     border-bottom: 1px solid c.$border-line;
+    border-radius: 11px 11px 0 0;
 
     @media #{mq.$m-phone} {
       flex-wrap: wrap;
@@ -151,13 +151,7 @@
     @media #{mq.$m-phone} {
       width: 100%;
       flex-wrap: wrap;
-    }
-
-    .organizations-card-note {
-      max-width: 18rem;
-      font-size: 0.75rem;
-      line-height: 1.4;
-      color: c.$text-muted;
+      justify-content: flex-end;
     }
   }
 

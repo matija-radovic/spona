@@ -60,8 +60,6 @@ const usePopoverFlip = (
 
   useEffect(() => {
     if (!open) return
-    // Capture phase - the scroll happens on an ancestor (<main>), not on window,
-    // and scroll events don't bubble.
     window.addEventListener('resize', measure)
     document.addEventListener('scroll', measure, true)
     return () => {

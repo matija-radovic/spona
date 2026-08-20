@@ -20,6 +20,7 @@ export {
   type ContactEntry,
 } from './ContactInfo'
 export { Dropdown, type DropdownOption } from './Dropdown'
+export { Tooltip, TooltipAlign } from './Tooltip'
 export { Modal } from './Modal'
 export { ScrollContainer } from './ScrollContainer'
 export { ActorAvatar, ActorAvatarSize } from './ActorAvatar'
