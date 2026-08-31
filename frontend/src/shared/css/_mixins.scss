@@ -256,6 +256,8 @@
   border: 1px solid c.$border-panel;
   border-radius: 10px;
   box-shadow: c.$shadow-popover;
+
+  scrollbar-gutter: auto;
 }
 
 @mixin menu-item {
