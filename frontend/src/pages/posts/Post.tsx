@@ -4,6 +4,8 @@ import { useMatch, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button, ButtonVariant } from '@shared/components'
 import { useUser } from '@shared/contexts'
+import { MQ } from '@shared/css/mediaqueries'
+import useMediaQuery from '@shared/hooks/useMediaQuery'
 import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { actorPath } from '@utils/actorPath'
 import { applyReactionDelta } from '@utils/applyReactionDelta'
@@ -26,9 +28,6 @@ import {
 import { CommentThread } from '@pages/posts/components/CommentThread'
 import { PostRail } from '@pages/posts/components/PostRail'
 import { PostView } from '@pages/posts/components/PostView'
-
-/** The rail drops at an existing breakpoint: `$tablet` in _mediaqueries.scss. */
-const RAIL_QUERY = '(min-width: 1025px)'
 
 interface PostBodyProps {
   initialPost: PostDto
@@ -107,14 +106,7 @@ const Post = () => {
   const [loadedKey, setLoadedKey] = useState<string | undefined>(undefined)
   const [reloadKey, setReloadKey] = useState(0)
 
-  const [hasRail, setHasRail] = useState(() => window.matchMedia(RAIL_QUERY).matches)
-
-  useEffect(() => {
-    const mql = window.matchMedia(RAIL_QUERY)
-    const onChange = (event: MediaQueryListEvent) => setHasRail(event.matches)
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
-  }, [])
+  const hasRail = useMediaQuery(MQ.exceptTablet)
 
   const key = `${postId}::${commentId ?? ''}`
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useReducedMotion } from 'motion/react'
 import { Button, ButtonVariant } from '@shared/components'
 import useOnScreen from '@shared/hooks/useOnScreen'
 import { useUser } from '@shared/contexts'
@@ -36,6 +37,7 @@ interface CommentThreadProps {
 const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: CommentThreadProps) => {
   const { t } = useTranslation()
   const { isAuthenticated } = useUser()
+  const reduced = useReducedMotion()
 
   const [sort, setSort] = useState<CommentSort>(DEFAULT_COMMENT_SORT)
   const [initial] = useState(() => getCommentsCache(commentsCacheKey(postId, DEFAULT_COMMENT_SORT)))
@@ -105,7 +107,6 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
   useEffect(() => {
     if (!anchor || !anchorNode) return
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     anchorNode.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
 
     const delay = reduced ? 0 : FLASH_DELAY_MS
@@ -116,7 +117,7 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
       window.clearTimeout(stop)
       setFlashing(false)
     }
-  }, [anchor, anchorNode])
+  }, [anchor, anchorNode, reduced])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || lastRef.current) return

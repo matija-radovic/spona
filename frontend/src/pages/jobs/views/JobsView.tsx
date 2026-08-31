@@ -2,7 +2,9 @@ import './JobsView.scss'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { MQ } from '@shared/css/mediaqueries'
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
+import useMediaQuery from '@shared/hooks/useMediaQuery'
 import useOnScreen from '@shared/hooks/useOnScreen'
 import { Button, ButtonVariant } from '@shared/components/Button'
 import { fetchJobs, type JobListItemDto } from '@utils/api/jobs'
@@ -13,7 +15,6 @@ import { SearchFilterBar } from '@pages/jobs/components/SearchFilterBar'
 import { JobCard } from '@pages/jobs/components/JobCard'
 
 const PAGE_SIZE = 20
-const MOBILE_QUERY = '(max-width: 768px)'
 
 type ListState = 'loading' | 'error' | 'ready'
 
@@ -40,14 +41,7 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
 
   const initialCache = useMemo(() => getJobsCache(queryKey), [queryKey])
 
-  // -- Responsive --------------------------------------------------------------
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches)
-  useEffect(() => {
-    const mql = window.matchMedia(MOBILE_QUERY)
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
-  }, [])
+  const isMobile = useMediaQuery(MQ.phone)
 
   // -- List state (lazy-initialised from cache; refs shadow it for async logic) --
   const [items, setItems] = useState<JobListItemDto[]>(initialCache?.items ?? [])

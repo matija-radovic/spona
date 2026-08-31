@@ -1,15 +1,15 @@
 import './PostAsSelect.scss'
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActorAvatar, ActorAvatarSize } from '@shared/components/ActorAvatar'
 import { Dropdown, type DropdownOption } from '@shared/components/Dropdown'
 import { useUser } from '@shared/contexts'
+import { MQ } from '@shared/css/mediaqueries'
+import useMediaQuery from '@shared/hooks/useMediaQuery'
 import type { MyOrganizationDto } from '@utils/api/memberships'
 import type { PostAsValue } from './postAsValue'
 
 const MYSELF = ''
 
-const PHONE_QUERY = '(max-width: 768px)'
 const MAX_LABEL_CHARS = 22
 const MAX_LABEL_CHARS_PHONE = 14
 
@@ -25,14 +25,7 @@ interface PostAsSelectProps {
 const PostAsSelect = ({ organizations, value, onChange, disabled, className }: PostAsSelectProps) => {
   const { t } = useTranslation()
   const { user } = useUser()
-  const [isPhone, setIsPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches)
-
-  useEffect(() => {
-    const mql = window.matchMedia(PHONE_QUERY)
-    const onChangeQuery = (event: MediaQueryListEvent) => setIsPhone(event.matches)
-    mql.addEventListener('change', onChangeQuery)
-    return () => mql.removeEventListener('change', onChangeQuery)
-  }, [])
+  const isPhone = useMediaQuery(MQ.phone)
 
   if (!user) return null
 

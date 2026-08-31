@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "gen:mediaqueries": "node scripts/gen-mediaqueries.mjs",
+    "prebuild": "node scripts/gen-mediaqueries.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
