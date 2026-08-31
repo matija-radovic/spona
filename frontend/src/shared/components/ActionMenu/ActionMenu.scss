@@ -1,49 +1,36 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .action-menu {
   position: relative;
   display: inline-flex;
 
   .action-menu-trigger {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     padding: 0.4rem;
-    font-family: inherit;
     font-size: 0.82rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background: transparent;
-    border: none;
     border-radius: 50%;
-    cursor: pointer;
-    transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
+      @include m.quiet-control-hover;
     }
   }
 
   &.is-open .action-menu-trigger {
-    color: c.$text-primary;
-    background-color: c.$overlay-hover;
+    @include m.quiet-control-hover;
   }
 
   .action-menu-panel {
+    @include m.popover-surface;
+
     position: absolute;
     top: calc(100% + 0.35rem);
     z-index: 40;
     width: max-content;
     min-width: 10rem;
     max-width: min(18rem, 90vw);
-    margin: 0;
-    padding: 0.3rem;
-    list-style: none;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
-    box-shadow: c.$shadow-popover;
 
     &.action-menu-start {
       left: 0;
@@ -60,22 +47,13 @@
   }
 
   .action-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    width: 100%;
-    padding: 0.5rem 0.6rem;
-    font-family: inherit;
-    font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: transparent;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    text-align: left;
+    @include m.menu-item;
 
-    &:hover,
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+
+    // Roving focus lands here without a pointer, so focus paints the hover.
     &:focus-visible {
       background-color: c.$overlay-hover;
       outline: none;

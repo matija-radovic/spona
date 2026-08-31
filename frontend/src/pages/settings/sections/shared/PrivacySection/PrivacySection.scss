@@ -1,16 +1,16 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .privacy-section {
   .privacy-toggle {
+    @include m.surface-panel;
+
     display: flex;
     align-items: flex-start;
     gap: 0.7rem;
     padding: 0.9rem 1rem;
     font-size: 0.9rem;
     line-height: var(--control-line-height);
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
     cursor: pointer;
 
     &:has(.privacy-toggle-input:disabled) {
@@ -20,31 +20,15 @@
   }
 
   .privacy-toggle-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    @include m.visually-hidden;
   }
 
   .privacy-toggle-box {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    width: var(--icon-size);
-    height: var(--icon-size);
-    color: c.$text-on-accent;
-    border: 1px solid c.$border-strong;
-    border-radius: 5px;
+    @include m.tick-box;
+
     transition: background-color 0.16s ease, border-color 0.16s ease;
 
     svg {
-      --icon-size: 0.95em;
-
       opacity: 0;
     }
   }

@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .job-detail {
   position: relative; // anchors the drag overlay
@@ -7,7 +8,6 @@
   gap: 1.1rem;
   padding: 1.25rem 1.4rem 2rem;
 
-  // ── Loading / error / not-found: back stays top-left, message centered ───────
   &.job-detail-status {
     height: 100%;
     gap: 0;
@@ -28,7 +28,6 @@
     font-size: 0.95rem;
   }
 
-  // ── Top bar (back + favourite) ──────────────────────────────────────────────
   .job-detail-topbar {
     display: flex;
     align-items: center;
@@ -37,17 +36,13 @@
   }
 
   .job-detail-back {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     padding: 0.35rem;
     font-size: 1rem;
-    line-height: var(--control-line-height);
     color: c.$text-primary;
-    background: transparent;
-    border: none;
     border-radius: 50%;
-    cursor: pointer;
 
     &:hover {
       background-color: c.$overlay-hover;
@@ -55,19 +50,13 @@
   }
 
   .job-detail-fav {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     margin-left: auto;
     padding: 0.35rem;
     font-size: 1.1rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background: transparent;
-    border: none;
     border-radius: 50%;
-    cursor: pointer;
-    transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
       color: c.$accent;
@@ -79,7 +68,6 @@
     }
   }
 
-  // ── Header block ────────────────────────────────────────────────────────────
   .job-detail-head {
     display: flex;
     align-items: flex-start;
@@ -129,12 +117,11 @@
     margin-top: 0.35rem;
 
     .job-detail-tag {
+      @include m.surface-panel(999px);
+
       padding: 0.25rem 0.65rem;
       font-size: 0.75rem;
       color: c.$text-primary;
-      background-color: c.$surface-2;
-      border: 1px solid c.$border-panel;
-      border-radius: 999px;
     }
   }
 
@@ -159,7 +146,6 @@
     }
   }
 
-  // ── Apply row ───────────────────────────────────────────────────────────────
   .job-detail-apply {
     display: flex;
     flex-direction: column;
@@ -174,13 +160,11 @@
     }
   }
 
-  // External-apply button: content width, centered (not full-bleed).
   .job-detail-external {
     align-self: center;
     max-width: 22rem;
   }
 
-  // ── Description (preserve line breaks; blank lines create paragraph gaps) ─────
   .job-detail-description {
     font-size: 0.9rem;
     line-height: 1.55;
@@ -188,7 +172,6 @@
     white-space: pre-line;
   }
 
-  // ── Drag overlay: covers the whole panel; no blur, inner thick dashed frame ───
   .job-detail-drop-overlay {
     position: absolute;
     inset: 0;

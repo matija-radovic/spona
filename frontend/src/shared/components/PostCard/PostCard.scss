@@ -1,13 +1,13 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .post-card {
+  @include m.surface-panel;
+
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
   padding: 0.9rem 1rem;
-  background-color: c.$surface-2;
-  border: 1px solid c.$border-panel;
-  border-radius: 12px;
 
   .post-card-author-row {
     display: flex;
@@ -51,23 +51,15 @@
   }
 
   .post-card-action {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     gap: 0.35rem;
     padding: 0.4rem 0.55rem;
-    font-family: inherit;
     font-size: 0.82rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background: transparent;
-    border: none;
     border-radius: 8px;
-    cursor: pointer;
-    transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
+      @include m.quiet-control-hover;
     }
   }
 }

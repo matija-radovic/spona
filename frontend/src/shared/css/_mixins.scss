@@ -1,12 +1,135 @@
 @use 'colors' as c;
+@use 'mediaqueries' as mq;
 
-// `.btn-small` is the reference size;
+// --- ButtonSizes ---
+
 @mixin control-small {
   padding: 0.4em 0.75em;
   font-size: 0.75rem;
 }
 
-// input field styling
+@mixin control-medium {
+  padding: 0.55em 1.1em;
+  font-size: 0.9rem;
+}
+
+@mixin control-large {
+  padding: 0.75em 1.3em;
+  font-size: 1rem;
+}
+
+// --- ButtonVariant + additional Button styles ---
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: var(--control-line-height);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.05s ease;
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid c.$accent;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+@mixin accent-fill {
+  background-color: c.$accent;
+  border-color: c.$accent;
+  color: c.$text-on-accent;
+}
+
+@mixin variant-primary {
+  @include accent-fill;
+
+  &:hover:not(:disabled) {
+    background-color: c.$accent-hover;
+    border-color: c.$accent-hover;
+  }
+}
+
+@mixin variant-secondary {
+  background-color: transparent;
+  border-color: c.$text-primary;
+  color: c.$text-primary;
+
+  &:hover:not(:disabled) {
+    background-color: c.$overlay-hover;
+  }
+}
+
+@mixin variant-tertiary {
+  background-color: c.$fill-control;
+  border-color: transparent;
+  color: c.$text-primary;
+
+  &:hover:not(:disabled) {
+    background-color: c.$fill-control-hover;
+  }
+}
+
+@mixin variant-quaternary {
+  background-color: transparent;
+  border-color: c.$text-muted;
+  color: c.$text-muted;
+
+  &:hover:not(:disabled) {
+    background-color: c.$overlay-hover;
+    color: c.$text-primary;
+  }
+}
+
+@mixin variant-ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background-color: c.$overlay-hover;
+  }
+}
+
+@mixin variant-danger {
+  background-color: c.$danger;
+  border-color: c.$danger;
+  color: c.$text-strong;
+
+  &:hover:not(:disabled) {
+    background-color: c.$danger-hover;
+    border-color: c.$danger-hover;
+  }
+}
+
+@mixin variant-danger-outline {
+  background-color: transparent;
+  border-color: c.$danger-border;
+  color: c.$danger-text;
+
+  &:hover:not(:disabled) {
+    background-color: c.$danger-wash;
+  }
+}
+
+
+// --- TextField stuff ---
+
 @mixin field-skin {
   width: 100%;
   font-family: inherit;
@@ -19,4 +142,271 @@
   &::placeholder {
     color: c.$text-placeholder;
   }
+}
+
+@mixin field-focus-ring {
+  border-color: c.$accent;
+  box-shadow: 0 0 0 2px c.$accent-glow;
+}
+
+@mixin field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: c.$text-primary;
+}
+
+// checkmark and x thing within the field
+@mixin field-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: c.$text-strong;
+  border: none;
+  border-radius: 50%;
+  cursor: default;
+}
+
+@mixin field-tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 5;
+  width: max-content;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: c.$neutral-900;
+  background-color: c.$neutral-100;
+  border-radius: 8px;
+  box-shadow: c.$shadow-tooltip;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    border: 5px solid transparent;
+    border-top-color: c.$neutral-100;
+  }
+}
+
+
+// --- Panels and stuff ---
+
+// tighter boxes that sit inside a card pass 10px.
+@mixin surface-panel($radius: 12px) {
+  background-color: c.$surface-2;
+  border: 1px solid c.$border-panel;
+  border-radius: $radius;
+}
+
+// The centred column the auth routes fill: AuthCard, Login, Register.
+@mixin auth-card-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2.5rem 1rem;
+
+  @media #{mq.$m-phone} {
+    align-items: flex-start;
+  }
+}
+
+// The card inside it. Only `max-width` differs between the three.
+@mixin auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  width: 100%;
+  padding: 2rem;
+  background-color: c.$surface-1;
+  border: 1px solid c.$border-panel;
+  border-radius: 16px;
+  box-shadow: c.$shadow-card;
+
+  @media #{mq.$m-phone} {
+    padding: 1.5rem;
+  }
+}
+
+// The inline error panel a form shows above its actions.
+@mixin error-box {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.8rem;
+  color: c.$danger-text;
+  background-color: c.$danger-wash;
+  border: 1px solid c.$danger-border;
+  border-radius: 8px;
+}
+
+
+// --- Popovers and menus ---
+
+// Dropdown, ActionMenu, ContactInfo
+@mixin popover-surface {
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background-color: c.$surface-4;
+  border: 1px solid c.$border-panel;
+  border-radius: 10px;
+  box-shadow: c.$shadow-popover;
+}
+
+@mixin menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-family: inherit;
+  line-height: var(--control-line-height);
+  color: c.$text-primary;
+  background-color: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background-color: c.$overlay-hover;
+  }
+}
+
+
+// --- Quiet controls ---
+
+// The bare <button> that carries an icon, and sometimes a label, with no chrome
+// until hover.
+// Example are the post and comment actions, copy link, the reaction and
+// three-dot triggers, modal close, the settings row buttons. Size, padding and
+// radius are per-site - 8px for a padded pill, 50% for a round affordance.
+@mixin quiet-control {
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+  line-height: var(--control-line-height);
+  color: c.$text-muted;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+@mixin quiet-control-hover {
+  color: c.$text-primary;
+  background-color: c.$overlay-hover;
+}
+
+
+// --- Capsules ---
+
+// Dropdown's trigger, the jobs filter button and filter toggles, ContactInfo's type capsule.
+@mixin capsule-control {
+  display: inline-flex;
+  align-items: center;
+  line-height: var(--control-line-height);
+  color: c.$text-primary;
+  background-color: c.$surface-4;
+  border: 1px solid c.$border-panel;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: c.$accent;
+  }
+}
+
+@mixin search-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 0.85rem;
+  font-size: 0.9rem;
+  color: c.$text-muted;
+  background-color: c.$surface-3;
+  border: 1px solid c.$border-panel;
+  border-radius: 999px;
+
+  &:focus-within {
+    border-color: c.$accent;
+  }
+
+  input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.6rem 0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: var(--control-line-height);
+    color: c.$text-strong;
+    background: transparent;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+      color: c.$text-placeholder;
+    }
+  }
+}
+
+// Dropdown's multi-select check, the jobs filter toggle, the privacy toggle. 
+@mixin tick-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: c.$text-on-accent;
+  border: 1px solid c.$border-strong;
+  border-radius: 5px;
+
+  svg {
+    --icon-size: 0.95em;
+  }
+}
+
+
+// --- List states ---
+
+// The centred "loading / empty / error" column a list falls back to.
+@mixin state-block($gap: 0.7rem, $padding: 2rem 1rem) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $gap;
+  padding: $padding;
+  text-align: center;
+  color: c.$text-muted;
+}
+
+// The row under a paginated list: a spinner, a retry, or the end-of-list note.
+@mixin load-more-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  font-size: 0.85rem;
+  color: c.$text-muted;
+}
+
+
+// --- Utilities ---
+
+// table's row caption, checkbox hidden behind its own box, an icon button's label.
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

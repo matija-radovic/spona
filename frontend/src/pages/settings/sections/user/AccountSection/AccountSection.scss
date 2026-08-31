@@ -1,11 +1,10 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .account-section {
   .account-credentials {
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
+    @include m.surface-panel;
   }
 
   .credential-row + .credential-row {

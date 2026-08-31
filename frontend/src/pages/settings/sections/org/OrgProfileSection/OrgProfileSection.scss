@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .org-profile-section {
   .org-profile-avatar,
@@ -10,9 +11,7 @@
 
   .org-profile-avatar-label,
   .org-profile-contacts-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: c.$text-primary;
+    @include m.field-label;
   }
 
   .org-profile-contacts-list {
@@ -25,6 +24,8 @@
   }
 
   .org-profile-contact {
+    @include m.surface-panel(10px);
+
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -32,9 +33,6 @@
     padding: 0.6rem 0.75rem;
     font-size: 0.85rem;
     line-height: var(--control-line-height);
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
 
     .org-profile-contact-desc {
       flex: 0 0 auto;

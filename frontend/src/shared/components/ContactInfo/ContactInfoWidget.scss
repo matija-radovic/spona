@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .contact-info {
   display: flex;
@@ -6,9 +7,7 @@
   gap: 0.5rem;
 
   .contact-info-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: c.$text-primary;
+    @include m.field-label;
   }
 
   .contact-info-builder {
@@ -23,24 +22,16 @@
   }
 
   .contact-info-input {
+    @include m.field-skin;
+
     flex: 1 1 auto;
     min-width: 0;
     padding: 0.6rem 0.75rem;
-    font-family: inherit;
     font-size: 0.88rem;
-    color: c.$text-strong;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
     outline: none;
 
-    &::placeholder {
-      color: c.$text-placeholder;
-    }
-
     &:focus {
-      border-color: c.$accent;
-      box-shadow: 0 0 0 2px c.$accent-glow;
+      @include m.field-focus-ring;
     }
 
     &.has-error {
@@ -48,45 +39,29 @@
     }
   }
 
-  // ── Type selector ─────────────────────────────────────────────────────────
   .contact-info-type {
     position: relative;
     flex: 0 0 auto;
   }
 
   .contact-info-capsule {
-    display: inline-flex;
-    align-items: center;
+    @include m.capsule-control;
+
     gap: 0.2rem;
     height: 100%;
     padding: 0 0.7rem;
     font-size: 0.88rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 999px;
-    cursor: pointer;
-
-    &:hover {
-      border-color: c.$accent;
-    }
   }
 
   .contact-info-dropdown {
+    @include m.popover-surface;
+
     position: absolute;
     top: calc(100% + 0.35rem);
     left: 0;
     z-index: 8;
     min-width: 11rem;
     max-height: 15rem;
-    margin: 0;
-    padding: 0.3rem;
-    list-style: none;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
-    box-shadow: c.$shadow-popover;
 
     // usePopoverFlip: no room below, more above.
     &.is-above {
@@ -118,24 +93,11 @@
   }
 
   .contact-info-option {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    width: 100%;
-    padding: 0.5rem 0.6rem;
-    font-family: inherit;
-    font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: transparent;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    text-align: left;
+    @include m.menu-item;
 
-    &:hover {
-      background-color: c.$overlay-hover;
-    }
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
 
     &.is-selected {
       color: c.$accent;
@@ -156,7 +118,6 @@
     color: c.$danger-text;
   }
 
-  // ── Added list ────────────────────────────────────────────────────────────
   .contact-info-list {
     display: flex;
     flex-direction: column;
@@ -167,13 +128,12 @@
   }
 
   .contact-info-item {
+    @include m.surface-panel(10px);
+
     display: flex;
     align-items: center;
     gap: 0.6rem;
     padding: 0.5rem 0.65rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
 
     .contact-info-item-icon {
       display: inline-flex;
@@ -200,15 +160,12 @@
     }
 
     .contact-info-item-remove {
-      display: inline-flex;
+      @include m.quiet-control;
+
       flex: 0 0 auto;
       padding: 0.25rem;
       font-size: 0.75rem;
-      color: c.$text-muted;
-      background-color: transparent;
-      border: none;
       border-radius: 50%;
-      cursor: pointer;
 
       &:hover {
         color: c.$danger-text;

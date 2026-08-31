@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .cv-apply {
   // One row: [choose file] [selected file + validity] [submit].
@@ -12,6 +13,8 @@
   }
 
   .cv-apply-file {
+    @include m.surface-panel(8px);
+
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -21,9 +24,6 @@
     font-size: 0.75rem;
     line-height: var(--control-line-height);
     color: c.$text-primary;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 8px;
 
     .cv-apply-file-name {
       overflow: hidden;
@@ -32,7 +32,6 @@
     }
   }
 
-  // ── Validity indicator (mirrors the TextField pattern) ──────────────────────
   .cv-apply-indicator-wrap {
     display: inline-flex;
     flex: 0 0 auto;
@@ -41,16 +40,10 @@
   .cv-apply-indicator {
     --icon-size: 0.8em;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    @include m.field-indicator;
+
     width: calc(var(--control-line-height) * 1em);
     height: calc(var(--control-line-height) * 1em);
-    padding: 0;
-    color: c.$text-strong;
-    border: none;
-    border-radius: 50%;
-    cursor: default;
   }
 
   .cv-apply-indicator-wrap.is-valid .cv-apply-indicator {
@@ -63,31 +56,12 @@
   }
 
   .cv-apply-tooltip {
-    position: absolute;
-    bottom: calc(100% + 0.5rem);
-    right: 0;
-    z-index: 5;
-    width: max-content;
+    @include m.field-tooltip;
+
     max-width: 15rem;
-    padding: 0.45rem 0.6rem;
-    font-size: 0.75rem;
-    line-height: 1.3;
-    // Inverted surface: dark ink on the light end of the neutral ramp.
-    color: c.$neutral-900;
-    background-color: c.$neutral-100;
-    border-radius: 8px;
-    box-shadow: c.$shadow-tooltip;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.14s ease;
 
     &::after {
-      content: '';
-      position: absolute;
-      top: 100%;
       right: 0.6rem;
-      border: 5px solid transparent;
-      border-top-color: c.$neutral-100;
     }
   }
 

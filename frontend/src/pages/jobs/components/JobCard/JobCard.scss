@@ -1,6 +1,9 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .job-card {
+  @include m.surface-panel;
+
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -9,9 +12,6 @@
   font-family: inherit;
   text-align: left;
   color: c.$text-primary;
-  background-color: c.$surface-2;
-  border: 1px solid c.$border-panel;
-  border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.06s ease;
 

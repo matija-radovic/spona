@@ -1,11 +1,11 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .comment-card {
+  @include m.surface-panel;
+
   display: flex;
   flex-direction: column;
-  background-color: c.$surface-2;
-  border: 1px solid c.$border-panel;
-  border-radius: 12px;
 
   .comment-card-bar {
     display: flex;
@@ -74,22 +74,15 @@
   }
 
   .comment-card-action {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     padding: 0.4rem;
     font-size: 0.82rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background: transparent;
-    border: none;
     border-radius: 8px;
-    cursor: pointer;
-    transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
+      @include m.quiet-control-hover;
     }
   }
 }

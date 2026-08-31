@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .jobs-bar {
   display: flex;
@@ -15,67 +16,23 @@
   }
 
   .jobs-bar-search {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1 1 auto;
-    min-width: 0;
-    padding: 0 0.85rem;
-    font-size: 0.9rem;
-    color: c.$text-muted;
-    background-color: c.$surface-3;
-    border: 1px solid c.$border-panel;
-    border-radius: 999px;
-
-    &:focus-within {
-      border-color: c.$accent;
-    }
-
-    input {
-      flex: 1 1 auto;
-      min-width: 0;
-      padding: 0.6rem 0;
-      font-family: inherit;
-      font-size: 0.9rem;
-      line-height: var(--control-line-height);
-      color: c.$text-strong;
-      background: transparent;
-      border: none;
-      outline: none;
-
-      &::placeholder {
-        color: c.$text-placeholder;
-      }
-    }
+    @include m.search-pill;
   }
 
   .jobs-bar-filter-btn {
-    display: inline-flex;
-    align-items: center;
+    @include m.capsule-control;
+
     gap: 0.3rem;
     flex: 0 0 auto;
     padding: 0.6rem 0.9rem;
     font-size: 0.9rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 999px;
-    cursor: pointer;
     transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
 
-    &:hover {
-      border-color: c.$accent;
-    }
-
     &.is-open {
-      color: c.$text-on-accent;
-      background-color: c.$accent;
-      border-color: c.$accent;
+      @include m.accent-fill;
     }
   }
 
-  // ── Filter menu (seamless with the bar, above the divider) ──────────────────
   .jobs-bar-menu {
     display: flex;
     flex-direction: column;
@@ -91,42 +48,20 @@
   }
 
   .filter-toggle {
-    display: inline-flex;
-    align-items: center;
+    @include m.capsule-control;
+
     gap: 0.4rem;
     padding: 0.5rem 0.8rem;
     font-family: inherit;
     font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 999px;
-    cursor: pointer;
-
-    &:hover {
-      border-color: c.$accent;
-    }
 
     .filter-toggle-box {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--icon-size);
-      height: var(--icon-size);
-      color: c.$text-on-accent;
-      border: 1px solid c.$border-strong;
-      border-radius: 5px;
-
-      svg {
-        --icon-size: 0.95em;
-      }
+      @include m.tick-box;
     }
 
     &.is-active {
-      color: c.$text-on-accent;
-      background-color: c.$accent;
-      border-color: c.$accent;
+      @include m.accent-fill;
+
       font-weight: 600;
 
       // Inverted inside the filled capsule.

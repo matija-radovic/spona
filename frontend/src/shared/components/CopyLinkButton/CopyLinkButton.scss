@@ -1,23 +1,16 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .copy-link {
-  display: inline-flex;
-  align-items: center;
+  @include m.quiet-control;
+
   gap: 0.4rem;
   padding: 0.4rem 0.6rem;
-  font-family: inherit;
   font-size: 0.82rem;
-  line-height: var(--control-line-height);
-  color: c.$text-muted;
-  background: transparent;
-  border: none;
   border-radius: 8px;
-  cursor: pointer;
-  transition: color 0.16s ease, background-color 0.16s ease;
 
   &:hover {
-    color: c.$text-primary;
-    background-color: c.$overlay-hover;
+    @include m.quiet-control-hover;
   }
 
   &.is-copied {

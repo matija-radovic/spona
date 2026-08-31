@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 @keyframes dropdown-pulse {
   0%,
@@ -15,25 +16,14 @@
   display: inline-flex;
 
   .dropdown-trigger {
-    display: inline-flex;
-    align-items: center;
+    @include m.capsule-control;
+    @include m.control-medium;
+
     gap: 0.4rem;
     max-width: 15rem;
-    padding: 0.55em 1.1em;
     font-family: inherit;
-    font-size: 0.9rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 999px;
-    cursor: pointer;
     white-space: nowrap;
     transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
-
-    &:hover {
-      border-color: c.$accent;
-    }
 
     &:disabled {
       opacity: 0.5;
@@ -48,14 +38,14 @@
 
   // Accent capsule while a non-default value is applied, visible even inside "More".
   &.is-active .dropdown-trigger {
-    color: c.$text-on-accent;
-    background-color: c.$accent;
-    border-color: c.$accent;
+    @include m.accent-fill;
+
     font-weight: 600;
   }
 
-  // ── Panel ─────────────────────────────────────────────────────────────────
   .dropdown-panel {
+    @include m.popover-surface;
+
     position: absolute;
     top: calc(100% + 0.35rem);
     left: 0;
@@ -64,13 +54,6 @@
     min-width: 12rem;
     max-width: min(20rem, 90vw);
     max-height: 15rem;
-    margin: 0;
-    padding: 0.3rem;
-    list-style: none;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
-    box-shadow: c.$shadow-popover;
 
     // usePopoverFlip: no room below, more above.
     &.is-above {
@@ -80,24 +63,11 @@
   }
 
   .dropdown-option {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    width: 100%;
-    padding: 0.5rem 0.6rem;
-    font-family: inherit;
-    font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    background-color: transparent;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    text-align: left;
+    @include m.menu-item;
 
-    &:hover {
-      background-color: c.$overlay-hover;
-    }
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
 
     &.is-selected {
       color: c.$accent;
@@ -164,19 +134,7 @@
   }
 
   .dropdown-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    width: var(--icon-size);
-    height: var(--icon-size);
-    color: c.$text-on-accent;
-    border: 1px solid c.$border-strong;
-    border-radius: 5px;
-
-    svg {
-      --icon-size: 0.95em;
-    }
+    @include m.tick-box;
 
     &.is-checked {
       background-color: c.$accent;

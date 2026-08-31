@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 $right-gap: 1.6rem;
 
@@ -91,6 +92,8 @@ $right-gap: 1.6rem;
   }
 
   .header-user-menu-panel {
+    @include m.popover-surface;
+
     position: absolute;
     top: calc(100% + 0.5rem);
     right: 0;
@@ -98,33 +101,15 @@ $right-gap: 1.6rem;
     min-width: 12rem;
     display: flex;
     flex-direction: column;
-    padding: 0.3rem;
-    background-color: c.$surface-4;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
-    box-shadow: c.$shadow-popover;
   }
 
   .header-user-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.55rem 0.7rem;
-    font-family: inherit;
-    font-size: 0.88rem;
-    line-height: var(--control-line-height);
-    color: c.$text-primary;
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    text-align: left;
+    @include m.menu-item;
 
-    &:hover {
-      background-color: c.$overlay-hover;
-    }
+    gap: 0.6rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.88rem;
+    text-decoration: none;
   }
 
   @media #{mq.$s-tablet} {

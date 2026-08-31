@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 $sidebar-width: 220px;
 
@@ -131,13 +132,12 @@ $sidebar-width: 220px;
   }
 
   .settings-card {
+    @include m.surface-panel;
+
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
     padding: 1rem 1.1rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
 
     .settings-card-title {
       font-size: 1rem;
@@ -179,21 +179,15 @@ $sidebar-width: 220px;
   }
 
   .settings-empty {
+    @include m.surface-panel;
+
     padding: 1.6rem 1rem;
     text-align: center;
     color: c.$text-muted;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
   }
 
   .settings-inline-error {
-    padding: 0.55rem 0.75rem;
-    font-size: 0.8rem;
-    color: c.$danger-text;
-    background-color: c.$danger-wash;
-    border: 1px solid c.$danger-border;
-    border-radius: 8px;
+    @include m.error-box;
   }
 
   .settings-flash {
@@ -206,22 +200,15 @@ $sidebar-width: 220px;
   }
 
   .settings-icon-button {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     padding: 0.35rem;
     font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background-color: transparent;
-    border: none;
     border-radius: 50%;
-    cursor: pointer;
-    transition: color 0.16s ease, background-color 0.16s ease;
 
     &:hover:not(:disabled) {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
+      @include m.quiet-control-hover;
     }
 
     &:disabled {

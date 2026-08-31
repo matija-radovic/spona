@@ -1,48 +1,18 @@
-@use '@css/colors' as c;
 @use '@css/mixins' as m;
 
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  font-family: inherit;
-  font-weight: 600;
-  line-height: var(--control-line-height);
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.06s ease;
-
-  &:active {
-    transform: translateY(1px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid c.$accent;
-    outline-offset: 2px;
-  }
-
-  // Every variant guards hover with :not(:disabled), so a disabled button stays inert.
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
-  }
+  @include m.button-base;
 
   &-small {
     @include m.control-small;
   }
 
   &-medium {
-    padding: 0.55em 1.1em;
-    font-size: 0.9rem;
+    @include m.control-medium;
   }
 
   &-large {
-    padding: 0.75em 1.3em;
-    font-size: 1rem;
+    @include m.control-large;
   }
 
   &-block {
@@ -51,75 +21,30 @@
   }
 
   &-primary {
-    background-color: c.$accent;
-    border-color: c.$accent;
-    color: c.$text-on-accent;
-
-    &:hover:not(:disabled) {
-      background-color: c.$accent-hover;
-      border-color: c.$accent-hover;
-    }
+    @include m.variant-primary;
   }
 
   &-secondary {
-    background-color: transparent;
-    border-color: c.$text-primary;
-    color: c.$text-primary;
-
-    &:hover:not(:disabled) {
-      background-color: c.$overlay-hover;
-    }
+    @include m.variant-secondary;
   }
 
   &-tertiary {
-    background-color: c.$fill-control;
-    border-color: transparent;
-    color: c.$text-primary;
-
-    &:hover:not(:disabled) {
-      background-color: c.$fill-control-hover;
-    }
+    @include m.variant-tertiary;
   }
 
   &-quaternary {
-    background-color: transparent;
-    border-color: c.$text-muted;
-    color: c.$text-muted;
-
-    &:hover:not(:disabled) {
-      background-color: c.$overlay-hover;
-      color: c.$text-primary;
-    }
+    @include m.variant-quaternary;
   }
 
   &-ghost {
-    background-color: transparent;
-    border-color: transparent;
-    color: inherit;
-
-    &:hover:not(:disabled) {
-      background-color: c.$overlay-hover;
-    }
+    @include m.variant-ghost;
   }
 
   &-danger {
-    background-color: c.$danger;
-    border-color: c.$danger;
-    color: c.$text-strong;
-
-    &:hover:not(:disabled) {
-      background-color: c.$danger-hover;
-      border-color: c.$danger-hover;
-    }
+    @include m.variant-danger;
   }
 
   &-danger-outline {
-    background-color: transparent;
-    border-color: c.$danger-border;
-    color: c.$danger-text;
-
-    &:hover:not(:disabled) {
-      background-color: c.$danger-wash;
-    }
+    @include m.variant-danger-outline;
   }
 }

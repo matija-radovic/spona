@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .members-section {
   .members-refresh {
@@ -42,13 +43,7 @@
   }
 
   .members-table-sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    @include m.visually-hidden;
   }
 
   .members-identity {
@@ -106,13 +101,12 @@
   }
 
   .invite-form {
+    @include m.surface-panel;
+
     display: flex;
     align-items: flex-start;
     gap: 0.7rem;
     padding: 0.9rem 1rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
 
     @media #{mq.$s-tablet} {
       flex-direction: column;
@@ -153,13 +147,12 @@
 
       // Nested under .members-row to outrank `tr:last-child td` and keep the last divider.
       .members-row {
+        @include m.surface-panel;
+
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         margin-bottom: 0.6rem;
         padding: 0.5rem 0.85rem;
-        background-color: c.$surface-2;
-        border: 1px solid c.$border-panel;
-        border-radius: 12px;
 
         td {
           display: flex;

@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .organizations-section {
   .organizations-invites {
@@ -12,13 +13,12 @@
   }
 
   .organizations-invite {
+    @include m.surface-panel;
+
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.8rem 0.9rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
 
     @media #{mq.$m-phone} {
       flex-wrap: wrap;
@@ -80,15 +80,7 @@
   }
 
   .organizations-create-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    @include m.visually-hidden;
   }
 
   .organizations-list {
@@ -101,9 +93,8 @@
   }
 
   .organizations-card {
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 12px;
+    @include m.surface-panel;
+
     transition: border-color 0.2s ease, background-color 0.2s ease;
 
     &.is-highlighted {

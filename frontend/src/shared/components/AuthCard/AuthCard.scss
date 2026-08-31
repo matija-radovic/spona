@@ -1,32 +1,14 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .auth-card-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: 2.5rem 1rem;
-
-  @media #{mq.$m-phone} {
-    align-items: flex-start;
-  }
+  @include m.auth-card-wrap;
 
   .auth-card {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    width: 100%;
-    max-width: 26rem;
-    padding: 2rem;
-    background-color: c.$surface-1;
-    border: 1px solid c.$border-panel;
-    border-radius: 16px;
-    box-shadow: c.$shadow-card;
+    @include m.auth-card;
 
-    @media #{mq.$m-phone} {
-      padding: 1.5rem;
-    }
+    max-width: 26rem;
   }
 
   .auth-card-head {

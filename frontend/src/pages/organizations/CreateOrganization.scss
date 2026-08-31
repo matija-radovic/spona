@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .org-create {
   display: flex;
@@ -7,15 +8,14 @@
   padding: 2rem 1rem;
 
   .org-create-card {
+    @include m.surface-panel(16px);
+
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     width: 100%;
     max-width: 40rem;
     padding: 2rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 16px;
 
     @media #{mq.$m-phone} {
       padding: 1.5rem;
@@ -46,13 +46,7 @@
   }
 
   .org-create-error {
-    margin: 0;
-    padding: 0.55rem 0.7rem;
-    font-size: 0.8rem;
-    color: c.$danger-text;
-    background-color: c.$danger-wash;
-    border: 1px solid c.$danger-border;
-    border-radius: 8px;
+    @include m.error-box;
   }
 
   .org-create-actions {

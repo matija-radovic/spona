@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 $panel-width: 30rem;
 
@@ -20,6 +21,8 @@ $panel-width: 30rem;
   }
 
   .modal-panel {
+    @include m.surface-panel(14px);
+
     position: relative;
     display: flex;
     flex-direction: column;
@@ -29,9 +32,6 @@ $panel-width: 30rem;
     max-height: 100%;
     padding: 1.1rem 1.2rem 1.2rem;
     overflow-y: auto;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 14px;
     box-shadow: c.$shadow-popover;
   }
 
@@ -47,23 +47,16 @@ $panel-width: 30rem;
   }
 
   .modal-close {
-    display: inline-flex;
-    align-items: center;
+    @include m.quiet-control;
+
     justify-content: center;
     flex: 0 0 auto;
     padding: 0.3rem;
     font-size: 0.9rem;
-    line-height: var(--control-line-height);
-    color: c.$text-muted;
-    background-color: transparent;
-    border: none;
     border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.16s ease, color 0.16s ease;
 
     &:hover {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
+      @include m.quiet-control-hover;
     }
   }
 

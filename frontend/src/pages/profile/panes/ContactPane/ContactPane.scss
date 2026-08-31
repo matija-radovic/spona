@@ -1,5 +1,6 @@
 @use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
 
 .contact-pane {
   display: grid;
@@ -18,14 +19,13 @@
   }
 
   .contact-pane-box {
+    @include m.surface-panel(10px);
+
     display: flex;
     align-items: center;
     gap: 0.7rem;
     min-width: 0;
     padding: 0.7rem 0.85rem;
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
   }
 
   .contact-pane-icon {
