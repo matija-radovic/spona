@@ -1,0 +1,101 @@
+@use '@css/colors' as c;
+
+.action-menu {
+  position: relative;
+  display: inline-flex;
+
+  .action-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+
+    &:hover {
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
+    }
+  }
+
+  &.is-open .action-menu-trigger {
+    color: c.$text-primary;
+    background-color: c.$overlay-hover;
+  }
+
+  .action-menu-panel {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    z-index: 40;
+    width: max-content;
+    min-width: 10rem;
+    max-width: min(18rem, 90vw);
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background-color: c.$surface-4;
+    border: 1px solid c.$border-panel;
+    border-radius: 10px;
+    box-shadow: c.$shadow-popover;
+
+    &.action-menu-start {
+      left: 0;
+    }
+
+    &.action-menu-end {
+      right: 0;
+    }
+
+    &.is-above {
+      top: auto;
+      bottom: calc(100% + 0.35rem);
+    }
+  }
+
+  .action-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    color: c.$text-primary;
+    background-color: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover,
+    &:focus-visible {
+      background-color: c.$overlay-hover;
+      outline: none;
+    }
+
+    &.is-danger {
+      color: c.$danger-text;
+
+      &:hover,
+      &:focus-visible {
+        background-color: c.$danger-wash;
+      }
+    }
+
+    .action-menu-item-label {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}

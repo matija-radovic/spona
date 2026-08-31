@@ -6,13 +6,13 @@
   background-color: c.$surface-2;
   border: 1px solid c.$border-panel;
   border-radius: 12px;
-  overflow: hidden; // rounded corners clip the context bar
 
   .comment-card-bar {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     padding: 0.5rem 1rem;
+    border-radius: 11px 11px 0 0;
     font-size: 0.78rem;
     line-height: var(--control-line-height);
     font-weight: 500;
@@ -32,39 +32,13 @@
     padding: 0.85rem 1rem;
   }
 
-  // ── Heading ─────────────────────────────────────────────────────────────────
-  .comment-card-author {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    align-self: flex-start;
-    text-decoration: none;
-    color: inherit;
-
-    &:hover .comment-card-name {
-      color: c.$accent;
-    }
-  }
-
-  .comment-card-identity {
+  .comment-card-author-row {
     display: flex;
-    flex-direction: column;
-    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
-  .comment-card-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: c.$text-strong;
-    transition: color 0.16s ease;
-  }
-
-  .comment-card-sub {
-    font-size: 0.78rem;
-    color: c.$text-muted;
-  }
-
-  // ── Content (the navigation surface) ────────────────────────────────────────
   .comment-card-content {
     display: -webkit-box;
     -webkit-line-clamp: 8;
@@ -86,7 +60,6 @@
     }
   }
 
-  // ── Action bar ──────────────────────────────────────────────────────────────
   .comment-card-actions {
     display: flex;
     align-items: center;

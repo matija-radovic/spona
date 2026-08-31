@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mixins' as m;
 
 .text-field {
   display: flex;
@@ -27,21 +28,11 @@
   }
 
   .text-field-input {
-    width: 100%;
+    @include m.field-skin;
+
     padding: 0.7rem 0.85rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: c.$text-strong;
-    // Opaque so the validity indicator never lets text show through.
-    background-color: c.$surface-2;
-    border: 1px solid c.$border-panel;
-    border-radius: 10px;
     outline: none;
     transition: border-color 0.16s ease, box-shadow 0.16s ease;
-
-    &::placeholder {
-      color: c.$text-placeholder;
-    }
 
     &:focus {
       border-color: c.$accent;

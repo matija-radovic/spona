@@ -4,6 +4,17 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.15rem 0.4rem;
+  font-family: inherit;
+  background-color: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.16s ease;
+
+  &:hover {
+    background-color: c.$overlay-subtle;
+  }
 
   .reaction-summary-item {
     display: inline-flex;
@@ -20,18 +31,10 @@
 
   .reaction-summary-more {
     padding: 0.15rem 0.5rem;
-    font-family: inherit;
     font-size: 0.8rem;
     font-weight: 600;
     color: c.$text-primary;
     background-color: c.$fill-control;
-    border: none;
     border-radius: 999px;
-    cursor: pointer;
-    transition: background-color 0.16s ease;
-
-    &:hover {
-      background-color: c.$fill-control-hover;
-    }
   }
 }

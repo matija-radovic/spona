@@ -1,11 +1,19 @@
 // Hardcoded mirror of the backend's permission matrix - the only place it lives on the client.
 import type { OrganizationRole, OrgMemberDto } from '@utils/api/organizations'
+import type { PostAsSurface } from '@shared/components/PostAsSelect/postAsValue'
 
 const ASSIGNABLE: Readonly<Record<OrganizationRole, readonly OrganizationRole[]>> = {
   OWNER: ['ADMIN', 'EDITOR', 'RECRUITER'],
   ADMIN: ['EDITOR', 'RECRUITER'],
   EDITOR: [],
   RECRUITER: [],
+}
+
+const PUBLISH_AS: Readonly<Record<OrganizationRole, Readonly<Record<PostAsSurface, boolean>>>> = {
+  OWNER: { content: true, job: true },
+  ADMIN: { content: true, job: true },
+  EDITOR: { content: true, job: false },
+  RECRUITER: { content: false, job: true },
 }
 
 export const isOwner = (viewerRole: OrganizationRole): boolean => viewerRole === 'OWNER'
@@ -18,6 +26,9 @@ export const canManageInvitations = (viewerRole: OrganizationRole): boolean =>
 
 export const assignableRoles = (viewerRole: OrganizationRole): readonly OrganizationRole[] =>
   ASSIGNABLE[viewerRole]
+
+export const canPublishAs = (role: OrganizationRole, surface: PostAsSurface): boolean =>
+  PUBLISH_AS[role][surface]
 
 export const canManageMember = (
   viewerRole: OrganizationRole,

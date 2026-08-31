@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { fetchMe, logoutRequest } from '@utils/api/auth'
 import { clearToken, getToken, setToken } from '@utils/authToken'
+import { invalidateMyOrganizations } from '@shared/hooks/useMyOrganizations'
+import { clearStoredPostAs } from '@utils/postAs'
 import { UserContext, type User, type UserContextValue } from './userContext'
 
 interface UserProviderProps {
@@ -44,11 +46,16 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const updateUser = useCallback((next: User) => setUser(next), [])
 
+  // Everything keyed to the departing identity goes with the token: the cached
+  // membership list and the remembered publishing identity are both "who you
+  // are", and a shared browser must not hand the next person either.
   const logout = useCallback(() => {
     logoutRequest().catch(() => {})
     clearToken()
+    invalidateMyOrganizations()
+    if (user) clearStoredPostAs(user.id)
     setUser(null)
-  }, [])
+  }, [user])
 
   const value = useMemo<UserContextValue>(
     () => ({ user, isAuthenticated: user !== null, isBootstrapping, login, updateUser, logout }),

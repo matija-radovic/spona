@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { FOOTER_LINKS } from '@shared/components/Footer/footerLinks'
 import type { NavItem } from '../MobileNav'
 import MobileGuestActions from './MobileNavActions/MobileGuestActions'
 import MobileAuthActions from './MobileNavActions/MobileAuthActions'
@@ -88,8 +89,19 @@ const MobileNavPanel = ({ isOpen, onClose, items, isAuthenticated }: MobileNavPa
                 </NavLink>
               ))}
             </nav>
+            <div className="mobile-nav-bottom">
+              <ul className="mobile-nav-legal">
+                {FOOTER_LINKS.map(({ labelKey, href }) => (
+                  <li key={labelKey}>
+                    <a href={href} className="mobile-nav-legal-link">
+                      {t(labelKey)}
+                    </a>
+                  </li>
+                ))}
+              </ul>
 
-            {isAuthenticated ? <MobileAuthActions onClose={onClose} /> : <MobileGuestActions />}
+              {isAuthenticated ? <MobileAuthActions onClose={onClose} /> : <MobileGuestActions />}
+            </div>
           </motion.aside>
         </motion.div>
       )}

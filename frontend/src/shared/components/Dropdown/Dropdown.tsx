@@ -1,13 +1,14 @@
 import './Dropdown.scss'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconCheck, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
-import type { Icon } from '@tabler/icons-react'
 import usePopoverFlip from '@shared/hooks/usePopoverFlip'
+import { truncateText } from '@utils/truncateText'
 
 export interface DropdownOption {
   value: string
   label: string
-  icon?: Icon
+  /** Arbitrary node before the label in the panel; the caller builds it. */
+  leading?: ReactNode
 }
 
 interface DropdownProps {
@@ -19,6 +20,8 @@ interface DropdownProps {
   multiple?: boolean
   /** shown as the trigger text when nothing is selected (the "none"/"all" case) */
   placeholder?: string
+  /** Word-boundary cut for the trigger label. */
+  maxLabelChars?: number
   disabled?: boolean
   /** options are still on the wire: the trigger opens onto placeholder rows */
   loading?: boolean
@@ -29,7 +32,7 @@ interface DropdownProps {
 
 /**
  * The panel is `position: absolute` and NOT portalled, so any host must keep
- * `overflow: visible` or it gets clipped; `usePopoverFlip` handles the bottom edge.
+ * `overflow: visible` or it gets clipped; `usePopoverFlip` handles both edges.
  */
 const Dropdown = ({
   label,
@@ -38,6 +41,7 @@ const Dropdown = ({
   onChange,
   multiple = false,
   placeholder,
+  maxLabelChars,
   disabled = false,
   loading = false,
   emptyLabel,
@@ -88,15 +92,18 @@ const Dropdown = ({
   }
 
   const triggerLabel = (() => {
-    if (selected.length === 0) return placeholder ?? label
-    if (!multiple) return options.find((o) => o.value === selected[0])?.label ?? placeholder ?? label
-    const first = options.find((o) => o.value === selected[0])?.label ?? selected[0]
-    const extra = selected.length - 1
-    return extra > 0 ? `${first} +${extra}` : first
+    const raw = (() => {
+      if (selected.length === 0) return placeholder ?? label
+      if (!multiple) return options.find((o) => o.value === selected[0])?.label ?? placeholder ?? label
+      const first = options.find((o) => o.value === selected[0])?.label ?? selected[0]
+      const extra = selected.length - 1
+      return extra > 0 ? `${first} +${extra}` : first
+    })()
+    return maxLabelChars ? truncateText(raw, maxLabelChars).text : raw
   })()
 
   const hasSelection = multiple ? selected.length > 0 : selected.some((v) => v !== '')
-  const rootClass = ['dropdown', open ? 'is-open' : '', hasSelection ? 'is-active' : '', className ?? '']
+  const rootClass = ['dropdown', hasSelection ? 'is-active' : '', className ?? '']
     .filter(Boolean)
     .join(' ')
 
@@ -120,7 +127,6 @@ const Dropdown = ({
       ) : null
     }
     return options.map((option) => {
-      const OptionIcon = option.icon
       const active = isSelected(option.value)
       return (
         <li key={option.value}>
@@ -136,8 +142,13 @@ const Dropdown = ({
                 {active && <IconCheck />}
               </span>
             )}
-            {OptionIcon && <OptionIcon aria-hidden />}
+            {option.leading}
             <span className="dropdown-option-label">{option.label}</span>
+            {!multiple && active && (
+              <span className="dropdown-option-hint" aria-hidden>
+                <IconCheck />
+              </span>
+            )}
           </button>
         </li>
       )

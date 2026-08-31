@@ -1,0 +1,288 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+
+// 876 + 24 + 300 = 1200 -> container size
+$post-column: 876px;
+$post-rail: 300px;
+$post-gap: 24px;
+
+// XS avatar (2rem) plus the byline gap
+$reply-indent: 2.55rem;
+
+.post-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: $post-gap;
+  padding: 1rem var(--container-spacing) 3rem;
+
+  .post-page-column {
+    display: flex;
+    flex-direction: column;
+    width: min($post-column, 100%);
+    min-width: 0;
+  }
+
+  .post-rail {
+    flex: 0 0 $post-rail;
+    width: $post-rail;
+  }
+
+  @media #{mq.$tablet} {
+    padding-top: 0.5rem;
+  }
+}
+
+.post-page-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: c.$text-muted;
+}
+
+.post-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 0.5rem 0.25rem;
+
+  .post-detail-author-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .post-detail-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: c.$text-primary;
+    white-space: pre-line;
+  }
+
+  .post-detail-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .post-detail-actions-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+}
+
+.post-page-composer {
+  padding: .5rem .25rem .75rem;
+  border-top: 1px solid c.$border-line;
+}
+
+.post-page-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 0.5rem 0.25rem;
+  border-top: 1px solid c.$border-line;
+
+  .post-page-thread-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .post-page-thread-count {
+    font-size: 0.85rem;
+    color: c.$text-muted;
+  }
+
+  .post-page-thread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .post-page-thread-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: c.$text-muted;
+  }
+
+  .post-page-thread-sentinel {
+    height: 1px;
+  }
+
+  .post-page-thread-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    font-size: 0.85rem;
+    color: c.$text-muted;
+  }
+}
+
+.thread-comment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  .thread-comment-author-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .thread-comment-content {
+    margin-left: $reply-indent;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: c.$text-primary;
+    white-space: pre-line;
+  }
+
+  .thread-comment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-left: calc(#{$reply-indent} - 0.4rem);
+  }
+
+  .thread-comment-actions-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .thread-comment-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.55rem;
+    font-family: inherit;
+    font-size: 0.82rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+
+    &:hover {
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
+    }
+  }
+
+  .thread-comment-responses {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-left: $reply-indent;
+  }
+
+  & > .content-editor {
+    margin-left: $reply-indent;
+  }
+}
+
+.thread-connector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  color: c.$border-line;
+
+  path {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+}
+
+.btn.thread-more {
+  align-self: flex-start;
+  gap: 0.35rem;
+  padding: 0 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: c.$accent;
+
+  &:hover:not(:disabled) {
+    background-color: transparent;
+    text-decoration: underline;
+  }
+
+  .thread-more-chevron {
+    transition: transform .05s ease;
+  }
+
+  &.thread-more-collapse .thread-more-chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.thread-more-error,
+.thread-more-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.thread-more-error {
+  color: c.$danger-text;
+}
+
+.thread-more-loading {
+  color: c.$text-muted;
+}
+
+@keyframes comment-anchor-flash {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.thread-comment.is-anchor-flash {
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.4rem;
+    z-index: -1;
+    border-radius: 10px;
+    background-color: c.$fill-muted;
+    opacity: 0;
+    pointer-events: none;
+    animation: comment-anchor-flash 1.5s ease-in-out forwards;
+  }
+}

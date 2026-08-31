@@ -73,7 +73,9 @@ const router = createBrowserRouter(
             </Route>
           </Route>
 
-          <Route path='posts/:postId' element={<Post />} />
+          <Route path='posts/:postId' element={<Post />}>
+            <Route path='comments/:commentId' element={null} />
+          </Route>
 
           <Route element={<ProtectedRoute />}>
             <Route path='feed' element={<Feed />} />

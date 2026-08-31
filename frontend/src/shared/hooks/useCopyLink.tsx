@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
+import { copyToClipboard } from '@utils/copyToClipboard'
 
 /** How long the "copied" confirmation holds before it reverts. */
 const COPIED_RESET_MS = 1800
@@ -23,14 +24,12 @@ const useCopyLink = (url: string) => {
   const copy = useCallback(async (event: MouseEvent) => {
     event.stopPropagation()
     event.preventDefault()
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => setCopied(false), COPIED_RESET_MS)
-    } catch {
-      /* clipboard unavailable - fail quietly, keep the icon */
-    }
+    
+    if (!(await copyToClipboard(url))) return // clipboard unavailable - keep the icon
+    setCopied(true)
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => setCopied(false), COPIED_RESET_MS)
   }, [url])
 
   return { copied, copy }

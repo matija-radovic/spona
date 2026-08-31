@@ -1,0 +1,22 @@
+@use 'colors' as c;
+
+// `.btn-small` is the reference size;
+@mixin control-small {
+  padding: 0.4em 0.75em;
+  font-size: 0.75rem;
+}
+
+// input field styling
+@mixin field-skin {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: c.$text-strong;
+  background-color: c.$surface-2;
+  border: 1px solid c.$border-panel;
+  border-radius: 10px;
+
+  &::placeholder {
+    color: c.$text-placeholder;
+  }
+}

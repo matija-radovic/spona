@@ -1,0 +1,14 @@
+@use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
+
+.dropdown.post-as-select {
+  .dropdown-trigger {
+    @include m.control-small;
+
+    max-width: 12rem;
+
+    @media #{mq.$phone} {
+      max-width: 9rem;
+    }
+  }
+}

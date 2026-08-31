@@ -2,19 +2,7 @@ import './Footer.scss'
 import { useTranslation } from 'react-i18next'
 import { Logo, LogoSize } from '@shared/components/Logo'
 import { Link, useLocation } from 'react-router-dom'
-
-interface FooterLink {
-  labelKey: string
-  href: string
-}
-
-const FOOTER_LINKS: readonly FooterLink[] = [
-  { labelKey: 'footer.about', href: '#' },
-  { labelKey: 'footer.cookiePolicy', href: '#' },
-  { labelKey: 'footer.privacyPolicy', href: '#' },
-  { labelKey: 'footer.userAgreement', href: '#' },
-  { labelKey: 'footer.license', href: 'https://opensource.org/licenses/MIT' },
-]
+import { FOOTER_LINKS } from './footerLinks'
 
 const Footer = () => {
   const { t } = useTranslation();

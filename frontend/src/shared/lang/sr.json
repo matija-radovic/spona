@@ -180,8 +180,36 @@
     "postedBy": "Objavio/la",
     "react": "Reaguj",
     "comments": "{{count}} komentara",
-    "moreReactions": "Još {{count}} reakcija",
-    "openPost": "Otvori objavu"
+    "allReactions": "Prikaži sve reakcije ({{count}})",
+    "openPost": "Otvori objavu",
+    "edit": "Uredi objavu",
+    "delete": "Obriši objavu",
+    "deleted": "Objava je obrisana.",
+    "notFound": "Objava nije pronađena ili je obrisana.",
+    "editSave": "Sačuvaj",
+    "editCancel": "Otkaži",
+    "actions": "Radnje",
+    "copyLinkComment": "Kopiraj link komentara"
+  },
+  "comments": {
+    "title": "{{count}} komentara",
+    "empty": "Još nema komentara. Budite prvi.",
+    "sort": {
+      "top": "Najrelevantnije",
+      "new": "Najnovije",
+      "old": "Najstarije"
+    },
+    "reply": "Odgovori",
+    "showResponses": "Prikaži odgovore ({{count}})",
+    "hideResponses": "Sakrij odgovore",
+    "showMore": "Prikaži još ({{count}})",
+    "showPrevious": "Prikaži prethodne ({{count}})",
+    "showNext": "Prikaži sledeće ({{count}})",
+    "submit": "Objavi",
+    "cancel": "Otkaži",
+    "edit": "Uredi komentar",
+    "deleteConfirm": "Obrisati ovaj komentar?",
+    "deleteWithReplies": "Obrisati ovaj komentar i {{count}} odgovora?"
   },
   "jobs": {
     "title": "Poslovi",

@@ -5,7 +5,6 @@
 // separate from the DB model (new_docx/types.ts): each item ships a stripped,
 // discriminated `author` (== the profile owner here, generic for feed reuse).
 //
-// All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`.
 // Magic inputs:
 //   - fetchActorActivity : actorId === "user-marko"  -> empty page (no activity)
 //   - fetchActorActivity : actorId in OWN_ACTOR_IDS  -> viewerCan* true on every item
@@ -13,38 +12,16 @@
 
 // import api from '@utils/api'
 
-import type { PagedResponse, ProblemDetail } from './types'
+import type { PagedResponse } from './types'
 import type { ActorRefDto } from './profiles'
+import type { ReactionSummaryDto } from './reactions'
+import type { PostDto } from './posts'
 
 // ── DTOs ────────────────────────────────────────────────────────────────────
 
-export interface ReactionSummaryDto {
-  /** Up to 3 entries, ordered by count desc. */
-  top: { emoji: string; count: number }[]
-  /** Total count of reactions NOT covered by `top` - renders as "+N". */
-  othersCount: number
-  total: number
-  /** Emojis the current viewer has used on this target (authenticated only). */
-  viewerReactions?: string[]
-}
-
-export interface ActivityPostDto {
-  kind: 'post'
-  id: string
-  author: ActorRefDto
-  content: string
-  createdAt: string
-  commentCount: number
-  reactions: ReactionSummaryDto
-  /** Management authority, computed server-side from the caller's token: the
-   *  client cannot derive it, because user-facing DTOs omit `createdBy`
-   *  (backend-contract.md §8 rule 7). Two independent booleans, never collapsed
-   *  into one - the backend grants them together today, but an ADMIN allowed to
-   *  delete a post they may not edit is a plausible split. Absent = false: a
-   *  guest, or a viewer with no authority over this item. */
-  viewerCanEdit?: boolean
-  viewerCanDelete?: boolean
-}
+/** A post in an activity feed is the post, discriminated - one shape, so the
+ *  feed row and the post page cannot drift apart. */
+export type ActivityPostDto = PostDto & { kind: 'post' }
 
 export interface ActivityCommentDto {
   kind: 'comment'
@@ -57,7 +34,12 @@ export interface ActivityCommentDto {
   content: string
   createdAt: string
   reactions: ReactionSummaryDto
-  /** As on `ActivityPostDto`: server-computed, mutually independent, and absent
+  /** Direct replies; always 0 on a reply, because the depth cap makes it
+   *  structurally so. Carried here too so the delete confirmation can say how
+   *  many replies go with the comment - a cascade the reader must be told about
+   *  before it happens. */
+  responseCount: number
+  /** As on `PostDto`: server-computed, mutually independent, and absent
    *  = false. */
   viewerCanEdit?: boolean
   viewerCanDelete?: boolean
@@ -70,23 +52,12 @@ export type ActivityKind = 'all' | 'posts' | 'comments'
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const makeProblem = (status: number, detail: string, title = ''): ProblemDetail => ({
-  type: 'about:blank',
-  title,
-  status,
-  detail,
-  instance: '/api/activity',
-})
-
-const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
-  Promise.reject(makeProblem(status, detail, title))
-
 const MAGIC_EMPTY_ACTOR = 'user-marko'
-/** The actor ids behind the `ja` / `moja-kompanija` handles in profiles.ts - the
- *  two editable "own" profiles. Browsing either one's activity is how the
- *  viewerCanEdit / viewerCanDelete affordances become reachable in the mock; the
- *  real API computes both from the JWT, never from the requested actor. */
-const OWN_ACTOR_IDS: readonly string[] = ['user-ja', 'org-moja']
+/** The actor ids behind the `my-account` / `moja-kompanija` handles in
+ *  profiles.ts - the two editable "own" profiles. Browsing either one's activity
+ *  is how the viewerCanEdit / viewerCanDelete affordances become reachable in the
+ *  mock; the real API computes both from the JWT, never from the requested actor. */
+const OWN_ACTOR_IDS: readonly string[] = ['user-my-account', 'org-moja']
 const MAX_MOCK_PAGES = 3
 const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮'] as const
 
@@ -141,21 +112,29 @@ const buildPost = (author: ActorRefDto, index: number, viewerOwns: boolean): Act
   ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
 })
 
+/** Comment ids follow the thread mock's `{postId}-c{n}` / `{postId}-c0-r{n}`
+ *  scheme, so the jump button's deep link resolves to a real comment on the post
+ *  page instead of a 404. The real API has one id space and needs no such rule. */
 const buildComment = (
   author: ActorRefDto,
   index: number,
   viewerOwns: boolean,
-): ActivityCommentDto => ({
-  kind: 'comment',
-  id: makeId(),
-  postId: `post-${(index % 4) + 1}`,
-  isReply: index % 2 === 1,
-  author,
-  content: COMMENT_BODIES[index % COMMENT_BODIES.length],
-  createdAt: iso(index * 9 + 5),
-  reactions: mockReactions(index),
-  ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
-})
+): ActivityCommentDto => {
+  const postId = `post-${(index % 4) + 1}`
+  const isReply = index % 2 === 1
+  return {
+    kind: 'comment',
+    id: isReply ? `${postId}-c0-r${index % 23}` : `${postId}-c${index % 26}`,
+    postId,
+    isReply,
+    author,
+    content: COMMENT_BODIES[index % COMMENT_BODIES.length],
+    createdAt: iso(index * 9 + 5),
+    reactions: mockReactions(index),
+    responseCount: isReply ? 0 : index % 3 === 0 ? 0 : (index % 4) + 1,
+    ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+  }
+}
 
 /** Interleaves posts and comments for the `all` feed; single-kind otherwise. */
 const buildPage = (
@@ -217,21 +196,3 @@ export const fetchActorActivity = async (
   }
 }
 
-/**
- * MOCK. Adds or removes the viewer's reaction (one user x one emoji x one target,
- * per the Reaction unique constraint). Real call switches verb on `next`:
- *   await api({ method: next ? 'put' : 'delete',
- *               url: `/reactions/${targetType}/${targetId}`, data: { emoji } })
- */
-export const setReaction = async (
-  targetType: 'post' | 'comment',
-  targetId: string,
-  emoji: string,
-  next: boolean,
-): Promise<void> => {
-  void targetType
-  void emoji
-  void next
-  await delay(200)
-  if (!targetId) return rejectProblem(400, 'Nedostaje identifikator sadržaja.', 'Bad Request')
-}

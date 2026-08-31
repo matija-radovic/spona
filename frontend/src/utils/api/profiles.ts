@@ -142,15 +142,16 @@ const CONTACTS_FULL: ContactEntry[] = [
 ]
 
 // ── Named mock profiles (specific shapes the panes/tabs need to exercise) ──────
-// Keyed by handle. `ja` and `moja-kompanija` are the editable "own" cases - log
-// in with one of those usernames to preview your own profile (the real backend
-// derives viewerCanEdit from the auth token; the mock keys it off the handle).
+// Keyed by handle. `my-account` and `moja-kompanija` are the editable "own" cases
+// - log in with one of those usernames to preview your own profile (the real
+// backend derives viewerCanEdit from the auth token; the mock keys it off the
+// handle).
 
 const USER_PROFILES: Record<string, ProfileDto> = {
-  "user-ja": {
+  'my-account': {
     actorType: 'user',
-    id: 'user-ja',
-    username: 'user-ja',
+    id: 'user-my-account',
+    username: 'my-account',
     fullName: 'Ana Jovanović',
     bio: 'Frontend inženjerka. Gradim pristupačne interfejse i volim dobar dizajn sistema.',
     avatarUrl: null,

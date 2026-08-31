@@ -2,13 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useOnScreen from '@shared/hooks/useOnScreen'
 import { Button, ButtonVariant, PostCard } from '@shared/components'
-import {
-  fetchActorActivity,
-  setReaction,
-  type ActivityItemDto,
-  type ActivityKind,
-  type ReactionSummaryDto,
-} from '@utils/api/activity'
+import { fetchActorActivity, type ActivityItemDto, type ActivityKind } from '@utils/api/activity'
+import { setReaction } from '@utils/api/reactions'
+import { applyReactionDelta } from '@utils/applyReactionDelta'
 import type { ActorRefDto } from '@utils/api/profiles'
 import { activityCacheKey, getActivityCache, setActivityCache } from '@pages/profile/lib/activityCache'
 import { CommentActivityCard } from './CommentActivityCard'
@@ -16,32 +12,6 @@ import { CommentActivityCard } from './CommentActivityCard'
 const PAGE_SIZE = 10
 
 type ListState = 'loading' | 'error' | 'ready'
-
-/** Recompute a summary from a ±1 delta on the picked emoji - honest and simple:
- *  we do not re-rank beyond what is knowable client-side (§7.3). */
-const applyReactionDelta = (
-  summary: ReactionSummaryDto,
-  emoji: string,
-  next: boolean,
-): ReactionSummaryDto => {
-  const viewer = new Set(summary.viewerReactions ?? [])
-  if (next) viewer.add(emoji)
-  else viewer.delete(emoji)
-
-  const total = Math.max(0, summary.total + (next ? 1 : -1))
-  const topIndex = summary.top.findIndex((entry) => entry.emoji === emoji)
-  let top = summary.top.map((entry) => ({ ...entry }))
-  let othersCount = summary.othersCount
-
-  if (topIndex >= 0) {
-    top[topIndex] = { ...top[topIndex], count: top[topIndex].count + (next ? 1 : -1) }
-    top = top.filter((entry) => entry.count > 0)
-  } else {
-    othersCount = Math.max(0, othersCount + (next ? 1 : -1))
-  }
-
-  return { top, othersCount, total, viewerReactions: [...viewer] }
-}
 
 interface ActivityListProps {
   actorId: string
@@ -165,6 +135,16 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     })
   }
 
+  const patchItem = (id: string, content: string) => {
+    writeItems(itemsRef.current.map((it) => (it.id === id ? ({ ...it, content } as ActivityItemDto) : it)))
+  }
+
+  const dropItem = (id: string) => {
+    const next = itemsRef.current.filter((it) => it.id !== id)
+    totalRef.current = Math.max(0, totalRef.current - 1)
+    writeItems(next)
+  }
+
   const retry = () => {
     setListState('loading')
     setLoadMoreError(false)
@@ -194,12 +174,20 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     <div className="activity-pane-list">
       {items.map((item) =>
         item.kind === 'post' ? (
-          <PostCard key={item.id} post={item} onReact={(emoji, next) => onReact(item, emoji, next)} />
+          <PostCard
+            key={item.id}
+            post={item}
+            onReact={(emoji, next) => onReact(item, emoji, next)}
+            onUpdated={(content) => patchItem(item.id, content)}
+            onDeleted={() => dropItem(item.id)}
+          />
         ) : (
           <CommentActivityCard
             key={item.id}
             comment={item}
             onReact={(emoji, next) => onReact(item, emoji, next)}
+            onUpdated={(content) => patchItem(item.id, content)}
+            onDeleted={() => dropItem(item.id)}
           />
         ),
       )}

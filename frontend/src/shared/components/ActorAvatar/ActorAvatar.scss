@@ -27,7 +27,13 @@
     transform: translate(-50%, -50%);
   }
 
-  // ── Sizes ──────────────────────────────────────────────────────────────────
+  &.actor-avatar-xs {
+    --icon-size: 1rem;
+
+    width: 2rem;
+    height: 2rem;
+  }
+
   &.actor-avatar-sm {
     --icon-size: 1.25rem;
 

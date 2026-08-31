@@ -153,7 +153,7 @@ const VIEWER_ROLES: Readonly<Record<string, OrganizationRole>> = {
 const viewerRoleFor = (slug: string): OrganizationRole => VIEWER_ROLES[slug] ?? 'ADMIN'
 
 /** Matches the own-profile handle in profiles.ts, so own-row immutability is easy to see. */
-const VIEWER_USERNAME = 'user-ja'
+const VIEWER_USERNAME = 'my-account'
 
 const ORG_SEEDS: Readonly<Record<string, { displayName: string; legalName: string }>> = {
   'moja-kompanija': { displayName: 'Moja Kompanija', legalName: 'Moja Kompanija d.o.o.' },

@@ -1,0 +1,33 @@
+@use '@css/colors' as c;
+
+.actor-byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  align-self: flex-start;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover .actor-byline-name {
+    color: c.$accent;
+  }
+
+  .actor-byline-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .actor-byline-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: c.$text-strong;
+    transition: color 0.16s ease;
+  }
+
+  .actor-byline-sub {
+    font-size: 0.78rem;
+    color: c.$text-muted;
+  }
+}

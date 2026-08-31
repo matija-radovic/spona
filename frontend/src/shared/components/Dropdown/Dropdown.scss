@@ -110,6 +110,20 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+
+    .dropdown-option-hint {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: var(--icon-size);
+      height: var(--icon-size);
+      color: c.$accent;
+
+      svg {
+        --icon-size: 0.95em;
+      }
+    }
   }
 
   .dropdown-placeholder {

@@ -116,7 +116,7 @@ export const fetchUserSettings = async (username: string): Promise<UserSettingsD
 /** MOCK - would be: const { data } = await api.put(`/users/${username}`, payload) */
 export const updateProfile = async (payload: UpdateProfilePayload): Promise<UserSettingsDto> => {
   await delay(500)
-  const current = seedAccount('ja')
+  const current = seedAccount('my-account')
   account = { ...current, ...payload }
   return { ...account }
 }
