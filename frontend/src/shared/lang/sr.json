@@ -143,7 +143,6 @@
     "verifying": "Potvrđujemo email adresu...",
     "successTitle": "Email potvrđen",
     "successBody": "Vaša email adresa je uspešno potvrđena.",
-    "toLogin": "Prijavite se",
     "errorTitle": "Potvrda nije uspela",
     "errorBody": "Link je nevažeći ili je istekao."
   },

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconAlertTriangle, IconCircleCheck } from '@tabler/icons-react'
-import { Button, ButtonVariant } from '@shared/components/Button'
 import { verifyEmail } from '@utils/api/auth'
 
 type Status = 'verifying' | 'success' | 'error'
@@ -43,9 +42,6 @@ const VerifyEmail = () => {
             <IconCircleCheck className="verify-icon verify-icon-ok" aria-hidden />
             <h1 className="verify-title">{t('verify.successTitle')}</h1>
             <p className="verify-text">{t('verify.successBody')}</p>
-            <Button to="/login" variant={ButtonVariant.PRIMARY}>
-              {t('verify.toLogin')}
-            </Button>
           </>
         )}
 
@@ -54,9 +50,6 @@ const VerifyEmail = () => {
             <IconAlertTriangle className="verify-icon verify-icon-error" aria-hidden />
             <h1 className="verify-title">{t('verify.errorTitle')}</h1>
             <p className="verify-text">{t('verify.errorBody')}</p>
-            <Button to="/login" variant={ButtonVariant.PRIMARY}>
-              {t('verify.toLogin')}
-            </Button>
           </>
         )}
       </div>
