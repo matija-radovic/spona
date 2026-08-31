@@ -105,8 +105,13 @@
 
   // ── Phone: one pane at a time, slide between list and detail ──────────────────
   @media #{mq.$phone} {
+    .jobs-body {
+      margin-inline-start: calc(-1 * var(--container-spacing));
+    }
+
     .jobs-body:not(.is-detail-only) {
-      width: 200%;
+      gap: 0;
+      width: calc(200% + 4 * var(--container-spacing));
       overflow: hidden;
       transform: translateX(0);
       transition: transform 0.3s ease;
@@ -123,7 +128,11 @@
     }
 
     .jobs-body.is-detail-only {
-      width: 100%;
+      width: calc(100% + 2 * var(--container-spacing));
+    }
+
+    .jobs-list {
+      padding-inline: var(--container-spacing);
     }
   }
 }
