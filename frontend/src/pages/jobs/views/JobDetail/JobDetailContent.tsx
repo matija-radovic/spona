@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   IconArrowLeft,
@@ -35,17 +35,21 @@ interface JobDetailContentProps {
 const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailContentProps) => {
   const { t } = useTranslation()
   const format = useFormat()
+  const navigate = useNavigate()
   const { isAuthenticated } = useUser()
   const cv = useCvApply(job.id)
   const wideEnoughForRail = useMediaQuery(MQ.exceptTablet)
 
-  const [favorited, setFavorited] = useState(() => isJobSaved(job.id))
+  const [saved, setSaved] = useState(() => isJobSaved(job.id))
 
-  // TODO(auth-preview): flip/comment this guard to preview the heart while logged out
-  const canFavorite = isAuthenticated  /* || true */
+  const favorited = isAuthenticated && saved
 
   const onToggleFavorite = () => {
-    setFavorited(toggleSavedJob({ id: job.id, slug: job.slug }))
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+    setSaved(toggleSavedJob({ id: job.id, slug: job.slug }))
   }
 
   const { createdFor } = job
@@ -56,17 +60,15 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
 
   const actions = (
     <div className="job-detail-topbar-actions">
-      {canFavorite && (
-        <button
-          type="button"
-          className={`job-detail-fav${favorited ? ' is-active' : ''}`}
-          onClick={onToggleFavorite}
-          aria-pressed={favorited}
-          aria-label={favorited ? t('jobs.favorite.remove') : t('jobs.favorite.add')}
-        >
-          {favorited ? <IconHeartFilled /> : <IconHeart />}
-        </button>
-      )}
+      <button
+        type="button"
+        className={`job-detail-fav${favorited ? ' is-active' : ''}`}
+        onClick={onToggleFavorite}
+        aria-pressed={favorited}
+        aria-label={favorited ? t('jobs.favorite.remove') : t('jobs.favorite.add')}
+      >
+        {favorited ? <IconHeartFilled /> : <IconHeart />}
+      </button>
 
       <ActionMenu
         align={MenuAlign.END}
