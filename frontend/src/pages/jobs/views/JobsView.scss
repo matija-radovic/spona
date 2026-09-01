@@ -131,7 +131,8 @@
       width: calc(100% + 2 * var(--container-spacing));
     }
 
-    .jobs-list {
+    .jobs-list,
+    .jobs-panel {
       padding-inline: var(--container-spacing);
     }
   }

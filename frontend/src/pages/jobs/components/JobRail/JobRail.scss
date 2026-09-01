@@ -1,0 +1,63 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.job-rail {
+  flex: 0 0 m.$read-rail;
+  width: m.$read-rail;
+
+  .job-rail-sticky {
+    position: sticky;
+    top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .job-rail-card {
+    @include m.surface-panel;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1.1rem 1.2rem;
+  }
+
+  .job-rail-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover .job-rail-name {
+      color: c.$accent;
+    }
+  }
+
+  .job-rail-name {
+    margin-top: 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: c.$text-strong;
+    transition: color 0.16s ease;
+  }
+
+  .job-rail-handle {
+    font-size: 0.8rem;
+    color: c.$text-muted;
+  }
+
+  .job-rail-bio {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: c.$text-primary;
+    text-align: center;
+  }
+
+  .job-rail-follow {
+    align-self: stretch;
+    justify-content: center;
+  }
+}

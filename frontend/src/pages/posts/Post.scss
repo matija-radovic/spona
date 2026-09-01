@@ -2,11 +2,6 @@
 @use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
-// 876 + 24 + 300 = 1200 -> container size
-$post-column: 876px;
-$post-rail: 300px;
-$post-gap: 24px;
-
 // XS avatar (2rem) plus the byline gap
 $reply-indent: 2.55rem;
 
@@ -14,19 +9,19 @@ $reply-indent: 2.55rem;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: $post-gap;
+  gap: m.$read-gap;
   padding: 1rem var(--container-spacing) 3rem;
 
   .post-page-column {
     display: flex;
     flex-direction: column;
-    width: min($post-column, 100%);
+    width: min(m.$read-column, 100%);
     min-width: 0;
   }
 
   .post-rail {
-    flex: 0 0 $post-rail;
-    width: $post-rail;
+    flex: 0 0 m.$read-rail;
+    width: m.$read-rail;
   }
 
   @media #{mq.$tablet} {

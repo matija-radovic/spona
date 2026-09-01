@@ -17,7 +17,7 @@ import JobDetailContent from './JobDetailContent'
 const JobDetail = () => {
   const { t } = useTranslation()
   const { slug } = useParams()
-  const { isMobile, onBack } = useJobsOutletContext()
+  const { isMobile, detailOnly, onBack } = useJobsOutletContext()
 
   const [job, setJob] = useState<JobDetailDto | null>(null)
   const [problem, setProblem] = useState<ProblemDetail | null>(null)
@@ -53,22 +53,20 @@ const JobDetail = () => {
     const isNotFound = problem?.status === 404
     return (
       <div className="job-detail job-detail-status">
-        <div className="job-detail-topbar">
-          {isMobile && (
+        {isMobile && (
+          <div className="job-detail-topbar">
             <button type="button" className="job-detail-back" onClick={onBack} aria-label={t('jobs.panel.back')}>
               <IconArrowLeft aria-hidden />
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="job-detail-status-body">
           {loading ? (
-            <p className="job-detail-muted">{t('common.loading')}</p>
+            <p>{t('common.loading')}</p>
           ) : (
             <>
-              <p className="job-detail-muted">
-                {isNotFound ? t('jobs.panel.notFound') : problem?.detail || t('errors.serverError')}
-              </p>
+              <p>{isNotFound ? t('jobs.panel.notFound') : problem?.detail || t('errors.serverError')}</p>
               {!isNotFound && (
                 <Button
                   variant={ButtonVariant.TERTIARY}
@@ -87,7 +85,9 @@ const JobDetail = () => {
     )
   }
 
-  return <JobDetailContent key={slug} job={job} isMobile={isMobile} onBack={onBack} />
+  return (
+    <JobDetailContent key={slug} job={job} isMobile={isMobile} detailOnly={detailOnly} onBack={onBack} />
+  )
 }
 
 export default JobDetail

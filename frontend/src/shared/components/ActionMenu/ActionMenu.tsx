@@ -110,7 +110,7 @@ const ActionMenu = ({ items, align = MenuAlign.END, label, className }: ActionMe
     }
   }
 
-  const menuLabel = label ?? t('post.actions')
+  const menuLabel = label ?? t('common.actions')
   const rootClass = ['action-menu', open ? 'is-open' : '', className ?? ''].filter(Boolean).join(' ')
 
   return (

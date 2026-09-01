@@ -28,7 +28,7 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
         <h3 className="job-card-title">{job.title}</h3>
 
         <span className="job-card-poster">
-          {isOrg ? createdFor.displayName : t('jobs.card.privatePoster')}
+          {isOrg ? createdFor.name : t('jobs.card.privatePoster')}
         </span>
 
         {job.location && (

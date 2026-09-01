@@ -24,7 +24,8 @@
     "optional": "Opciono",
     "comingSoon": "Uskoro dostupno.",
     "linkCopied": "Link kopiran",
-    "copyLink": "Kopiraj link"
+    "copyLink": "Kopiraj link",
+    "actions": "Radnje"
   },
   "nav": {
     "home": "Početna",
@@ -187,7 +188,6 @@
     "notFound": "Objava nije pronađena ili je obrisana.",
     "editSave": "Sačuvaj",
     "editCancel": "Otkaži",
-    "actions": "Radnje",
     "copyLinkComment": "Kopiraj link komentara"
   },
   "comments": {
@@ -217,6 +217,7 @@
     "contactEmployer": "Kontaktirajte poslodavca",
     "applyExternal": "Prijavite se na sajtu kompanije",
     "noJobs": "Nema dostupnih oglasa.",
+    "keywords": "Ključne reči",
     "status": {
       "DRAFT": "Nacrt",
       "OPEN": "Aktivan",

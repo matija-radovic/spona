@@ -9,7 +9,9 @@
 // uniformly. Magic inputs make the failure/empty paths reachable:
 //   - fetchJobs   : q === "prazno"            -> empty page (0 results)
 //   - fetchJobBySlug : slug === "nepostojeci" -> 404 Not Found
-//   - fetchJobBySlug : slug hashing onto VIEWER_ORG_SLUG -> viewerCan* true
+//   - fetchJobBySlug : slug hashing onto VIEWER_ORG_HANDLE -> viewerCan* true
+//   - fetchJobBySlug : slug containing "zatvoren" -> CLOSED, "nacrt" -> DRAFT
+//                      (a DRAFT also forces viewerCan* true - see below)
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
 //
@@ -21,6 +23,7 @@
 // import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
+import type { ActorRefDto } from './profiles'
 import type { PagedResponse, ProblemDetail } from './types'
 import type { JobQuery } from '@pages/jobs/lib/filters'
 import { filtersToSearchParams } from '@pages/jobs/lib/filters'
@@ -53,7 +56,7 @@ export interface Salary {
 
 /** "Who posted this", stripped for public consumption. */
 export type JobPosterDto =
-  | { actorType: 'org'; displayName: string; slug: string; avatarUrl: string | null }
+  | (ActorRefDto & { actorType: 'org' })
   | { actorType: 'user' } // person-posted: intentionally minimal - render a generic tag, NOT a name
 
 export interface JobListItemDto {
@@ -75,6 +78,9 @@ export interface JobDetailDto extends JobListItemDto {
   contactInformation: ContactEntry[] | null
   externalUrl: string | null
   description: string
+  keywords?: string[]
+  createdForBio?: string | null
+  createdForFollowedByViewer?: boolean
   /** Management authority, computed server-side from the caller's token: the
    *  client cannot derive it, because user-facing DTOs omit `createdBy`
    *  (backend-contract.md §8 rule 7). Two independent booleans, never collapsed
@@ -116,11 +122,18 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 
 const MAGIC_EMPTY_QUERY = 'prazno'
 const MAGIC_NOT_FOUND_SLUG = 'nepostojeci'
+/** Substrings, not whole slugs: the public list only ever builds slugs from a
+ *  title, so a CLOSED or DRAFT posting is reachable by direct link and by an
+ *  actor's own postings, and never from a search result. Any slug carrying one
+ *  works - `/jobs/frontend-programer-nacrt` reads as a real posting because
+ *  `titleFromSlug` strips the marker back out. */
+const MAGIC_CLOSED_SLUG = 'zatvoren'
+const MAGIC_DRAFT_SLUG = 'nacrt'
 /** The org behind the editable `moja-kompanija` profile in profiles.ts. A job
  *  posted for it is the one case the mock can call the viewer's own, which is
  *  what makes the authority flags reachable; the real API reads them off the
- *  JWT and never off the poster's slug. */
-const VIEWER_ORG_SLUG = 'moja-kompanija'
+ *  JWT and never off the poster's handle. */
+const VIEWER_ORG_HANDLE = 'moja-kompanija'
 const MAX_MOCK_PAGES = 3
 
 const TITLES = [
@@ -134,20 +147,41 @@ const TITLES = [
   'Softverski inženjer',
 ]
 
-const ORGS: readonly { displayName: string; slug: string; avatarUrl: string | null }[] = [
-  { displayName: 'Nordeus', slug: 'nordeus', avatarUrl: null },
-  { displayName: 'Vega IT', slug: 'vega-it', avatarUrl: null },
-  { displayName: 'HTEC Group', slug: 'htec-group', avatarUrl: null },
-  { displayName: 'Levi9', slug: 'levi9', avatarUrl: null },
-  { displayName: 'Zühlke', slug: 'zuhlke', avatarUrl: null },
-  { displayName: 'Moja Kompanija', slug: VIEWER_ORG_SLUG, avatarUrl: null },
+const ORGS: readonly (ActorRefDto & { actorType: 'org' })[] = [
+  { actorType: 'org', id: 'org-nordeus', name: 'Nordeus', handle: 'nordeus', avatarUrl: null },
+  { actorType: 'org', id: 'org-vega', name: 'Vega IT', handle: 'vega-it', avatarUrl: null },
+  { actorType: 'org', id: 'org-htec', name: 'HTEC Group', handle: 'htec-group', avatarUrl: null },
+  { actorType: 'org', id: 'org-levi9', name: 'Levi9', handle: 'levi9', avatarUrl: null },
+  { actorType: 'org', id: 'org-zuhlke', name: 'Zühlke', handle: 'zuhlke', avatarUrl: null },
+  { actorType: 'org', id: 'org-moja', name: 'Moja Kompanija', handle: VIEWER_ORG_HANDLE, avatarUrl: null },
 ]
+
+const ORG_BIOS: Readonly<Record<string, string>> = {
+  'org-nordeus': 'Gejming studio iz Beograda. Pravimo igre koje igraju milioni.',
+  'org-vega': 'IT kompanija sa timovima u Novom Sadu i Beogradu.',
+  'org-htec': 'Inženjerska kuća koja gradi proizvode za klijente iz Evrope i SAD.',
+  'org-levi9': 'Tehnološki servis sa timovima u Srbiji, Rumuniji i Ukrajini.',
+  'org-zuhlke': 'Konsultantska kuća za inženjering i inovacije.',
+  'org-moja': 'Softverska agencija. Radimo web i mobilne aplikacije po meri.',
+}
 
 const LOCATIONS: readonly (string | null)[] = ['Beograd', 'Novi Sad', 'Niš', null, 'Kragujevac']
 const JOB_TYPES: readonly JobType[] = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'VOLUNTEER']
 const WORKPLACES: readonly WorkplaceType[] = ['REMOTE', 'HYBRID', 'ONSITE']
 const LEVELS: readonly ExperienceLevel[] = ['ENTRY', 'MEDIOR', 'SENIOR', 'MANAGER', 'DIRECTOR']
 const APPLICATION_TYPES: readonly ApplicationType[] = ['CONTACT_ONLY', 'EXTERNAL_URL', 'CV_DROP']
+/** Poster-authored, so deliberately unruly - mixed case and multi-word entries
+ *  are what the detail page's plain-text rendering has to survive. */
+const KEYWORDS: readonly string[] = [
+  'React',
+  'TypeScript',
+  'REST',
+  'Docker',
+  'PostgreSQL',
+  'agilno okruženje',
+  'rad od kuće',
+  'CI/CD',
+]
 
 const slugify = (value: string): string =>
   value
@@ -157,7 +191,10 @@ const slugify = (value: string): string =>
     .replace(/(^-|-$)/g, '')
 
 const titleFromSlug = (slug: string): string => {
-  const words = slug.replace(/-\d+$/, '').split('-').filter(Boolean)
+  const words = slug
+    .replace(/-\d+$/, '')
+    .split('-')
+    .filter((w) => w && w !== MAGIC_CLOSED_SLUG && w !== MAGIC_DRAFT_SLUG)
   if (words.length === 0) return 'Oglas za posao'
   return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
@@ -205,9 +242,7 @@ const buildListItem = (index: number): JobListItemDto => {
   const title = TITLES[index % TITLES.length]
   const isUser = index % 3 === 0
   const hasSalary = index % 2 === 0
-  const createdFor: JobPosterDto = isUser
-    ? { actorType: 'user' }
-    : { actorType: 'org', ...ORGS[index % ORGS.length] }
+  const createdFor: JobPosterDto = isUser ? { actorType: 'user' } : ORGS[index % ORGS.length]
 
   return {
     id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
@@ -270,8 +305,13 @@ export const fetchJobs = async (
 /**
  * MOCK - would be: const { data } = await api.get(`/jobs/${slug}`)
  * Single-entry: resolves the bare DTO (no wrapper). Unknown slug -> 404.
- * A posting whose slug hashes onto VIEWER_ORG_SLUG comes back with both
+ * A posting whose slug hashes onto VIEWER_ORG_HANDLE comes back with both
  * authority flags set - the real API reads them off the JWT.
+ *
+ * A DRAFT always comes back with them too, and that is not a shortcut: the real
+ * route answers 404 for a draft to any caller who cannot edit it, so "a draft
+ * the viewer has no authority over" is a response the backend never produces
+ * and the client must never be shaped around.
  */
 export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   await delay(400)
@@ -283,10 +323,14 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   const title = titleFromSlug(slug)
   const applicationType = APPLICATION_TYPES[seed % APPLICATION_TYPES.length]
   const isUser = seed % 4 === 0
-  const createdFor: JobPosterDto = isUser
-    ? { actorType: 'user' }
-    : { actorType: 'org', ...ORGS[seed % ORGS.length] }
-  const viewerOwns = createdFor.actorType === 'org' && createdFor.slug === VIEWER_ORG_SLUG
+  const createdFor: JobPosterDto = isUser ? { actorType: 'user' } : ORGS[seed % ORGS.length]
+  const isOrg = createdFor.actorType === 'org'
+  const status: JobStatus = slug.includes(MAGIC_CLOSED_SLUG)
+    ? 'CLOSED'
+    : slug.includes(MAGIC_DRAFT_SLUG)
+      ? 'DRAFT'
+      : 'OPEN'
+  const viewerOwns = status === 'DRAFT' || (isOrg && createdFor.handle === VIEWER_ORG_HANDLE)
 
   return {
     id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
@@ -299,11 +343,18 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
     jobType: JOB_TYPES[seed % JOB_TYPES.length],
     workplaceType: WORKPLACES[seed % WORKPLACES.length],
     experienceLevel: LEVELS[seed % LEVELS.length],
-    status: 'OPEN',
+    status,
     applicationType,
     contactInformation: applicationType === 'CONTACT_ONLY' ? mockContact() : null,
     externalUrl: applicationType === 'EXTERNAL_URL' ? 'https://primer.rs/karijera/oglas' : null,
     description: mockDescription(title),
+    keywords: KEYWORDS.slice(seed % 4, (seed % 4) + 3 + (seed % 3)),
+    ...(isOrg
+      ? {
+          createdForBio: ORG_BIOS[createdFor.id] ?? null,
+          createdForFollowedByViewer: seed % 3 === 0,
+        }
+      : {}),
     ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }

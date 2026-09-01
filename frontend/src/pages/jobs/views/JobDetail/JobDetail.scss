@@ -1,12 +1,28 @@
 @use '@css/colors' as c;
 @use '@css/mixins' as m;
 
+$logo-size: 3.5rem;
+
+.job-detail-page {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: m.$read-gap;
+}
+
 .job-detail {
   position: relative; // anchors the drag overlay
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 1.1rem;
-  padding: 1.25rem 1.4rem 2rem;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 1.5rem 0.25rem 2rem;
+
+  &.is-column {
+    max-width: m.$read-column;
+    margin-inline: auto;
+  }
 
   &.job-detail-status {
     height: 100%;
@@ -14,25 +30,15 @@
   }
 
   .job-detail-status-body {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.9rem;
-    text-align: center;
-  }
+    @include m.state-block(0.9rem);
 
-  .job-detail-muted {
-    color: c.$text-muted;
-    font-size: 0.95rem;
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .job-detail-topbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    min-height: 1.5rem;
   }
 
   .job-detail-back {
@@ -49,25 +55,6 @@
     }
   }
 
-  .job-detail-fav {
-    @include m.quiet-control;
-
-    justify-content: center;
-    margin-left: auto;
-    padding: 0.35rem;
-    font-size: 1.1rem;
-    border-radius: 50%;
-
-    &:hover {
-      color: c.$accent;
-      background-color: c.$accent-wash;
-    }
-
-    &.is-active {
-      color: c.$accent;
-    }
-  }
-
   .job-detail-head {
     display: flex;
     align-items: flex-start;
@@ -76,10 +63,27 @@
 
   .job-detail-head-main {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 0.4rem;
     min-width: 0;
-    flex: 1 1 auto;
+  }
+
+  // Everything that is about the posting rather than part of it: the two
+  // controls on top, the publisher's logo under them.
+  .job-detail-head-side {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  .job-detail-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
   }
 
   .job-detail-title {
@@ -89,15 +93,49 @@
     color: c.$text-strong;
   }
 
+  .job-detail-status-chip {
+    @include m.surface-panel(999px);
+
+    flex: 0 0 auto;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+
+    &.is-draft {
+      color: c.$text-muted;
+      background-color: c.$fill-muted;
+    }
+
+    &.is-closed {
+      color: c.$danger-text;
+      background-color: c.$danger-wash;
+      border-color: c.$danger-border;
+    }
+  }
+
   .job-detail-poster {
+    align-self: flex-start;
     font-size: 0.95rem;
     color: c.$accent;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &.is-private {
+      color: c.$text-muted;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
   }
 
   .job-detail-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
     margin-top: 0.15rem;
 
     .job-detail-meta-item {
@@ -132,8 +170,8 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: $logo-size;
+    height: $logo-size;
     color: c.$text-muted;
     background-color: c.$surface-3;
     border-radius: 12px;
@@ -144,6 +182,37 @@
       height: 100%;
       object-fit: cover;
     }
+  }
+
+  .job-detail-topbar-actions {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0.15rem;
+    margin-left: auto;
+  }
+
+  .job-detail-fav {
+    @include m.quiet-control;
+
+    justify-content: center;
+    padding: 0.35rem;
+    font-size: 1.1rem;
+    border-radius: 50%;
+
+    &:hover {
+      color: c.$accent;
+      background-color: c.$accent-wash;
+    }
+
+    &.is-active {
+      color: c.$accent;
+    }
+  }
+
+  .job-detail-menu .action-menu-trigger {
+    padding: 0.35rem;
+    font-size: 1.1rem;
   }
 
   .job-detail-apply {
@@ -166,10 +235,17 @@
   }
 
   .job-detail-description {
+    padding-top: .5rem;
     font-size: 0.9rem;
     line-height: 1.55;
     color: c.$text-primary;
     white-space: pre-line;
+  }
+
+  .job-detail-keywords {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: c.$text-muted;
   }
 
   .job-detail-drop-overlay {

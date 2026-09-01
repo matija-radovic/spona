@@ -1,6 +1,13 @@
 @use 'colors' as c;
 @use 'mediaqueries' as mq;
 
+// --- The reading column ---
+
+// 876 + 24 + 300 = 1200 -> container size
+$read-column: 876px;
+$read-rail: 300px;
+$read-gap: 24px;
+
 // --- ButtonSizes ---
 
 @mixin control-small {

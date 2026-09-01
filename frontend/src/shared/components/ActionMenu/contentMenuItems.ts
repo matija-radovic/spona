@@ -6,13 +6,12 @@ interface ContentMenuOptions {
   /** Path on this origin - the permalink, e.g. `/posts/123`. */
   path: string
   copyLabel: string
-  editLabel: string
-  deleteLabel: string
-  /** Gated independently: the backend grants them together today, but need not. */
+  editLabel?: string
+  deleteLabel?: string
   canEdit?: boolean
   canDelete?: boolean
-  onEdit: () => void
-  onDelete: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
 export const contentMenuItems = ({
@@ -36,8 +35,10 @@ export const contentMenuItems = ({
     },
   ]
 
-  if (canEdit) items.push({ key: 'edit', label: editLabel, icon: IconPencil, onSelect: onEdit })
-  if (canDelete) {
+  if (canEdit && editLabel && onEdit) {
+    items.push({ key: 'edit', label: editLabel, icon: IconPencil, onSelect: onEdit })
+  }
+  if (canDelete && deleteLabel && onDelete) {
     items.push({ key: 'delete', label: deleteLabel, icon: IconTrash, onSelect: onDelete, danger: true })
   }
 
