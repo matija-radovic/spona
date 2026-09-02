@@ -124,22 +124,18 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
               <span className="job-detail-poster is-private">{t('jobs.card.privatePoster')}</span>
             )}
 
-            {(job.location || job.salary) && (
-              <div className="job-detail-meta">
-                {job.location && (
-                  <span className="job-detail-meta-item">
-                    <IconMapPin aria-hidden />
-                    {job.location}
-                  </span>
-                )}
-                {job.salary && (
-                  <span className="job-detail-meta-item">
-                    <IconCoin aria-hidden />
-                    {formatSalary(job.salary, t, format.locale)}
-                  </span>
-                )}
-              </div>
-            )}
+            <div className="job-detail-meta">
+              <span className="job-detail-meta-item">
+                <IconMapPin aria-hidden />
+                {job.location}
+              </span>
+              {job.salary && (
+                <span className="job-detail-meta-item">
+                  <IconCoin aria-hidden />
+                  {formatSalary(job.salary, t, format.locale)}
+                </span>
+              )}
+            </div>
 
             <div className="job-detail-tags">
               <span className="job-detail-tag">{t(`jobs.type.${job.jobType}`)}</span>

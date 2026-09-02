@@ -1,0 +1,36 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+
+  .field-row-label {
+    @include m.field-label;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    .field-row-asterisk {
+      color: c.$danger-text;
+      line-height: 1;
+    }
+  }
+
+  .field-row-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: c.$text-muted;
+  }
+
+  .field-row-error {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: c.$danger-text;
+  }
+}

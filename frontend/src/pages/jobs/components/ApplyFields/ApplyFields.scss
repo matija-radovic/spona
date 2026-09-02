@@ -1,0 +1,66 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.apply-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .apply-fields-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  // Segmented control, same build as the jobs bar's `.filter-toggle`.
+  .apply-fields-toggle {
+    @include m.capsule-control;
+
+    padding: 0.5rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+
+    &.is-active {
+      @include m.accent-fill;
+
+      font-weight: 600;
+    }
+  }
+
+  .apply-fields-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .apply-fields-hint {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: c.$text-muted;
+  }
+
+  .apply-fields-prefill {
+    align-self: flex-start;
+  }
+
+  // CV_DROP configures nothing; one line saying where the applications land.
+  .apply-fields-note {
+    @include m.surface-panel(10px);
+
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0.9rem 1rem;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+  }
+
+  .apply-fields-error {
+    margin: 0;
+    font-size: 0.75rem;
+    color: c.$danger-text;
+  }
+}

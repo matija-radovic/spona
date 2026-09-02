@@ -1,0 +1,202 @@
+import { z } from 'zod'
+import {
+  CONTACT_DESC_MAX,
+  CONTACT_MAX_ENTRIES,
+  CONTACT_VALUE_MAX,
+  JOB_DESCRIPTION_MAX,
+  JOB_DESCRIPTION_MIN,
+  JOB_EXTERNAL_URL_MAX,
+  JOB_KEYWORD_MAX,
+  JOB_KEYWORDS_MAX,
+  JOB_LOCATION_MAX,
+  JOB_TITLE_MAX,
+  JOB_TITLE_MIN,
+} from '@utils/constants/validation'
+import { isSafeHref, WEB_PROTOCOLS } from '@utils/safeUrl'
+import type { CreateJobPayload, CreateJobStatus } from '@utils/api/jobs'
+import {
+  APPLICATION_TYPE_VALUES,
+  EXPERIENCE_LEVEL_VALUES,
+  JOB_TYPE_VALUES,
+  SALARY_CURRENCY_VALUES,
+  SALARY_PERIOD_VALUES,
+  WORKPLACE_TYPE_VALUES,
+} from '@pages/jobs/lib/jobEnums'
+
+type Translate = (key: string, opts?: Record<string, unknown>) => string
+
+const JOB_CATEGORY_VALUES = [
+  'SOFTWARE_ENGINEER',
+  'FRONTEND_DEVELOPER',
+  'BACKEND_DEVELOPER',
+  'PRODUCT_DESIGNER',
+  'PRODUCT_MANAGER',
+  'DATA_ANALYST',
+  'DEVOPS_ENGINEER',
+  'QA_ENGINEER',
+  'MARKETING_SPECIALIST',
+  'SALES_REPRESENTATIVE',
+  'HR_RECRUITER',
+  'PROJECT_MANAGER',
+  'OTHER',
+] as const
+
+/** Amounts are typed, so they travel as strings and are parsed once, here. */
+const toAmount = (raw: string): number | null => {
+  const trimmed = raw.trim().replace(',', '.')
+  if (trimmed === '') return null
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : Number.NaN
+}
+
+const contactInfoSchema = (t: Translate) =>
+  z
+    .array(
+      z.object({
+        type: z.string(),
+        description: z.string().max(CONTACT_DESC_MAX, t('errors.maxLength', { max: CONTACT_DESC_MAX })),
+        value: z
+          .string()
+          .min(1, t('errors.contactValueRequired'))
+          .max(CONTACT_VALUE_MAX, t('errors.maxLength', { max: CONTACT_VALUE_MAX })),
+      }),
+    )
+    .max(CONTACT_MAX_ENTRIES, t('errors.contactMax', { max: CONTACT_MAX_ENTRIES }))
+
+export const buildJobSchema = (t: Translate, draft = false) =>
+  z
+    .object({
+      title: z.string().max(JOB_TITLE_MAX, t('errors.maxLength', { max: JOB_TITLE_MAX })),
+      description: z
+        .string()
+        .max(JOB_DESCRIPTION_MAX, t('errors.maxLength', { max: JOB_DESCRIPTION_MAX })),
+      category: z.enum(JOB_CATEGORY_VALUES).or(z.literal('')),
+      keywords: z
+        .array(z.string().max(JOB_KEYWORD_MAX, t('errors.maxLength', { max: JOB_KEYWORD_MAX })))
+        .max(JOB_KEYWORDS_MAX, t('errors.keywordMax', { max: JOB_KEYWORDS_MAX })),
+      jobType: z.enum(JOB_TYPE_VALUES),
+      workplaceType: z.enum(WORKPLACE_TYPE_VALUES),
+      experienceLevel: z.enum(EXPERIENCE_LEVEL_VALUES),
+      location: z.string().max(JOB_LOCATION_MAX, t('errors.maxLength', { max: JOB_LOCATION_MAX })),
+      salaryMin: z.string(),
+      salaryMax: z.string(),
+      salaryCurrency: z.enum(SALARY_CURRENCY_VALUES),
+      salaryPeriod: z.enum(SALARY_PERIOD_VALUES),
+      applicationType: z.enum(APPLICATION_TYPE_VALUES),
+      contactInformation: contactInfoSchema(t),
+      externalUrl: z
+        .string()
+        .max(JOB_EXTERNAL_URL_MAX, t('errors.maxLength', { max: JOB_EXTERNAL_URL_MAX })),
+    })
+    .superRefine((values, ctx) => {
+      const required = (path: keyof typeof values) =>
+        ctx.addIssue({ code: 'custom', path: [path], message: t('errors.required') })
+
+      const min = toAmount(values.salaryMin)
+      const max = toAmount(values.salaryMax)
+
+      if (Number.isNaN(min)) {
+        ctx.addIssue({ code: 'custom', path: ['salaryMin'], message: t('errors.notANumber') })
+      }
+      if (Number.isNaN(max)) {
+        ctx.addIssue({ code: 'custom', path: ['salaryMax'], message: t('errors.notANumber') })
+      }
+      if (min === null && max !== null) {
+        ctx.addIssue({ code: 'custom', path: ['salaryMin'], message: t('errors.salaryMinRequired') })
+      }
+      if (typeof min === 'number' && typeof max === 'number' && !Number.isNaN(min) && !Number.isNaN(max) && max < min) {
+        ctx.addIssue({ code: 'custom', path: ['salaryMax'], message: t('errors.salaryMaxBelowMin') })
+      }
+
+      const tooShort = (path: 'title' | 'description', value: string, min: number) => {
+        if (value.trim() !== '' && value.trim().length < min) {
+          ctx.addIssue({ code: 'custom', path: [path], message: t('errors.minLength', { min }) })
+        }
+      }
+      tooShort('title', values.title, JOB_TITLE_MIN)
+      tooShort('description', values.description, JOB_DESCRIPTION_MIN)
+
+      const externalUrl = values.externalUrl.trim()
+      if (
+        externalUrl !== '' &&
+        !isSafeHref(externalUrl, {
+          protocols: WEB_PROTOCOLS,
+          allowSchemeless: false,
+          allowRelative: false,
+        })
+      ) {
+        ctx.addIssue({ code: 'custom', path: ['externalUrl'], message: t('errors.invalidUrl') })
+      }
+
+      if (draft) return
+
+      if (values.title.trim() === '') required('title')
+      if (values.description.trim() === '') required('description')
+      if (values.category === '') required('category')
+      if (values.location.trim() === '') required('location')
+      if (values.applicationType === 'EXTERNAL_URL' && values.externalUrl.trim() === '') {
+        required('externalUrl')
+      }
+      if (values.applicationType === 'CONTACT_ONLY' && values.contactInformation.length === 0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['contactInformation'],
+          message: t('errors.contactRequired'),
+        })
+      }
+    })
+
+export type JobFormData = z.infer<ReturnType<typeof buildJobSchema>>
+
+export const JOB_DEFAULTS: JobFormData = {
+  title: '',
+  description: '',
+  category: '',
+  keywords: [],
+  jobType: 'FULL_TIME',
+  workplaceType: 'ONSITE',
+  experienceLevel: 'MEDIOR',
+  location: '',
+  salaryMin: '',
+  salaryMax: '',
+  salaryCurrency: 'EUR',
+  salaryPeriod: 'MONTH',
+  applicationType: 'CONTACT_ONLY',
+  contactInformation: [],
+  externalUrl: '',
+}
+
+export const toCreateJobPayload = (
+  values: JobFormData,
+  createdForId: string,
+  status: CreateJobStatus,
+): CreateJobPayload => {
+  const min = toAmount(values.salaryMin)
+  const max = toAmount(values.salaryMax)
+
+  return {
+    createdForId,
+    status,
+    title: values.title.trim(),
+    description: values.description.trim(),
+    category: values.category === '' ? 'OTHER' : values.category,
+    keywords: values.keywords,
+    jobType: values.jobType,
+    workplaceType: values.workplaceType,
+    experienceLevel: values.experienceLevel,
+    location: values.location.trim(),
+    salary:
+      min === null || Number.isNaN(min)
+        ? null
+        : {
+            min,
+            max: max === null || Number.isNaN(max) ? null : max,
+            currency: values.salaryCurrency,
+            period: values.salaryPeriod,
+          },
+    applicationType: values.applicationType,
+    contactInformation:
+      values.applicationType === 'CONTACT_ONLY' ? values.contactInformation : null,
+    externalUrl: values.applicationType === 'EXTERNAL_URL' ? values.externalUrl.trim() : null,
+  }
+}

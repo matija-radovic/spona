@@ -1,8 +1,5 @@
-/**
- * Popular job roles surfaced on the home page. Clicking one routes to the jobs
- * page with the role pre-applied as a filter (`/jobs?role=<slug>`).
- * Labels are plain Serbian role names rather than i18n keys.
- */
+import type { JobCategory } from '@utils/api/jobs'
+
 export interface JobRole {
   slug: string
   label: string
@@ -24,3 +21,16 @@ export const POPULAR_JOB_ROLES: readonly JobRole[] = Object.freeze([
 ])
 
 export const jobsFilterPath = (slug: string): string => `/jobs?role=${slug}`
+
+export const categoryFromSlug = (slug: string): JobCategory =>
+  slug.toUpperCase().replace(/-/g, '_') as JobCategory
+
+export const slugFromCategory = (category: JobCategory): string =>
+  category.toLowerCase().replace(/_/g, '-')
+
+export const jobCategoryOptions = (
+  otherLabel: string,
+): readonly { value: JobCategory; label: string }[] => [
+  ...POPULAR_JOB_ROLES.map((role) => ({ value: categoryFromSlug(role.slug), label: role.label })),
+  { value: 'OTHER', label: otherLabel },
+]

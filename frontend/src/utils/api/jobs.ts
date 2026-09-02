@@ -14,6 +14,8 @@
 //                      (a DRAFT also forces viewerCan* true - see below)
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
+//   - createJob   : title containing "greska"  -> 422 rejection
+//   - createJob   : title containing "tudja"   -> 403 (createdForId refused)
 //
 // Saved jobs no longer live here (new_docx/types.ts, end of the Jobs block —
 // there is no FavoriteJob table); they are browser
@@ -44,6 +46,27 @@ export type ExperienceLevel =
   | 'EXECUTIVE'
 export type SalaryPeriod = 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'JOB'
 
+/** The occupation axis. The URL carries the kebab slug (`?role=frontend-developer`),
+ *  the column stores the enum - `utils/constants/jobRoles.ts` maps between them. */
+export type JobCategory =
+  | 'SOFTWARE_ENGINEER'
+  | 'FRONTEND_DEVELOPER'
+  | 'BACKEND_DEVELOPER'
+  | 'PRODUCT_DESIGNER'
+  | 'PRODUCT_MANAGER'
+  | 'DATA_ANALYST'
+  | 'DEVOPS_ENGINEER'
+  | 'QA_ENGINEER'
+  | 'MARKETING_SPECIALIST'
+  | 'SALES_REPRESENTATIVE'
+  | 'HR_RECRUITER'
+  | 'PROJECT_MANAGER'
+  | 'OTHER'
+
+/** `POST /jobs` reaches DRAFT or OPEN and never CLOSED: a posting that has never
+ *  been open cannot be closed, and the rest of the ladder is a status write. */
+export type CreateJobStatus = Extract<JobStatus, 'DRAFT' | 'OPEN'>
+
 export interface Salary {
   min: number
   max: number | null
@@ -64,12 +87,15 @@ export interface JobListItemDto {
   slug: string
   title: string
   createdFor: JobPosterDto
-  location: string | null
+  /** NOT NULL even for a REMOTE listing: a remote job still states where the
+   *  hiring organization sits, and the create form makes it required. */
+  location: string
   salary: Salary | null
   createdAt: string
 }
 
 export interface JobDetailDto extends JobListItemDto {
+  category: JobCategory
   jobType: JobType
   workplaceType: WorkplaceType
   experienceLevel: ExperienceLevel
@@ -103,6 +129,32 @@ export interface JobApplication {
   jobId: string
   cvUrl: string | null
   submittedAt: string
+}
+
+// ── Write payloads ────────────────────────────────────────────────────────────
+
+/** `displayText` is not authored in a form; the server may still serve one back. */
+export type SalaryPayload = Omit<Salary, 'displayText'>
+
+export interface CreateJobPayload {
+  /** The actor this is published as, resolved by `usePostAs` as `postAs ?? user.id`.
+   *  Always sent, never null, and re-checked server-side against the role matrix
+   *  (backend-contract.md §8 rule 6) - the picker is a convenience, not the
+   *  authorization. `createdById` is never sent: it is the authenticated caller. */
+  createdForId: string
+  title: string
+  description: string
+  category: JobCategory
+  keywords: string[]
+  jobType: JobType
+  workplaceType: WorkplaceType
+  experienceLevel: ExperienceLevel
+  location: string
+  salary: SalaryPayload | null
+  status: CreateJobStatus
+  applicationType: ApplicationType
+  contactInformation: ContactEntry[] | null
+  externalUrl: string | null
 }
 
 // ── Mock plumbing ──────────────────────────────────────────────────────────────
@@ -165,7 +217,18 @@ const ORG_BIOS: Readonly<Record<string, string>> = {
   'org-moja': 'Softverska agencija. Radimo web i mobilne aplikacije po meri.',
 }
 
-const LOCATIONS: readonly (string | null)[] = ['Beograd', 'Novi Sad', 'Niš', null, 'Kragujevac']
+const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
+/** Parallel to TITLES, so a mocked posting's occupation matches its name. */
+const CATEGORIES: readonly JobCategory[] = [
+  'FRONTEND_DEVELOPER',
+  'BACKEND_DEVELOPER',
+  'PRODUCT_DESIGNER',
+  'DEVOPS_ENGINEER',
+  'QA_ENGINEER',
+  'DATA_ANALYST',
+  'PRODUCT_MANAGER',
+  'SOFTWARE_ENGINEER',
+]
 const JOB_TYPES: readonly JobType[] = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'VOLUNTEER']
 const WORKPLACES: readonly WorkplaceType[] = ['REMOTE', 'HYBRID', 'ONSITE']
 const LEVELS: readonly ExperienceLevel[] = ['ENTRY', 'MEDIOR', 'SENIOR', 'MANAGER', 'DIRECTOR']
@@ -340,6 +403,7 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
     location: LOCATIONS[seed % LOCATIONS.length],
     salary: seed % 2 === 0 ? mockSalary(seed) : null,
     createdAt: new Date(Date.now() - (seed % 30) * 24 * 60 * 60 * 1000).toISOString(),
+    category: CATEGORIES[seed % CATEGORIES.length],
     jobType: JOB_TYPES[seed % JOB_TYPES.length],
     workplaceType: WORKPLACES[seed % WORKPLACES.length],
     experienceLevel: LEVELS[seed % LEVELS.length],
@@ -356,6 +420,53 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
         }
       : {}),
     ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+  }
+}
+
+/**
+ * MOCK - would be: const { data } = await api.post('/jobs', payload)
+ * A title containing "greska" is rejected so the error UI is testable, and one
+ * containing "tudja" comes back 403 - the server disagreeing with the identity
+ * the picker offered, which is the one failure that must never be retried.
+ *
+ * The slug is derived from the title plus a numeric suffix because a real slug
+ * is server-assigned and unique, and the page navigates to it.
+ */
+export const createJob = async (payload: CreateJobPayload): Promise<JobDetailDto> => {
+  await delay(650)
+
+  const title = payload.title.trim()
+  if (title.toLowerCase().includes('greska')) {
+    return rejectProblem(422, 'Oglas nije sačuvan. Proverite unos i pokušajte ponovo.', 'Unprocessable Entity')
+  }
+  if (title.toLowerCase().includes('tudja')) {
+    return rejectProblem(403, 'Nemate pravo da objavljujete u ime izabrane organizacije.', 'Forbidden')
+  }
+
+  const org = ORGS.find((row) => row.id === payload.createdForId)
+  const createdFor: JobPosterDto = org ?? { actorType: 'user' }
+
+  return {
+    id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
+    slug: `${slugify(title)}-${1000 + (hashString(title) % 9000)}`,
+    title,
+    createdFor,
+    location: payload.location,
+    salary: payload.salary ? { ...payload.salary, displayText: null } : null,
+    createdAt: new Date().toISOString(),
+    category: payload.category,
+    jobType: payload.jobType,
+    workplaceType: payload.workplaceType,
+    experienceLevel: payload.experienceLevel,
+    status: payload.status,
+    applicationType: payload.applicationType,
+    contactInformation: payload.contactInformation,
+    externalUrl: payload.externalUrl,
+    description: payload.description,
+    keywords: payload.keywords,
+    ...(org ? { createdForBio: ORG_BIOS[org.id] ?? null, createdForFollowedByViewer: false } : {}),
+    viewerCanEdit: true,
+    viewerCanDelete: true,
   }
 }
 

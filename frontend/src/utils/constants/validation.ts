@@ -38,3 +38,13 @@ export const COMMENT_MAX = 2000
 export const CV_MAX_BYTES = 5 * 1024 * 1024
 export const CV_ACCEPTED_TYPES: readonly string[] = ['application/pdf']
 export const CV_ACCEPTED_EXT: readonly string[] = ['.pdf']
+
+/** Job posting bounds  */
+export const JOB_TITLE_MIN = 3
+export const JOB_TITLE_MAX = 120
+export const JOB_DESCRIPTION_MIN = 40
+export const JOB_DESCRIPTION_MAX = 5000
+export const JOB_LOCATION_MAX = 120
+export const JOB_KEYWORDS_MAX = 10
+export const JOB_KEYWORD_MAX = 32
+export const JOB_EXTERNAL_URL_MAX = 300

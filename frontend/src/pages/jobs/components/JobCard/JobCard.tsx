@@ -31,12 +31,10 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
           {isOrg ? createdFor.name : t('jobs.card.privatePoster')}
         </span>
 
-        {job.location && (
-          <span className="job-card-meta">
-            <IconMapPin aria-hidden />
-            {job.location}
-          </span>
-        )}
+        <span className="job-card-meta">
+          <IconMapPin aria-hidden />
+          {job.location}
+        </span>
 
         {job.salary && (
           <span className="job-card-meta job-card-salary">

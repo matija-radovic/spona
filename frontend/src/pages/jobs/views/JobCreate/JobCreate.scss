@@ -1,0 +1,131 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
+
+// Reserved so a late organization list does not shift the form under the writer.
+$identity-row: 2.4rem;
+
+.job-create {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+
+  .job-create-card {
+    @include m.surface-panel(16px);
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 48rem;
+    padding: 2rem;
+
+    @media #{mq.$m-phone} {
+      padding: 1.5rem;
+    }
+  }
+
+  .job-create-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .job-create-sub {
+      margin: 0;
+      color: c.$text-muted;
+      font-size: 0.9rem;
+    }
+  }
+
+  .job-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .job-create-identity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: $identity-row;
+
+    .job-create-identity-label {
+      @include m.field-label;
+    }
+  }
+
+  // The apply block is a section of the same form, separated by a rule rather than
+  // boxed: it is the second half of one posting, not a card inside a card.
+  .job-create-apply {
+    padding-top: 1.25rem;
+    border-top: 1px solid c.$border-line;
+  }
+
+  .job-create-error {
+    @include m.error-box;
+  }
+
+  .job-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+
+    .btn-ghost {
+      margin-right: auto;
+    }
+
+    @media #{mq.$m-phone} {
+      flex-wrap: wrap;
+    }
+  }
+
+  .job-create-saved {
+    @include m.state-block(0.7rem, 2rem 1rem);
+
+    .job-create-saved-mark {
+      --icon-size: 1.4rem;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      color: c.$text-on-accent;
+      background-color: c.$success;
+      border-radius: 50%;
+    }
+
+    .job-create-saved-title {
+      margin: 0.3rem 0 0;
+      font-size: 1.2rem;
+      color: c.$text-strong;
+    }
+
+    .job-create-saved-body {
+      margin: 0;
+      max-width: 32rem;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .job-create-saved-slug {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.85rem;
+      color: c.$text-strong;
+      background-color: c.$fill-muted;
+      border-radius: 8px;
+    }
+
+    .job-create-saved-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+  }
+}

@@ -1,0 +1,113 @@
+import './ApplyFields.scss'
+import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { IconInbox } from '@tabler/icons-react'
+import { Button, ButtonVariant, ButtonSize, ContactInfoWidget, TextField } from '@shared/components'
+import type { ContactEntry } from '@shared/components'
+import { APPLICATION_TYPE_VALUES } from '@pages/jobs/lib/jobEnums'
+import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
+import { FieldRow } from '../FieldRow'
+
+/** Entries the publisher already has on file, minus the ones already added. */
+const missingFrom = (current: ContactEntry[], saved: readonly ContactEntry[]): ContactEntry[] =>
+  saved.filter((entry) => !current.some((held) => held.type === entry.type && held.value === entry.value))
+
+interface ApplyFieldsProps {
+  register: UseFormRegister<JobFormData>
+  control: Control<JobFormData>
+  errors: FieldErrors<JobFormData>
+  /** The publishing actor's saved contact entries, offered as a starting point. */
+  savedContacts?: readonly ContactEntry[]
+}
+
+/** The application-type picker and the chosen type's panel */
+const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFieldsProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="apply-fields">
+      <Controller
+        control={control}
+        name="applicationType"
+        render={({ field: typeField }) => (
+          <>
+            <FieldRow label={t('jobs.create.applyTitle')} className="apply-fields-picker">
+              <div className="apply-fields-toggles" role="group" aria-label={t('jobs.create.applyType')}>
+                {APPLICATION_TYPE_VALUES.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`apply-fields-toggle${typeField.value === value ? ' is-active' : ''}`}
+                    onClick={() => typeField.onChange(value)}
+                    aria-pressed={typeField.value === value}
+                  >
+                    {t(`jobs.application.${value}`)}
+                  </button>
+                ))}
+              </div>
+            </FieldRow>
+
+            <div className="apply-fields-panel">
+              {typeField.value === 'CONTACT_ONLY' && (
+                <Controller
+                  control={control}
+                  name="contactInformation"
+                  render={({ field }) => {
+                    const offered = missingFrom(field.value, savedContacts)
+                    return (
+                      <>
+                        <p className="apply-fields-hint">{t('jobs.create.contactHint')}</p>
+
+                        {offered.length > 0 && (
+                          <Button
+                            variant={ButtonVariant.TERTIARY}
+                            size={ButtonSize.SMALL}
+                            className="apply-fields-prefill"
+                            onClick={() => field.onChange([...field.value, ...offered])}
+                          >
+                            {t('jobs.create.useSavedContacts')}
+                          </Button>
+                        )}
+
+                        <ContactInfoWidget
+                          label={t('jobs.fields.contactInformation')}
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+
+                        {errors.contactInformation?.message && (
+                          <p className="apply-fields-error">{errors.contactInformation.message}</p>
+                        )}
+                      </>
+                    )
+                  }}
+                />
+              )}
+
+              {typeField.value === 'EXTERNAL_URL' && (
+                <TextField
+                  label={t('jobs.fields.externalUrl')}
+                  type="url"
+                  required
+                  placeholder="https://"
+                  helper={t('jobs.create.externalHint')}
+                  error={errors.externalUrl?.message}
+                  {...register('externalUrl')}
+                />
+              )}
+
+              {typeField.value === 'CV_DROP' && (
+                <p className="apply-fields-note">
+                  <IconInbox aria-hidden />
+                  {t('jobs.create.cvDropHint')}
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      />
+    </div>
+  )
+}
+
+export default ApplyFields
