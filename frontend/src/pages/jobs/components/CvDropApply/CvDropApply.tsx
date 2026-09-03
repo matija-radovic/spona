@@ -2,7 +2,7 @@ import './CvDropApply.scss'
 import { useRef, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCheck, IconX, IconUpload, IconFileText } from '@tabler/icons-react'
-import { Button, ButtonVariant, ButtonSize } from '@shared/components/Button'
+import { Button, ButtonVariant, ButtonSize } from '@shared/components/form/Button'
 import type { CvApply } from '@pages/jobs/lib/useCvApply'
 
 interface CvDropApplyProps {
@@ -10,7 +10,7 @@ interface CvDropApplyProps {
 }
 
 /**
- * Presentational apply controls — one row: [choose file] [selected file + validity]
+ * Presentational apply controls â€” one row: [choose file] [selected file + validity]
  * [submit]. State + the drop target live in `useCvApply` (the drop target is the
  * whole detail panel, wired up by JobDetail).
  */

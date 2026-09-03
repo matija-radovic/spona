@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant, TextField } from '@shared/components'
+import { Button, ButtonVariant, FieldShell, Input } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
 import { deleteAccount } from '@utils/api/settings'
@@ -70,14 +70,15 @@ const DeleteAccountCard = () => {
       >
         <p className="settings-modal-warning">{t('settings.account.delete.warning')}</p>
 
-        <TextField
-          label={t('settings.account.delete.passwordLabel')}
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          error={error ?? undefined}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <FieldShell label={t('settings.account.delete.passwordLabel')}>
+          <Input
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            error={error ?? undefined}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </FieldShell>
       </SettingsModal>
     </section>
   )

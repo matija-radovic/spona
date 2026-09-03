@@ -2,7 +2,7 @@ import './SavedJobsPane.scss'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { JobCard } from '@pages/jobs/components/JobCard'
 import { FilterCapsules, type CapsuleOption } from '@pages/profile/components/FilterCapsules'
 import { fetchJobsByIds, type SavedJobItemDto } from '@utils/api/jobs'
@@ -23,7 +23,7 @@ const mergeById = (base: SavedJobItemDto[], extra: SavedJobItemDto[]): SavedJobI
 }
 
 /**
- * Own-profile Saved-jobs pane. localStorage is the source of truth (§10). The
+ * Own-profile Saved-jobs pane. localStorage is the source of truth (Â§10). The
  * initial fetch hydrates OPEN only; Finished/All lazily hydrate CLOSED once, all
  * into a single array filtered in code. A module cache survives tab switches and
  * is invalidated when the saved set changed.

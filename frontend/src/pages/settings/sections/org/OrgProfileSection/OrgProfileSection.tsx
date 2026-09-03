@@ -10,7 +10,8 @@ import {
   ContactInfoWidget,
   ContactValue,
   contactTypeOption,
-  TextField,
+  FieldShell,
+  Input,
 } from '@shared/components'
 import { parseProblem } from '@utils/api/types'
 import { updateOrgProfile } from '@utils/api/organizations'
@@ -98,56 +99,58 @@ const OrgProfileSection = () => {
             )}
           />
         ) : (
-          <div className="org-profile-avatar">
-            <span className="org-profile-avatar-label">{t('auth.avatar')}</span>
+          <FieldShell label={t('auth.avatar')} htmlLabel={false}>
             <ActorAvatar
               avatarUrl={settings.avatarUrl}
               actorType="org"
               size={ActorAvatarSize.MD}
               alt={settings.displayName}
             />
-          </div>
+          </FieldShell>
         )}
 
-        <TextField
-          label={t('auth.org.displayName')}
-          required
-          readOnly={!canEdit}
-          error={errors.displayName?.message}
-          {...register('displayName')}
-        />
+        <FieldShell label={t('auth.org.displayName')} required>
+          <Input
+            readOnly={!canEdit}
+            error={errors.displayName?.message}
+            {...register('displayName')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.org.legalName')}
-          required
-          readOnly={!canEdit}
-          error={errors.legalName?.message}
-          {...register('legalName')}
-        />
+        <FieldShell label={t('auth.org.legalName')} required>
+          <Input
+            readOnly={!canEdit}
+            error={errors.legalName?.message}
+            {...register('legalName')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.org.description')}
-          multiline
-          readOnly={!canEdit}
-          error={errors.description?.message}
-          {...register('description')}
-        />
+        <FieldShell label={t('auth.org.description')}>
+          <Input
+            multiline
+            readOnly={!canEdit}
+            error={errors.description?.message}
+            {...register('description')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.org.website')}
-          type="url"
-          placeholder="https://"
-          readOnly={!canEdit}
-          error={errors.website?.message}
-          {...register('website')}
-        />
+        <FieldShell label={t('auth.org.website')}>
+          <Input
+            type="url"
+            placeholder="https://"
+            readOnly={!canEdit}
+            error={errors.website?.message}
+            {...register('website')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.org.location')}
-          readOnly={!canEdit}
-          error={errors.location?.message}
-          {...register('location')}
-        />
+        <FieldShell label={t('auth.org.location')}>
+          <Input
+            readOnly={!canEdit}
+            error={errors.location?.message}
+            {...register('location')}
+          />
+        </FieldShell>
 
         {canEdit ? (
           <Controller
@@ -162,8 +165,7 @@ const OrgProfileSection = () => {
             )}
           />
         ) : (
-          <div className="org-profile-contacts">
-            <span className="org-profile-contacts-label">{t('auth.otherContactInfo')}</span>
+          <FieldShell label={t('auth.otherContactInfo')} htmlLabel={false}>
             <ul className="org-profile-contacts-list">
               {settings.otherContactInfo.map((entry, index) => {
                 const option = contactTypeOption(entry.type)
@@ -179,7 +181,7 @@ const OrgProfileSection = () => {
                 )
               })}
             </ul>
-          </div>
+          </FieldShell>
         )}
 
         {canEdit && (

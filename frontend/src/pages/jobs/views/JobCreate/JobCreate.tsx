@@ -4,7 +4,7 @@ import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, ButtonVariant, PostAsSelect, PostAsSurface } from '@shared/components'
+import { Button, ButtonVariant, FieldShell, PostAsSelect, PostAsSurface } from '@shared/components'
 import type { ContactEntry } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import useMyOrganizations from '@shared/hooks/useMyOrganizations'
@@ -125,15 +125,14 @@ const JobCreate = () => {
           >
             <div className="job-create-identity">
               {!loading && publishable.length > 0 && (
-                <>
-                  <span className="job-create-identity-label">{t('jobs.create.postingAs')}</span>
+                <FieldShell label={t('jobs.create.postingAs')} htmlLabel={false}>
                   <PostAsSelect
                     organizations={publishable}
                     value={postAs.value}
                     onChange={postAs.setValue}
                     disabled={isSubmitting}
                   />
-                </>
+                </FieldShell>
               )}
             </div>
 

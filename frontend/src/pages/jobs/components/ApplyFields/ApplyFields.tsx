@@ -2,11 +2,17 @@ import './ApplyFields.scss'
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { IconInbox } from '@tabler/icons-react'
-import { Button, ButtonVariant, ButtonSize, ContactInfoWidget, TextField } from '@shared/components'
+import {
+  Button,
+  ButtonVariant,
+  ButtonSize,
+  ContactInfoWidget,
+  FieldShell,
+  Input,
+} from '@shared/components'
 import type { ContactEntry } from '@shared/components'
 import { APPLICATION_TYPE_VALUES } from '@pages/jobs/lib/jobEnums'
 import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
-import { FieldRow } from '../FieldRow'
 
 /** Entries the publisher already has on file, minus the ones already added. */
 const missingFrom = (current: ContactEntry[], saved: readonly ContactEntry[]): ContactEntry[] =>
@@ -31,7 +37,11 @@ const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFie
         name="applicationType"
         render={({ field: typeField }) => (
           <>
-            <FieldRow label={t('jobs.create.applyTitle')} className="apply-fields-picker">
+            <FieldShell
+              label={t('jobs.create.applyTitle')}
+              htmlLabel={false}
+              className="apply-fields-picker"
+            >
               <div className="apply-fields-toggles" role="group" aria-label={t('jobs.create.applyType')}>
                 {APPLICATION_TYPE_VALUES.map((value) => (
                   <button
@@ -45,7 +55,7 @@ const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFie
                   </button>
                 ))}
               </div>
-            </FieldRow>
+            </FieldShell>
 
             <div className="apply-fields-panel">
               {typeField.value === 'CONTACT_ONLY' && (
@@ -85,15 +95,18 @@ const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFie
               )}
 
               {typeField.value === 'EXTERNAL_URL' && (
-                <TextField
+                <FieldShell
                   label={t('jobs.fields.externalUrl')}
-                  type="url"
                   required
-                  placeholder="https://"
-                  helper={t('jobs.create.externalHint')}
-                  error={errors.externalUrl?.message}
-                  {...register('externalUrl')}
-                />
+                  hint={t('jobs.create.externalHint')}
+                >
+                  <Input
+                    type="url"
+                    placeholder="https://"
+                    error={errors.externalUrl?.message}
+                    {...register('externalUrl')}
+                  />
+                </FieldShell>
               )}
 
               {typeField.value === 'CV_DROP' && (

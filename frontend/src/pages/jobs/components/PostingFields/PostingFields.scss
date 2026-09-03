@@ -1,4 +1,3 @@
-@use '@css/colors' as c;
 @use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
@@ -17,29 +16,6 @@
     }
   }
 
-  .posting-fields-salary {
-    @include m.surface-panel(10px);
-
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    margin: 0;
-    padding: 0.9rem 1rem;
-
-    legend {
-      @include m.field-label;
-
-      padding: 0 0.35rem;
-    }
-
-    .posting-fields-salary-hint {
-      margin: 0;
-      font-size: 0.75rem;
-      line-height: 1.35;
-      color: c.$text-muted;
-    }
-  }
-
   .posting-fields-salary-row {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -55,18 +31,11 @@
     width: 100%;
   }
 
-  .dropdown .dropdown-trigger,
-  .dropdown.is-active .dropdown-trigger {
+  .dropdown .dropdown-trigger {
     @include m.field-skin;
+    @include m.control-field;
 
     max-width: none;
-    padding: 0.7rem 0.85rem;
     font-weight: 400;
-
-    &:focus-visible {
-      @include m.field-focus-ring;
-
-      outline: none;
-    }
   }
 }

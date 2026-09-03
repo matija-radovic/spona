@@ -1,0 +1,13 @@
+@use '@css/mediaqueries' as mq;
+
+.dropdown.post-as-select {
+  // A name is long and the trigger sits in a row with other things; the cap is
+  // narrower than a plain dropdown's, and `maxLabelChars` cuts to match.
+  .dropdown-trigger {
+    max-width: 12rem;
+
+    @media #{mq.$phone} {
+      max-width: 9rem;
+    }
+  }
+}

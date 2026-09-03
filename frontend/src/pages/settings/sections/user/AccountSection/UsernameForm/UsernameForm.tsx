@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { TextField } from '@shared/components'
+import { FieldShell, Input } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
@@ -60,13 +60,16 @@ const UsernameForm = ({ settings, refetch }: UsernameFormProps) => {
       error={errors.root?.message}
       success={justSaved ? t('settings.account.username.success') : undefined}
     >
-      <TextField
+      <FieldShell
         label={t('auth.username')}
-        autoComplete="username"
-        helper={t('settings.account.username.helper', { min: USERNAME_MIN, max: USERNAME_MAX })}
-        error={errors.username?.message}
-        {...register('username')}
-      />
+        hint={t('settings.account.username.helper', { min: USERNAME_MIN, max: USERNAME_MAX })}
+      >
+        <Input
+          autoComplete="username"
+          error={errors.username?.message}
+          {...register('username')}
+        />
+      </FieldShell>
     </CredentialForm>
   )
 }

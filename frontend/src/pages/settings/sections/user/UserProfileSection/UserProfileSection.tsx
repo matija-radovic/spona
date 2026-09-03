@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { AvatarPicker, ContactInfoWidget, TextField } from '@shared/components'
+import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
 import { updateProfile } from '@utils/api/settings'
@@ -80,27 +80,26 @@ const UserProfileSection = () => {
           )}
         />
 
-        <TextField
-          label={t('auth.fullName')}
-          autoComplete="name"
-          error={errors.fullName?.message}
-          {...register('fullName')}
-        />
+        <FieldShell label={t('auth.fullName')}>
+          <Input autoComplete="name" error={errors.fullName?.message} {...register('fullName')} />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.bio')}
-          multiline
-          placeholder={t('auth.bioPlaceholder')}
-          error={errors.bio?.message}
-          {...register('bio')}
-        />
+        <FieldShell label={t('auth.bio')}>
+          <Input
+            multiline
+            placeholder={t('auth.bioPlaceholder')}
+            error={errors.bio?.message}
+            {...register('bio')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.location')}
-          autoComplete="address-level2"
-          error={errors.location?.message}
-          {...register('location')}
-        />
+        <FieldShell label={t('auth.location')}>
+          <Input
+            autoComplete="address-level2"
+            error={errors.location?.message}
+            {...register('location')}
+          />
+        </FieldShell>
 
         <Controller
           control={control}

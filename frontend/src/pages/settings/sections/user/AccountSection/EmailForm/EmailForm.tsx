@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { TextField } from '@shared/components'
+import { FieldShell, Input } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
 import { changeEmail, type UserSettingsDto } from '@utils/api/settings'
@@ -56,21 +56,23 @@ const EmailForm = ({ settings }: EmailFormProps) => {
       error={errors.root?.message}
       success={justRequested ? t('settings.account.email.success') : undefined}
     >
-      <TextField
-        label={t('auth.email')}
-        type="email"
-        autoComplete="email"
-        error={errors.email?.message}
-        {...register('email')}
-      />
+      <FieldShell label={t('auth.email')}>
+        <Input
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('settings.account.email.current')}
-        type="password"
-        autoComplete="current-password"
-        error={errors.currentPassword?.message}
-        {...register('currentPassword')}
-      />
+      <FieldShell label={t('settings.account.email.current')}>
+        <Input
+          type="password"
+          autoComplete="current-password"
+          error={errors.currentPassword?.message}
+          {...register('currentPassword')}
+        />
+      </FieldShell>
     </CredentialForm>
   )
 }

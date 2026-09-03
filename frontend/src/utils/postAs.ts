@@ -1,4 +1,4 @@
-import type { PostAsValue } from '@shared/components/PostAsSelect/postAsValue'
+import type { PostAsValue } from '@shared/components/actor/PostAsSelect/postAsValue'
 
 // To store an organization user previously acted as for ease of access
 

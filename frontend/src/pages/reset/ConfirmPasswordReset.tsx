@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { AuthCard, TextField } from '@shared/components'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { AuthCard, FieldShell, Input } from '@shared/components'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { PASSWORD_MIN, PASSWORD_MAX } from '@utils/constants/validation'
 import { confirmPasswordReset } from '@utils/api/auth'
 import { buildConfirmResetSchema, type ConfirmResetData } from './schema'
@@ -63,23 +63,28 @@ const ConfirmPasswordReset = () => {
   return (
     <AuthCard title={t('reset.confirmTitle')} subtitle={t('reset.confirmSubtitle')}>
       <form onSubmit={onSubmit} noValidate>
-        <TextField
+        <FieldShell
           label={t('reset.newPassword')}
-          type="password"
-          autoComplete="new-password"
-          helper={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
-          error={errors.password?.message}
-          valid={!!dirtyFields.password && !errors.password}
-          {...register('password')}
-        />
-        <TextField
-          label={t('reset.confirmPassword')}
-          type="password"
-          autoComplete="new-password"
-          error={errors.confirmPassword?.message}
-          valid={!!dirtyFields.confirmPassword && !errors.confirmPassword}
-          {...register('confirmPassword')}
-        />
+          hint={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
+        >
+          <Input
+            type="password"
+            autoComplete="new-password"
+            error={errors.password?.message}
+            valid={!!dirtyFields.password && !errors.password}
+            {...register('password')}
+          />
+        </FieldShell>
+
+        <FieldShell label={t('reset.confirmPassword')}>
+          <Input
+            type="password"
+            autoComplete="new-password"
+            error={errors.confirmPassword?.message}
+            valid={!!dirtyFields.confirmPassword && !errors.confirmPassword}
+            {...register('confirmPassword')}
+          />
+        </FieldShell>
         <div className="auth-card-actions">
           <Button to="/login" variant={ButtonVariant.GHOST}>
             {t('reset.backToLogin')}

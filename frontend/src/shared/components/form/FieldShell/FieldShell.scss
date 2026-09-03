@@ -1,0 +1,41 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.field-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+
+  .field-shell-label {
+    @include m.field-label;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    .field-shell-asterisk {
+      color: c.$danger-text;
+      line-height: 1;
+    }
+  }
+
+  .field-shell-hint {
+    @include m.field-hint;
+  }
+
+  .field-shell-error {
+    @include m.field-error;
+  }
+
+  // A picker holds no words, so the field-level signal is its border. The
+  // selectors carry a host's own re-skin (a form dropdown wears `field-skin`),
+  // which is why the dropdown arm is written through `.dropdown`.
+  &.is-invalid {
+    .input-box,
+    .tag-input,
+    .dropdown .dropdown-trigger {
+      border-color: c.$danger-border;
+    }
+  }
+}

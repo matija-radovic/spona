@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant, TextField } from '@shared/components'
+import { Button, ButtonVariant, FieldShell, Input } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
 import { requestPasswordReset } from '@utils/api/auth'
@@ -80,30 +80,35 @@ const PasswordForm = ({ email }: PasswordFormProps) => {
         </Button>
       }
     >
-      <TextField
-        label={t('settings.account.password.current')}
-        type="password"
-        autoComplete="current-password"
-        error={errors.currentPassword?.message}
-        {...register('currentPassword')}
-      />
+      <FieldShell label={t('settings.account.password.current')}>
+        <Input
+          type="password"
+          autoComplete="current-password"
+          error={errors.currentPassword?.message}
+          {...register('currentPassword')}
+        />
+      </FieldShell>
 
-      <TextField
+      <FieldShell
         label={t('settings.account.password.new')}
-        type="password"
-        autoComplete="new-password"
-        helper={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
-        error={errors.newPassword?.message}
-        {...register('newPassword')}
-      />
+        hint={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
+      >
+        <Input
+          type="password"
+          autoComplete="new-password"
+          error={errors.newPassword?.message}
+          {...register('newPassword')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('settings.account.password.repeat')}
-        type="password"
-        autoComplete="new-password"
-        error={errors.repeatPassword?.message}
-        {...register('repeatPassword')}
-      />
+      <FieldShell label={t('settings.account.password.repeat')}>
+        <Input
+          type="password"
+          autoComplete="new-password"
+          error={errors.repeatPassword?.message}
+          {...register('repeatPassword')}
+        />
+      </FieldShell>
 
       {notice && (
         <p className={notice.ok ? 'settings-flash' : 'credential-form-error'}>{notice.text}</p>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useOnScreen from '@shared/hooks/useOnScreen'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { searchActors, type ActorSearchItemDto } from '@utils/api/profiles'
 import { ActorSearchRow } from '../ActorSearchRow'
 

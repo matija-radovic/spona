@@ -12,13 +12,11 @@
     gap: 0.5rem;
   }
 
-  // Segmented control, same build as the jobs bar's `.filter-toggle`.
   .apply-fields-toggle {
     @include m.capsule-control;
+    @include m.control-medium;
 
-    padding: 0.5rem 0.9rem;
     font-family: inherit;
-    font-size: 0.85rem;
 
     &.is-active {
       @include m.accent-fill;
@@ -34,10 +32,7 @@
   }
 
   .apply-fields-hint {
-    margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.4;
-    color: c.$text-muted;
+    @include m.field-hint;
   }
 
   .apply-fields-prefill {
@@ -59,8 +54,6 @@
   }
 
   .apply-fields-error {
-    margin: 0;
-    font-size: 0.75rem;
-    color: c.$danger-text;
+    @include m.field-error;
   }
 }

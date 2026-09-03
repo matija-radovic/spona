@@ -1,0 +1,130 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.input {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  .input-box {
+    @include m.field-skin;
+
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    cursor: text;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+
+    &:focus-within {
+      @include m.field-focus-ring;
+    }
+  }
+
+  // Their own gutter; the field's inline padding is the gap after them.
+  .input-leading,
+  .input-trailing {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    color: c.$text-muted;
+  }
+
+  .input-leading {
+    padding-left: 0.85rem;
+  }
+
+  .input-trailing {
+    padding-right: 0.85rem;
+  }
+
+  .input-field {
+    @include m.control-field;
+
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: inherit;
+    color: c.$text-strong;
+    background: transparent;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+      color: c.$text-placeholder;
+    }
+  }
+
+  &.input-pill .input-box {
+    background-color: c.$surface-3;
+    border-radius: 999px;
+  }
+
+  &.input-multiline {
+    .input-box {
+      align-items: stretch;
+    }
+
+    .input-field {
+      resize: vertical;
+      min-height: 6rem;
+      line-height: 1.4;
+    }
+
+    .input-indicator-wrap {
+      top: 0.6rem;
+      transform: none;
+    }
+  }
+
+  &.is-invalid .input-field,
+  &.is-valid .input-field {
+    padding-right: 2.7rem;
+  }
+
+  &.is-invalid .input-box {
+    border-color: c.$danger-border;
+  }
+
+  .input-indicator-wrap {
+    position: absolute;
+    top: 50%;
+    right: 0.55rem;
+    transform: translateY(-50%);
+    display: flex;
+  }
+
+  .input-indicator {
+    --icon-size: 0.875rem;
+
+    @include m.field-indicator;
+
+    width: 1.55rem;
+    height: 1.55rem;
+    background-color: c.$surface-4;
+  }
+
+  &.is-invalid .input-indicator {
+    background-color: c.$danger;
+    cursor: pointer;
+  }
+
+  &.is-valid .input-indicator {
+    background-color: c.$success;
+  }
+
+  .input-tooltip {
+    @include m.field-tooltip;
+
+    max-width: 16rem;
+
+    &::after {
+      right: 0.5rem;
+    }
+  }
+
+  .input-indicator-wrap:hover .input-tooltip,
+  .input-indicator-wrap.is-open .input-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+}

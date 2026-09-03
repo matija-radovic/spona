@@ -6,13 +6,11 @@ import {
   IconSearch,
   IconFilter,
   IconFilterOff,
-  IconChevronDown,
-  IconChevronUp,
   IconCheck,
   IconAdjustmentsHorizontal,
 } from '@tabler/icons-react'
-import { Dropdown } from '@shared/components'
-import { Button, ButtonVariant, ButtonSize } from '@shared/components/Button'
+import { Dropdown, Input, InputShape, SelectTrigger } from '@shared/components'
+import { Button, ButtonVariant, ButtonSize } from '@shared/components/form/Button'
 import {
   FILTERS,
   PRIMARY_FILTER_COUNT,
@@ -28,7 +26,7 @@ interface SearchFilterBarProps {
 }
 
 // The parent keys this component by the URL querystring, so a real navigation
-// (e.g. browser Back) remounts it — and RHF re-seeds every field from
+// (e.g. browser Back) remounts it â€” and RHF re-seeds every field from
 // `defaultValues: filters`, no sync effect needed. Staged edits live in the form
 // and never touch the URL until submit. `role` is carried through from the
 // home-page chips: it has no input, but as a default value it round-trips
@@ -127,32 +125,30 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
   }
 
   const FilterIcon = isMobile ? (menuOpen ? IconFilterOff : IconFilter) : IconFilter
-  const Chevron = menuOpen ? IconChevronUp : IconChevronDown
 
   return (
     <form className="jobs-bar" onSubmit={onSubmit} role="search">
       <div className="jobs-bar-row">
-        <div className="jobs-bar-search">
-          <IconSearch aria-hidden />
-          <input
-            type="search"
-            placeholder={t('jobs.search.placeholder')}
-            enterKeyHint="search"
-            aria-label={t('jobs.search.placeholder')}
-            {...register('q')}
-          />
-        </div>
+        <Input
+          className="jobs-bar-search"
+          shape={InputShape.PILL}
+          leading={<IconSearch aria-hidden />}
+          type="search"
+          placeholder={t('jobs.search.placeholder')}
+          enterKeyHint="search"
+          aria-label={t('jobs.search.placeholder')}
+          {...register('q')}
+        />
 
-        <button
-          type="button"
-          className={`jobs-bar-filter-btn${menuOpen ? ' is-open' : ''}`}
+        <SelectTrigger
+          className="jobs-bar-filter-btn"
+          open={menuOpen}
+          active={menuOpen}
+          chevron={!isMobile}
+          leading={<FilterIcon aria-hidden />}
           onClick={() => setMenuOpen((o) => !o)}
-          aria-expanded={menuOpen}
           aria-label={menuOpen ? t('jobs.search.filtersClose') : t('jobs.search.filtersOpen')}
-        >
-          <FilterIcon aria-hidden />
-          {!isMobile && <Chevron aria-hidden />}
-        </button>
+        />
       </div>
 
       {menuOpen && (

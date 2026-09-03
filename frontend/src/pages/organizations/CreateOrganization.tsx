@@ -4,8 +4,8 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { TextField, AvatarPicker, ContactInfoWidget } from '@shared/components'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { parseProblem } from '@utils/api/types'
 import { createOrganization } from '@utils/api/organizations'
 import { uploadAvatar } from '@utils/api/uploads'
@@ -65,54 +65,60 @@ const CreateOrganization = () => {
             )}
           />
 
-          <TextField
+          <FieldShell
             label={t('auth.org.slug')}
             required
-            helper={t('auth.org.slugHelper', { min: SLUG_MIN, max: SLUG_MAX })}
-            error={errors.slug?.message}
-            valid={!!dirtyFields.slug && !errors.slug}
-            {...register('slug')}
-          />
+            hint={t('auth.org.slugHelper', { min: SLUG_MIN, max: SLUG_MAX })}
+          >
+            <Input
+              error={errors.slug?.message}
+              valid={!!dirtyFields.slug && !errors.slug}
+              {...register('slug')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('auth.org.displayName')}
-            required
-            error={errors.displayName?.message}
-            valid={!!dirtyFields.displayName && !errors.displayName}
-            {...register('displayName')}
-          />
+          <FieldShell label={t('auth.org.displayName')} required>
+            <Input
+              error={errors.displayName?.message}
+              valid={!!dirtyFields.displayName && !errors.displayName}
+              {...register('displayName')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('auth.org.legalName')}
-            required
-            error={errors.legalName?.message}
-            valid={!!dirtyFields.legalName && !errors.legalName}
-            {...register('legalName')}
-          />
+          <FieldShell label={t('auth.org.legalName')} required>
+            <Input
+              error={errors.legalName?.message}
+              valid={!!dirtyFields.legalName && !errors.legalName}
+              {...register('legalName')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('auth.org.description')}
-            multiline
-            error={errors.description?.message}
-            valid={!!dirtyFields.description && !errors.description}
-            {...register('description')}
-          />
+          <FieldShell label={t('auth.org.description')}>
+            <Input
+              multiline
+              error={errors.description?.message}
+              valid={!!dirtyFields.description && !errors.description}
+              {...register('description')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('auth.org.website')}
-            type="url"
-            placeholder="https://"
-            error={errors.website?.message}
-            valid={!!dirtyFields.website && !errors.website}
-            {...register('website')}
-          />
+          <FieldShell label={t('auth.org.website')}>
+            <Input
+              type="url"
+              placeholder="https://"
+              error={errors.website?.message}
+              valid={!!dirtyFields.website && !errors.website}
+              {...register('website')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('auth.org.location')}
-            error={errors.location?.message}
-            valid={!!dirtyFields.location && !errors.location}
-            {...register('location')}
-          />
+          <FieldShell label={t('auth.org.location')}>
+            <Input
+              error={errors.location?.message}
+              valid={!!dirtyFields.location && !errors.location}
+              {...register('location')}
+            />
+          </FieldShell>
 
           <Controller
             control={control}

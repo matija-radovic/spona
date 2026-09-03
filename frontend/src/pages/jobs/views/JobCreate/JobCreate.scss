@@ -2,8 +2,7 @@
 @use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
-// Reserved so a late organization list does not shift the form under the writer.
-$identity-row: 2.4rem;
+$identity-row: 3.65rem;
 
 .job-create {
   display: flex;
@@ -50,13 +49,11 @@ $identity-row: 2.4rem;
 
   .job-create-identity {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
     min-height: $identity-row;
 
-    .job-create-identity-label {
-      @include m.field-label;
+    // The picker hugs its label instead of filling the form's width.
+    .field-shell {
+      align-items: flex-start;
     }
   }
 

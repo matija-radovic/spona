@@ -1,8 +1,9 @@
 import './PostingFields.scss'
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Dropdown, TextField } from '@shared/components'
+import { Dropdown, FieldGroup, FieldShell, Input, TagInput } from '@shared/components'
 import { jobCategoryOptions } from '@utils/constants/jobRoles'
+import { JOB_KEYWORD_MAX, JOB_KEYWORDS_MAX } from '@utils/constants/validation'
 import {
   EXPERIENCE_LEVEL_VALUES,
   JOB_TYPE_VALUES,
@@ -12,8 +13,6 @@ import {
   enumOptions,
 } from '@pages/jobs/lib/jobEnums'
 import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
-import { FieldRow } from '../FieldRow'
-import { KeywordInput } from '../KeywordInput'
 
 interface PostingFieldsProps {
   register: UseFormRegister<JobFormData>
@@ -29,28 +28,25 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
 
   return (
     <div className="posting-fields">
-      <TextField
-        label={t('jobs.fields.title')}
-        required
-        error={errors.title?.message}
-        {...register('title')}
-      />
+      <FieldShell label={t('jobs.fields.title')} required>
+        <Input error={errors.title?.message} {...register('title')} />
+      </FieldShell>
 
-      <TextField
-        label={t('jobs.fields.description')}
-        multiline
-        rows={10}
-        required
-        error={errors.description?.message}
-        {...register('description')}
-      />
+      <FieldShell label={t('jobs.fields.description')} required>
+        <Input multiline rows={10} error={errors.description?.message} {...register('description')} />
+      </FieldShell>
 
       <div className="posting-fields-grid">
         <Controller
           control={control}
           name="category"
           render={({ field }) => (
-            <FieldRow label={t('jobs.fields.category')} required error={errors.category?.message}>
+            <FieldShell
+              label={t('jobs.fields.category')}
+              required
+              htmlLabel={false}
+              error={errors.category?.message}
+            >
               <Dropdown
                 label={t('jobs.fields.category')}
                 options={categories}
@@ -58,7 +54,7 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
                 placeholder={t('jobs.fields.category')}
                 onChange={(next) => field.onChange(next)}
               />
-            </FieldRow>
+            </FieldShell>
           )}
         />
 
@@ -66,14 +62,18 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           control={control}
           name="jobType"
           render={({ field }) => (
-            <FieldRow label={t('jobs.fields.jobType')} error={errors.jobType?.message}>
+            <FieldShell
+              label={t('jobs.fields.jobType')}
+              htmlLabel={false}
+              error={errors.jobType?.message}
+            >
               <Dropdown
                 label={t('jobs.fields.jobType')}
                 options={enumOptions(JOB_TYPE_VALUES, 'jobs.type', t)}
                 value={field.value}
                 onChange={(next) => field.onChange(next)}
               />
-            </FieldRow>
+            </FieldShell>
           )}
         />
 
@@ -81,14 +81,18 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           control={control}
           name="workplaceType"
           render={({ field }) => (
-            <FieldRow label={t('jobs.fields.workplaceType')} error={errors.workplaceType?.message}>
+            <FieldShell
+              label={t('jobs.fields.workplaceType')}
+              htmlLabel={false}
+              error={errors.workplaceType?.message}
+            >
               <Dropdown
                 label={t('jobs.fields.workplaceType')}
                 options={enumOptions(WORKPLACE_TYPE_VALUES, 'jobs.workplace', t)}
                 value={field.value}
                 onChange={(next) => field.onChange(next)}
               />
-            </FieldRow>
+            </FieldShell>
           )}
         />
 
@@ -96,69 +100,77 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           control={control}
           name="experienceLevel"
           render={({ field }) => (
-            <FieldRow label={t('jobs.fields.experienceLevel')} error={errors.experienceLevel?.message}>
+            <FieldShell
+              label={t('jobs.fields.experienceLevel')}
+              htmlLabel={false}
+              error={errors.experienceLevel?.message}
+            >
               <Dropdown
                 label={t('jobs.fields.experienceLevel')}
                 options={enumOptions(EXPERIENCE_LEVEL_VALUES, 'jobs.experience', t)}
                 value={field.value}
                 onChange={(next) => field.onChange(next)}
               />
-            </FieldRow>
+            </FieldShell>
           )}
         />
       </div>
 
-      <TextField
-        label={t('jobs.fields.location')}
-        required
-        error={errors.location?.message}
-        {...register('location')}
-      />
+      <FieldShell label={t('jobs.fields.location')} required>
+        <Input error={errors.location?.message} {...register('location')} />
+      </FieldShell>
 
       <Controller
         control={control}
         name="keywords"
         render={({ field }) => (
-          <KeywordInput
+          <FieldShell
             label={t('jobs.fields.keywords')}
-            value={field.value}
-            onChange={field.onChange}
+            hint={t('jobs.create.keywordsHint', { max: JOB_KEYWORDS_MAX })}
             error={errors.keywords?.message}
-          />
+          >
+            <TagInput
+              value={field.value}
+              onChange={field.onChange}
+              max={JOB_KEYWORDS_MAX}
+              maxLength={JOB_KEYWORD_MAX}
+              placeholder={t('jobs.create.keywordPlaceholder')}
+              removeLabel={(keyword) => t('jobs.create.keywordRemove', { keyword })}
+            />
+          </FieldShell>
         )}
       />
 
-      <fieldset className="posting-fields-salary">
-        <legend>{t('jobs.create.salary')}</legend>
-        <p className="posting-fields-salary-hint">{t('jobs.create.salaryHint')}</p>
-
+      <FieldGroup legend={t('jobs.create.salary')} hint={t('jobs.create.salaryHint')}>
         <div className="posting-fields-salary-row">
-          <TextField
-            label={t('jobs.fields.salaryMin')}
-            inputMode="decimal"
-            error={errors.salaryMin?.message}
-            {...register('salaryMin')}
-          />
+          <FieldShell label={t('jobs.fields.salaryMin')}>
+            <Input
+              inputMode="decimal"
+              error={errors.salaryMin?.message}
+              {...register('salaryMin')}
+            />
+          </FieldShell>
 
-          <TextField
-            label={t('jobs.fields.salaryMax')}
-            inputMode="decimal"
-            error={errors.salaryMax?.message}
-            {...register('salaryMax')}
-          />
+          <FieldShell label={t('jobs.fields.salaryMax')}>
+            <Input
+              inputMode="decimal"
+              error={errors.salaryMax?.message}
+              {...register('salaryMax')}
+            />
+          </FieldShell>
 
           <Controller
             control={control}
             name="salaryCurrency"
             render={({ field }) => (
-              <FieldRow label={t('jobs.fields.salaryCurrency')}>
+              <FieldShell label={t('jobs.fields.salaryCurrency')} htmlLabel={false}>
                 <Dropdown
                   label={t('jobs.fields.salaryCurrency')}
                   options={currencies}
                   value={field.value}
                   onChange={(next) => field.onChange(next)}
                 />
-              </FieldRow>
+              </FieldShell>
             )}
           />
 
@@ -166,18 +178,18 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
             control={control}
             name="salaryPeriod"
             render={({ field }) => (
-              <FieldRow label={t('jobs.fields.salaryPeriod')}>
+              <FieldShell label={t('jobs.fields.salaryPeriod')} htmlLabel={false}>
                 <Dropdown
                   label={t('jobs.fields.salaryPeriod')}
                   options={enumOptions(SALARY_PERIOD_VALUES, 'jobs.period', t)}
                   value={field.value}
                   onChange={(next) => field.onChange(next)}
                 />
-              </FieldRow>
+              </FieldShell>
             )}
           />
         </div>
-      </fieldset>
+      </FieldGroup>
     </div>
   )
 }

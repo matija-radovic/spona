@@ -6,8 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { TextField } from '@shared/components'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { FieldShell, Input } from '@shared/components'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { useUser } from '@shared/contexts'
 import { loginRequest, resendVerification } from '@utils/api/auth'
 import { parseProblem } from '@utils/api/types'
@@ -86,24 +86,24 @@ const Login = () => {
           <p className="login-sub">{t('auth.loginSubtitle')}</p>
         </header>
 
-        <TextField
-          label={t('auth.usernameOrEmail')}
-          required
-          autoComplete="username"
-          error={errors.identifier?.message}
-          valid={!!dirtyFields.identifier && !errors.identifier}
-          {...register('identifier')}
-        />
+        <FieldShell label={t('auth.usernameOrEmail')} required>
+          <Input
+            autoComplete="username"
+            error={errors.identifier?.message}
+            valid={!!dirtyFields.identifier && !errors.identifier}
+            {...register('identifier')}
+          />
+        </FieldShell>
 
-        <TextField
-          label={t('auth.password')}
-          required
-          type="password"
-          autoComplete="current-password"
-          error={errors.password?.message}
-          valid={!!dirtyFields.password && !errors.password}
-          {...register('password')}
-        />
+        <FieldShell label={t('auth.password')} required>
+          <Input
+            type="password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            valid={!!dirtyFields.password && !errors.password}
+            {...register('password')}
+          />
+        </FieldShell>
 
         <div className="login-forgot-row">
           <Link to="/reset" className="login-forgot">

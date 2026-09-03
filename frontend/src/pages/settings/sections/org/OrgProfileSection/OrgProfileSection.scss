@@ -2,18 +2,6 @@
 @use '@css/mixins' as m;
 
 .org-profile-section {
-  .org-profile-avatar,
-  .org-profile-contacts {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .org-profile-avatar-label,
-  .org-profile-contacts-label {
-    @include m.field-label;
-  }
-
   .org-profile-contacts-list {
     display: flex;
     flex-direction: column;

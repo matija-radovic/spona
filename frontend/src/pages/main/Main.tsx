@@ -2,7 +2,7 @@ import './Main.scss'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { Section } from '@shared/components'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { POPULAR_JOB_ROLES, jobsFilterPath } from '@utils/constants/jobRoles'
 
 const reveal = {

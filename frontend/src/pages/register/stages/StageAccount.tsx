@@ -1,6 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { TextField } from '@shared/components'
+import { FieldShell, Input } from '@shared/components'
 import {
   USERNAME_MIN,
   USERNAME_MAX,
@@ -26,46 +26,52 @@ const StageAccount = ({ form, usernameTaken }: StageAccountProps) => {
 
   return (
     <div className="register-fields">
-      <TextField
+      <FieldShell
         label={t('auth.username')}
         required
-        autoComplete="username"
-        helper={t('auth.usernameHelper', { min: USERNAME_MIN, max: USERNAME_MAX })}
-        error={usernameError}
-        valid={!!dirtyFields.username && !errors.username && !usernameTaken}
-        {...register('username')}
-      />
+        hint={t('auth.usernameHelper', { min: USERNAME_MIN, max: USERNAME_MAX })}
+      >
+        <Input
+          autoComplete="username"
+          error={usernameError}
+          valid={!!dirtyFields.username && !errors.username && !usernameTaken}
+          {...register('username')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('auth.email')}
-        required
-        type="email"
-        autoComplete="email"
-        error={errors.email?.message}
-        valid={!!dirtyFields.email && !errors.email}
-        {...register('email')}
-      />
+      <FieldShell label={t('auth.email')} required>
+        <Input
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          valid={!!dirtyFields.email && !errors.email}
+          {...register('email')}
+        />
+      </FieldShell>
 
-      <TextField
+      <FieldShell
         label={t('auth.password')}
         required
-        type="password"
-        autoComplete="new-password"
-        helper={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
-        error={errors.password?.message}
-        valid={!!dirtyFields.password && !errors.password}
-        {...register('password')}
-      />
+        hint={t('auth.passwordHelper', { min: PASSWORD_MIN, max: PASSWORD_MAX })}
+      >
+        <Input
+          type="password"
+          autoComplete="new-password"
+          error={errors.password?.message}
+          valid={!!dirtyFields.password && !errors.password}
+          {...register('password')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('auth.confirmPassword')}
-        required
-        type="password"
-        autoComplete="new-password"
-        error={errors.confirmPassword?.message}
-        valid={!!dirtyFields.confirmPassword && !errors.confirmPassword}
-        {...register('confirmPassword')}
-      />
+      <FieldShell label={t('auth.confirmPassword')} required>
+        <Input
+          type="password"
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+          valid={!!dirtyFields.confirmPassword && !errors.confirmPassword}
+          {...register('confirmPassword')}
+        />
+      </FieldShell>
     </div>
   )
 }

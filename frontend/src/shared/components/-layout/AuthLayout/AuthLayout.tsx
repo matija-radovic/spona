@@ -1,7 +1,7 @@
 import './AuthLayout.scss'
 import { useEffect, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Footer } from '@shared/components/Footer'
+import { Footer } from '@shared/components/chrome/Footer'
 import { markInitialLoadDone } from '@shared/hooks/useLastSection'
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
 

@@ -1,5 +1,4 @@
 @use '@css/colors' as c;
-@use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
 .jobs-bar {
@@ -16,21 +15,12 @@
   }
 
   .jobs-bar-search {
-    @include m.search-pill;
+    flex: 1 1 auto;
   }
 
   .jobs-bar-filter-btn {
-    @include m.capsule-control;
-
-    gap: 0.3rem;
     flex: 0 0 auto;
-    padding: 0.6rem 0.9rem;
-    font-size: 0.9rem;
-    transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
-
-    &.is-open {
-      @include m.accent-fill;
-    }
+    min-height: m.$field-height;
   }
 
   .jobs-bar-menu {
@@ -47,13 +37,13 @@
     align-items: center;
   }
 
+  // Sits in a row with the filter dropdowns, so it carries their size.
   .filter-toggle {
     @include m.capsule-control;
+    @include m.control-medium;
 
     gap: 0.4rem;
-    padding: 0.5rem 0.8rem;
     font-family: inherit;
-    font-size: 0.85rem;
 
     .filter-toggle-box {
       @include m.tick-box;
@@ -89,12 +79,6 @@
       color: c.$text-primary;
       background-color: transparent;
       text-decoration: underline;
-    }
-  }
-
-  @media #{mq.$phone} {
-    .jobs-bar-filter-btn {
-      padding: 0.6rem;
     }
   }
 }

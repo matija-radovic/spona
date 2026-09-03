@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { useUser } from '@shared/contexts'
 import { getStoredPostAs, setStoredPostAs } from '@utils/postAs'
 import type { MyOrganizationDto } from '@utils/api/memberships'
-import type { PostAsValue } from '@shared/components/PostAsSelect/postAsValue'
+import type { PostAsValue } from '@shared/components/actor/PostAsSelect/postAsValue'
 
 interface PostAs {
   /** `null` = as myself. Always one of `publishable`, or null. */

@@ -1,0 +1,41 @@
+@use '@css/mixins' as m;
+
+.select-trigger {
+  @include m.capsule-control;
+  @include m.control-medium;
+
+  gap: 0.4rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+
+  &:focus-visible {
+    @include m.field-focus-ring;
+
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.is-active {
+    @include m.accent-fill;
+
+    font-weight: 600;
+  }
+
+  .select-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .select-trigger-chevron {
+    transition: transform 0.16s ease;
+  }
+
+  &[aria-expanded='true'] .select-trigger-chevron {
+    transform: rotate(180deg);
+  }
+}

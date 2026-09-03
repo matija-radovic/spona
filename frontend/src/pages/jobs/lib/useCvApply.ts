@@ -63,8 +63,6 @@ export const useCvApply = (jobId: string): CvApply => {
     setServerError(null)
     const error = validateCv(candidate)
     setClientError(error)
-    // The error tooltip opens automatically (unlike TextField); a real hover-out
-    // or an ✕ click then dismisses it.
     setTooltipOpen(error !== null)
   }
 

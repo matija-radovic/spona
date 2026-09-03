@@ -3,6 +3,7 @@ import { useState, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconSearch, IconBuildingFactory2, IconUsers } from '@tabler/icons-react'
+import { Input, InputShape } from '@shared/components'
 import useDebounce from '@shared/hooks/useDebounce'
 import { ActorResults } from './components/ActorResults'
 
@@ -37,17 +38,17 @@ const ActorSearch = ({ type }: ActorSearchProps) => {
   return (
     <div className="actor-search container">
       <div className="actor-search-bar">
-        <div className="actor-search-input">
-          <IconSearch aria-hidden />
-          <input
-            type="search"
-            value={value}
-            onChange={onInput}
-            placeholder={t('actors.search.placeholder')}
-            enterKeyHint="search"
-            aria-label={t('actors.search.placeholder')}
-          />
-        </div>
+        <Input
+          className="actor-search-input"
+          shape={InputShape.PILL}
+          leading={<IconSearch aria-hidden />}
+          type="search"
+          value={value}
+          onChange={onInput}
+          placeholder={t('actors.search.placeholder')}
+          enterKeyHint="search"
+          aria-label={t('actors.search.placeholder')}
+        />
 
         <div className="actor-search-modes" role="group" aria-label={t('nav.profileMenu')}>
           <button

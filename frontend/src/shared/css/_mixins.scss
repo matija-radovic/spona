@@ -8,7 +8,10 @@ $read-column: 876px;
 $read-rail: 300px;
 $read-gap: 24px;
 
-// --- ButtonSizes ---
+// --- Control sizes ---
+
+// 2 * 0.7rem + 1.25 * 0.9rem + 2px
+$field-height: 2.65rem;
 
 @mixin control-small {
   padding: 0.4em 0.75em;
@@ -23,6 +26,12 @@ $read-gap: 24px;
 @mixin control-large {
   padding: 0.75em 1.3em;
   font-size: 1rem;
+}
+
+@mixin control-field {
+  padding: 0.7rem 0.85rem;
+  font-size: 0.9rem;
+  line-height: var(--control-line-height);
 }
 
 // --- ButtonVariant + additional Button styles ---
@@ -135,7 +144,7 @@ $read-gap: 24px;
 }
 
 
-// --- TextField stuff ---
+// --- Field parts ---
 
 @mixin field-skin {
   width: 100%;
@@ -159,7 +168,23 @@ $read-gap: 24px;
 @mixin field-label {
   font-size: 0.85rem;
   font-weight: 600;
+  line-height: var(--control-line-height);
   color: c.$text-primary;
+}
+
+@mixin field-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: c.$text-muted;
+  white-space: pre-line;
+}
+
+@mixin field-error {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: c.$danger-text;
 }
 
 // checkmark and x thing within the field
@@ -329,42 +354,7 @@ $read-gap: 24px;
   }
 }
 
-@mixin search-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0 0.85rem;
-  font-size: 0.9rem;
-  color: c.$text-muted;
-  background-color: c.$surface-3;
-  border: 1px solid c.$border-panel;
-  border-radius: 999px;
-
-  &:focus-within {
-    border-color: c.$accent;
-  }
-
-  input {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding: 0.6rem 0;
-    font-family: inherit;
-    font-size: 0.9rem;
-    line-height: var(--control-line-height);
-    color: c.$text-strong;
-    background: transparent;
-    border: none;
-    outline: none;
-
-    &::placeholder {
-      color: c.$text-placeholder;
-    }
-  }
-}
-
-// Dropdown's multi-select check, the jobs filter toggle, the privacy toggle. 
+// Dropdown's multi-select check, the jobs filter toggle, the privacy toggle.
 @mixin tick-box {
   display: inline-flex;
   align-items: center;

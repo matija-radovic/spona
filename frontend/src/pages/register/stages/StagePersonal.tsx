@@ -1,6 +1,6 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { TextField, AvatarPicker, ContactInfoWidget } from '@shared/components'
+import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
 import { uploadAvatar } from '@utils/api/uploads'
 import type { RegisterData } from '../schema'
 
@@ -30,30 +30,33 @@ const StagePersonal = ({ form }: StagePersonalProps) => {
         )}
       />
 
-      <TextField
-        label={t('auth.fullName')}
-        autoComplete="name"
-        error={errors.fullName?.message}
-        valid={!!dirtyFields.fullName && !errors.fullName}
-        {...register('fullName')}
-      />
+      <FieldShell label={t('auth.fullName')}>
+        <Input
+          autoComplete="name"
+          error={errors.fullName?.message}
+          valid={!!dirtyFields.fullName && !errors.fullName}
+          {...register('fullName')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('auth.bio')}
-        multiline
-        placeholder={t('auth.bioPlaceholder')}
-        error={errors.bio?.message}
-        valid={!!dirtyFields.bio && !errors.bio}
-        {...register('bio')}
-      />
+      <FieldShell label={t('auth.bio')}>
+        <Input
+          multiline
+          placeholder={t('auth.bioPlaceholder')}
+          error={errors.bio?.message}
+          valid={!!dirtyFields.bio && !errors.bio}
+          {...register('bio')}
+        />
+      </FieldShell>
 
-      <TextField
-        label={t('auth.location')}
-        autoComplete="address-level2"
-        error={errors.location?.message}
-        valid={!!dirtyFields.location && !errors.location}
-        {...register('location')}
-      />
+      <FieldShell label={t('auth.location')}>
+        <Input
+          autoComplete="address-level2"
+          error={errors.location?.message}
+          valid={!!dirtyFields.location && !errors.location}
+          {...register('location')}
+        />
+      </FieldShell>
 
       <Controller
         control={control}

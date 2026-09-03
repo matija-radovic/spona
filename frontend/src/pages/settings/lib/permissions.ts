@@ -1,6 +1,6 @@
 // Hardcoded mirror of the backend's permission matrix - the only place it lives on the client.
 import type { OrganizationRole, OrgMemberDto } from '@utils/api/organizations'
-import type { PostAsSurface } from '@shared/components/PostAsSelect/postAsValue'
+import type { PostAsSurface } from '@shared/components/actor/PostAsSelect/postAsValue'
 
 const ASSIGNABLE: Readonly<Record<OrganizationRole, readonly OrganizationRole[]>> = {
   OWNER: ['ADMIN', 'EDITOR', 'RECRUITER'],

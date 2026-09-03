@@ -1,7 +1,7 @@
 @use '@css/mediaqueries';
 @use '@css/colors';
 
-@use './shared/components/ScrollContainer/ScrollContainer';
+@use './shared/components/chrome/ScrollContainer/ScrollContainer';
 
 :root {
   font-family: 'Montserrat', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

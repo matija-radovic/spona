@@ -5,7 +5,14 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant, Dropdown, TextField, type DropdownOption } from '@shared/components'
+import {
+  Button,
+  ButtonVariant,
+  Dropdown,
+  FieldShell,
+  Input,
+  type DropdownOption,
+} from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
 import { SLUG_MIN, SLUG_MAX, SLUG_REGEX } from '@utils/constants/validation'
@@ -145,12 +152,9 @@ const ManagementSection = () => {
       <form className="settings-card" onSubmit={onRename} noValidate>
         <h5 className="settings-card-title">{t('settings.org.slug.title')}</h5>
 
-        <TextField
-          label={t('auth.org.slug')}
-          helper={t('settings.org.slug.helper')}
-          error={errors.slug?.message}
-          {...register('slug')}
-        />
+        <FieldShell label={t('auth.org.slug')} hint={t('settings.org.slug.helper')}>
+          <Input error={errors.slug?.message} {...register('slug')} />
+        </FieldShell>
 
         <div className="settings-card-actions">
           {justSaved && <p className="settings-flash">{t('common.saved')}</p>}
@@ -237,11 +241,9 @@ const ManagementSection = () => {
       >
         <p className="settings-modal-warning">{t('settings.org.transfer.confirm')}</p>
 
-        <TextField
-          label={t('settings.org.transfer.typeSlug', { slug })}
-          value={confirmSlug}
-          onChange={(event) => setConfirmSlug(event.target.value)}
-        />
+        <FieldShell label={t('settings.org.transfer.typeSlug', { slug })}>
+          <Input value={confirmSlug} onChange={(event) => setConfirmSlug(event.target.value)} />
+        </FieldShell>
 
         {modalError && <p className="settings-modal-error">{modalError}</p>}
       </SettingsModal>
@@ -267,11 +269,9 @@ const ManagementSection = () => {
       >
         <p className="settings-modal-warning">{t('settings.org.delete.warning')}</p>
 
-        <TextField
-          label={t('settings.confirm.typeSlug', { slug })}
-          value={confirmSlug}
-          onChange={(event) => setConfirmSlug(event.target.value)}
-        />
+        <FieldShell label={t('settings.confirm.typeSlug', { slug })}>
+          <Input value={confirmSlug} onChange={(event) => setConfirmSlug(event.target.value)} />
+        </FieldShell>
 
         {modalError && <p className="settings-modal-error">{modalError}</p>}
       </SettingsModal>

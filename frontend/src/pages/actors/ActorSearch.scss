@@ -15,7 +15,7 @@
   }
 
   .actor-search-input {
-    @include m.search-pill;
+    flex: 1 1 auto;
   }
 
   .actor-search-modes {
@@ -28,12 +28,12 @@
   }
 
   .actor-search-mode {
+    @include m.control-field;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.6rem 0.75rem;
-    font-size: 0.9rem;
-    line-height: var(--control-line-height);
+    padding-inline: 0.75rem;
     color: c.$text-muted;
     background: transparent;
     border: none;

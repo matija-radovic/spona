@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { IconMail } from '@tabler/icons-react'
-import { Button, ButtonVariant } from '@shared/components/Button'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
 import {
   checkUsernameAvailable,
   registerUser,

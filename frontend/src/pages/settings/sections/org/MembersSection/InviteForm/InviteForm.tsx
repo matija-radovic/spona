@@ -1,6 +1,13 @@
 import { useState, type SubmitEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant, Dropdown, TextField, type DropdownOption } from '@shared/components'
+import {
+  Button,
+  ButtonVariant,
+  Dropdown,
+  FieldShell,
+  Input,
+  type DropdownOption,
+} from '@shared/components'
 import type { OrganizationRole } from '@utils/api/organizations'
 import { assignableRoles } from '../../../../lib/permissions'
 
@@ -43,13 +50,13 @@ const InviteForm =({ viewerRole, onInvite }: InviteFormProps) => {
 
   return (
     <form className="invite-form" onSubmit={submit} noValidate>
-      <TextField
-        className="invite-form-field"
-        label={t('settings.invitations.identifier')}
-        error={error ?? undefined}
-        value={identifier}
-        onChange={(event) => setIdentifier(event.target.value)}
-      />
+      <FieldShell className="invite-form-field" label={t('settings.invitations.identifier')}>
+        <Input
+          error={error ?? undefined}
+          value={identifier}
+          onChange={(event) => setIdentifier(event.target.value)}
+        />
+      </FieldShell>
 
       <div className="invite-form-controls">
         <Dropdown

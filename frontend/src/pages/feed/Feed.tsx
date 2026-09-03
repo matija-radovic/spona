@@ -1,4 +1,4 @@
-import { PlaceholderPage } from '@shared/components/PlaceholderPage'
+import { PlaceholderPage } from '@shared/components/chrome/PlaceholderPage'
 
 const Feed = () => <PlaceholderPage />
 

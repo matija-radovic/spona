@@ -1,0 +1,21 @@
+@use '@css/mixins' as m;
+
+.field-group {
+  @include m.surface-panel(10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+
+  .field-group-legend {
+    @include m.field-label;
+
+    padding: 0 0.35rem;
+  }
+
+  .field-group-hint {
+    @include m.field-hint;
+  }
+}
