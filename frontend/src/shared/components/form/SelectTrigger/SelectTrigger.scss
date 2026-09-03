@@ -5,6 +5,7 @@
   @include m.control-medium;
 
   gap: 0.4rem;
+  justify-content: space-between;
   font-family: inherit;
   white-space: nowrap;
   transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
