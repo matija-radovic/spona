@@ -59,13 +59,13 @@ const Main = () => {
           <p className="home-lead">{t('home.rolesSubtitle')}</p>
 
           <div className="home-roles">
-            {POPULAR_JOB_ROLES.map((role) => (
+            {POPULAR_JOB_ROLES.map((category) => (
               <Button
-                key={role.slug}
-                to={jobsFilterPath(role.slug)}
+                key={category}
+                to={jobsFilterPath(category)}
                 variant={ButtonVariant.QUATERNARY}
               >
-                {role.label}
+                {t(`jobs.category.${category}`)}
               </Button>
             ))}
           </div>

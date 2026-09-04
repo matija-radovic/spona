@@ -18,7 +18,7 @@ export { FieldGroup } from './form/FieldGroup'
 export { Input, InputShape } from './form/Input'
 export { TagInput } from './form/TagInput'
 export { SelectTrigger } from './form/SelectTrigger'
-export { Dropdown, type DropdownOption } from './form/Dropdown'
+export { Dropdown, type DropdownNoMatch, type DropdownOption } from './form/Dropdown'
 export { AvatarPicker } from './form/AvatarPicker'
 export {
   ContactInfoWidget,

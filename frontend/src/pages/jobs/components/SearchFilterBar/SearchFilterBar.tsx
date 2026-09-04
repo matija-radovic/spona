@@ -25,13 +25,6 @@ interface SearchFilterBarProps {
   isMobile: boolean
 }
 
-// The parent keys this component by the URL querystring, so a real navigation
-// (e.g. browser Back) remounts it â€” and RHF re-seeds every field from
-// `defaultValues: filters`, no sync effect needed. Staged edits live in the form
-// and never touch the URL until submit. `role` is carried through from the
-// home-page chips: it has no input, but as a default value it round-trips
-// through `handleSubmit` (RHF keeps unregistered defaults; shouldUnregister is
-// false by default).
 const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) => {
   const { t } = useTranslation()
   const { register, control, handleSubmit, reset, getValues } = useForm<FilterState>({
@@ -104,7 +97,7 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
       )
     }
 
-    const key = config.key as 'workplace' | 'employment' | 'experience'
+    const key = config.key as 'workplace' | 'employment' | 'hours' | 'experience'
     return (
       <Controller
         key={config.key}

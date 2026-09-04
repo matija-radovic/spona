@@ -100,7 +100,6 @@ const JobCreate = () => {
       intent.current = 'DRAFT'
       return (await trigger()) ? persist(getValues()) : false
     },
-    onDiscard: () => reset(JOB_DEFAULTS),
   })
 
   useEffect(() => {
@@ -153,7 +152,7 @@ const JobCreate = () => {
               <Button
                 variant={ButtonVariant.GHOST}
                 onClick={() => navigate('/jobs')}
-                disabled={!isDirty || isSubmitting}
+                disabled={isSubmitting}
               >
                 {t('common.cancel')}
               </Button>

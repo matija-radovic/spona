@@ -32,35 +32,89 @@ import { filtersToSearchParams } from '@pages/jobs/lib/filters'
 
 // ── Local enum mirrors (the project mirrors backend enums as local unions) ─────
 
-export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'GIG' | 'INTERNSHIP' | 'VOLUNTEER'
-export type WorkplaceType = 'ONSITE' | 'REMOTE' | 'HYBRID' | 'OTHER'
+/** The engagement being offered - the contract, not the hours. How many hours it
+ *  runs to is `WorkingHours`, which varies independently of every member here. */
+export type JobType =
+  | 'PERMANENT'
+  | 'FIXED_TERM'
+  | 'SEASONAL'
+  | 'FREELANCE'
+  | 'INTERNSHIP'
+  | 'VOLUNTEER'
+
+/** Full or reduced hours. Nullable on `Job`: most postings never say. */
+export type WorkingHours = 'FULL_TIME' | 'PART_TIME'
+
+/** Where the work is performed, and nothing else - the kind of work is `category`.
+ *  `FIELD` is work whose location changes: client homes, sites, routes, venues. */
+export type WorkplaceType = 'ONSITE' | 'REMOTE' | 'HYBRID' | 'FIELD' | 'OTHER'
+
 export type ApplicationType = 'CONTACT_ONLY' | 'EXTERNAL_URL' | 'CV_DROP'
 export type JobStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
+
+/** The minimum experience the posting asks for, as a threshold rather than a
+ *  band: a poster wanting 8 years reaches for "over 5" and is not forced to
+ *  choose between 5-10 and 10-15. Ordered by increasing requirement. */
 export type ExperienceLevel =
-  | 'ENTRY'
-  | 'INTERNSHIP'
-  | 'MEDIOR'
-  | 'SENIOR'
-  | 'MANAGER'
-  | 'DIRECTOR'
-  | 'EXECUTIVE'
+  | 'NONE'
+  | 'MONTHS_6'
+  | 'YEARS_1'
+  | 'YEARS_2'
+  | 'YEARS_3'
+  | 'YEARS_5'
+  | 'YEARS_10'
+
 export type SalaryPeriod = 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'JOB'
 
-/** The occupation axis. The URL carries the kebab slug (`?role=frontend-developer`),
- *  the column stores the enum - `utils/constants/jobRoles.ts` maps between them. */
+/**
+ * The occupation axis, cut at the occupational-group level - never a job title,
+ * which is `title` and already weighted above everything else in search.
+ *
+ * It has to stay a closed enum: the `(status, category)` index, the `?role=`
+ * chips and the slug round-trip all match exactly, and free text fragments a
+ * group into four spellings that each return a quarter of its jobs. The URL
+ * carries the kebab slug (`?role=it-software`) and the backend maps it back;
+ * the client only goes the other way, through `slugFromCategory`.
+ *
+ * Finding the right group is a client-side synonym index over this list
+ * (`jobs.categorySynonyms` in the locale file), not a taxonomy table.
+ */
 export type JobCategory =
-  | 'SOFTWARE_ENGINEER'
-  | 'FRONTEND_DEVELOPER'
-  | 'BACKEND_DEVELOPER'
-  | 'PRODUCT_DESIGNER'
-  | 'PRODUCT_MANAGER'
-  | 'DATA_ANALYST'
-  | 'DEVOPS_ENGINEER'
-  | 'QA_ENGINEER'
-  | 'MARKETING_SPECIALIST'
-  | 'SALES_REPRESENTATIVE'
-  | 'HR_RECRUITER'
-  | 'PROJECT_MANAGER'
+  | 'IT_SOFTWARE'
+  | 'IT_INFRASTRUCTURE'
+  | 'DATA_AI'
+  | 'DESIGN_CREATIVE'
+  | 'MEDIA_JOURNALISM'
+  | 'MARKETING_PR'
+  | 'SALES'
+  | 'RETAIL'
+  | 'CUSTOMER_SUPPORT'
+  | 'ADMIN_OFFICE'
+  | 'FINANCE_ACCOUNTING'
+  | 'LEGAL'
+  | 'HR'
+  | 'PROJECT_PRODUCT'
+  | 'EDUCATION'
+  | 'HEALTHCARE'
+  | 'CARE_SERVICES'
+  | 'CONSTRUCTION'
+  | 'SKILLED_TRADES'
+  | 'MANUFACTURING'
+  | 'ENGINEERING'
+  | 'AUTOMOTIVE'
+  | 'TRANSPORT_LOGISTICS'
+  | 'WAREHOUSE'
+  | 'HOSPITALITY_FOOD'
+  | 'TOURISM'
+  | 'AGRICULTURE'
+  | 'CLEANING_MAINTENANCE'
+  | 'SECURITY'
+  | 'BEAUTY_WELLNESS'
+  | 'SPORT_RECREATION'
+  | 'ARTS_CULTURE'
+  | 'TRANSLATION'
+  | 'SCIENCE_RESEARCH'
+  | 'REAL_ESTATE'
   | 'OTHER'
 
 /** `POST /jobs` reaches DRAFT or OPEN and never CLOSED: a posting that has never
@@ -95,10 +149,16 @@ export interface JobListItemDto {
 }
 
 export interface JobDetailDto extends JobListItemDto {
-  category: JobCategory
-  jobType: JobType
-  workplaceType: WorkplaceType
-  experienceLevel: ExperienceLevel
+  /** The three below are NULL only on a DRAFT: publishing requires all of them,
+   *  so an OPEN or CLOSED posting always states its category, engagement and
+   *  work model. */
+  category: JobCategory | null
+  jobType: JobType | null
+  workplaceType: WorkplaceType | null
+  /** These two stay NULL on a published posting when it says nothing. Rendered
+   *  as nothing, matched by no filter. */
+  workingHours: WorkingHours | null
+  experienceLevel: ExperienceLevel | null
   status: JobStatus
   applicationType: ApplicationType
   contactInformation: ContactEntry[] | null
@@ -144,11 +204,14 @@ export interface CreateJobPayload {
   createdForId: string
   title: string
   description: string
-  category: JobCategory
   keywords: string[]
-  jobType: JobType
-  workplaceType: WorkplaceType
-  experienceLevel: ExperienceLevel
+  /** Every picker sends NULL when it was left on its "not stated" row. The
+   *  first three are refused with `status: 'OPEN'` and accepted on a draft. */
+  category: JobCategory | null
+  jobType: JobType | null
+  workplaceType: WorkplaceType | null
+  workingHours: WorkingHours | null
+  experienceLevel: ExperienceLevel | null
   location: string
   salary: SalaryPayload | null
   status: CreateJobStatus
@@ -218,20 +281,32 @@ const ORG_BIOS: Readonly<Record<string, string>> = {
 }
 
 const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
-/** Parallel to TITLES, so a mocked posting's occupation matches its name. */
+/** Parallel to TITLES, so a mocked posting's occupational group matches its name. */
 const CATEGORIES: readonly JobCategory[] = [
-  'FRONTEND_DEVELOPER',
-  'BACKEND_DEVELOPER',
-  'PRODUCT_DESIGNER',
-  'DEVOPS_ENGINEER',
-  'QA_ENGINEER',
-  'DATA_ANALYST',
-  'PRODUCT_MANAGER',
-  'SOFTWARE_ENGINEER',
+  'IT_SOFTWARE',
+  'IT_SOFTWARE',
+  'DESIGN_CREATIVE',
+  'IT_INFRASTRUCTURE',
+  'IT_SOFTWARE',
+  'DATA_AI',
+  'PROJECT_PRODUCT',
+  'IT_SOFTWARE',
 ]
-const JOB_TYPES: readonly JobType[] = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'VOLUNTEER']
-const WORKPLACES: readonly WorkplaceType[] = ['REMOTE', 'HYBRID', 'ONSITE']
-const LEVELS: readonly ExperienceLevel[] = ['ENTRY', 'MEDIOR', 'SENIOR', 'MANAGER', 'DIRECTOR']
+const JOB_TYPES: readonly JobType[] = ['PERMANENT', 'FIXED_TERM', 'SEASONAL', 'FREELANCE', 'INTERNSHIP']
+const WORKPLACES: readonly WorkplaceType[] = ['REMOTE', 'HYBRID', 'ONSITE', 'FIELD']
+/** The nulls are load-bearing: without them no mocked posting leaves these two
+ *  unstated, and the conditional detail pills are unreachable. */
+const WORKING_HOURS: readonly (WorkingHours | null)[] = ['FULL_TIME', 'PART_TIME', null]
+const LEVELS: readonly (ExperienceLevel | null)[] = [
+  'NONE',
+  'MONTHS_6',
+  'YEARS_1',
+  'YEARS_2',
+  'YEARS_3',
+  'YEARS_5',
+  'YEARS_10',
+  null,
+]
 const APPLICATION_TYPES: readonly ApplicationType[] = ['CONTACT_ONLY', 'EXTERNAL_URL', 'CV_DROP']
 /** Poster-authored, so deliberately unruly - mixed case and multi-word entries
  *  are what the detail page's plain-text rendering has to survive. */
@@ -406,6 +481,7 @@ export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
     category: CATEGORIES[seed % CATEGORIES.length],
     jobType: JOB_TYPES[seed % JOB_TYPES.length],
     workplaceType: WORKPLACES[seed % WORKPLACES.length],
+    workingHours: WORKING_HOURS[seed % WORKING_HOURS.length],
     experienceLevel: LEVELS[seed % LEVELS.length],
     status,
     applicationType,
@@ -457,6 +533,7 @@ export const createJob = async (payload: CreateJobPayload): Promise<JobDetailDto
     category: payload.category,
     jobType: payload.jobType,
     workplaceType: payload.workplaceType,
+    workingHours: payload.workingHours,
     experienceLevel: payload.experienceLevel,
     status: payload.status,
     applicationType: payload.applicationType,

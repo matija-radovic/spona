@@ -52,6 +52,14 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
     setSaved(toggleSavedJob({ id: job.id, slug: job.slug }))
   }
 
+  const tags = [
+    { field: 'category', label: job.category && t(`jobs.category.${job.category}`) },
+    { field: 'jobType', label: job.jobType && t(`jobs.type.${job.jobType}`) },
+    { field: 'workingHours', label: job.workingHours && t(`jobs.hours.${job.workingHours}`) },
+    { field: 'workplaceType', label: job.workplaceType && t(`jobs.workplace.${job.workplaceType}`) },
+    { field: 'experienceLevel', label: job.experienceLevel && t(`jobs.experience.${job.experienceLevel}`) },
+  ].filter((tag): tag is { field: string; label: string } => Boolean(tag.label))
+
   const { createdFor } = job
   const org = createdFor.actorType === 'org' ? createdFor : null
   // The drop target is the WHOLE panel, not just the apply row.
@@ -137,11 +145,15 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
               )}
             </div>
 
-            <div className="job-detail-tags">
-              <span className="job-detail-tag">{t(`jobs.type.${job.jobType}`)}</span>
-              <span className="job-detail-tag">{t(`jobs.workplace.${job.workplaceType}`)}</span>
-              <span className="job-detail-tag">{t(`jobs.experience.${job.experienceLevel}`)}</span>
-            </div>
+            {tags.length > 0 && (
+              <div className="job-detail-tags">
+                {tags.map((tag) => (
+                  <span key={tag.field} className="job-detail-tag">
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {(!isMobile || org) && (

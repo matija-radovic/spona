@@ -1,8 +1,8 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import sr from '@shared/lang/sr.json'
 import { formatDate, type DatePreset } from '@utils/format'
 import { DEFAULT_LANGUAGE, LANGUAGE_CODES, intlLocale } from './locales'
+import { RESOURCES } from './resources'
 
 i18n
     .use(initReactI18next)
@@ -10,11 +10,7 @@ i18n
         lng: DEFAULT_LANGUAGE,
         fallbackLng: DEFAULT_LANGUAGE,
         supportedLngs: LANGUAGE_CODES,
-        resources: {
-            sr: {
-                translation: sr,
-            },
-        },
+        resources: RESOURCES,
         interpolation: {
             escapeValue: false,
         },

@@ -4,7 +4,7 @@ import { useBlocker } from 'react-router-dom'
 interface UnsavedGuardOptions {
   isDirty: boolean
   onSave: () => Promise<boolean>
-  onDiscard: () => void
+  onDiscard?: () => void
 }
 
 export interface UnsavedGuard {
@@ -43,7 +43,7 @@ const useUnsavedGuard = ({ isDirty, onSave, onDiscard }: UnsavedGuardOptions): U
   }
 
   const discard = () => {
-    onDiscard()
+    onDiscard?.()
     blocker.proceed?.()
   }
 

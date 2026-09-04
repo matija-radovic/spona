@@ -224,26 +224,31 @@
       "CLOSED": "Zatvoren"
     },
     "type": {
-      "FULL_TIME": "Puno radno vreme",
-      "PART_TIME": "Skraćeno radno vreme",
-      "CONTRACT": "Ugovor",
-      "GIG": "Honorarni posao",
+      "PERMANENT": "Ugovor na neodređeno",
+      "FIXED_TERM": "Ugovor na određeno",
+      "SEASONAL": "Sezonski posao",
+      "FREELANCE": "Honorarno",
       "INTERNSHIP": "Praksa",
       "VOLUNTEER": "Volontiranje"
     },
+    "hours": {
+      "FULL_TIME": "Puno radno vreme",
+      "PART_TIME": "Skraćeno radno vreme"
+    },
     "experience": {
-      "ENTRY": "Početni nivo",
-      "INTERNSHIP": "Praksa",
-      "MEDIOR": "Srednji nivo",
-      "SENIOR": "Senior",
-      "MANAGER": "Menadžer",
-      "DIRECTOR": "Direktor",
-      "EXECUTIVE": "Izvršni direktor"
+      "NONE": "Bez iskustva",
+      "MONTHS_6": "Više od 6 meseci",
+      "YEARS_1": "Više od 1 godine",
+      "YEARS_2": "Više od 2 godine",
+      "YEARS_3": "Više od 3 godine",
+      "YEARS_5": "Više od 5 godina",
+      "YEARS_10": "Više od 10 godina"
     },
     "workplace": {
-      "ONSITE": "Kancelarija",
+      "ONSITE": "Na lokaciji poslodavca",
       "REMOTE": "Rad od kuće",
       "HYBRID": "Hibrid",
+      "FIELD": "Terenski rad",
       "OTHER": "Ostalo"
     },
     "application": {
@@ -252,7 +257,398 @@
       "CV_DROP": "Pošalji CV"
     },
     "category": {
+      "IT_SOFTWARE": "Softver i programiranje",
+      "IT_INFRASTRUCTURE": "IT infrastruktura i podrška",
+      "DATA_AI": "Podaci i veštačka inteligencija",
+      "DESIGN_CREATIVE": "Dizajn i kreativa",
+      "MEDIA_JOURNALISM": "Mediji i novinarstvo",
+      "MARKETING_PR": "Marketing, PR i društvene mreže",
+      "SALES": "Prodaja i komercijala",
+      "RETAIL": "Trgovina i maloprodaja",
+      "CUSTOMER_SUPPORT": "Korisnička podrška i kol centar",
+      "ADMIN_OFFICE": "Administracija i kancelarija",
+      "FINANCE_ACCOUNTING": "Finansije i računovodstvo",
+      "LEGAL": "Pravo",
+      "HR": "Ljudski resursi",
+      "PROJECT_PRODUCT": "Projektni i produkt menadžment",
+      "EDUCATION": "Obrazovanje i nastava",
+      "HEALTHCARE": "Zdravstvo i farmacija",
+      "CARE_SERVICES": "Nega i briga o ljudima",
+      "CONSTRUCTION": "Građevinarstvo",
+      "SKILLED_TRADES": "Zanati i majstorske usluge",
+      "MANUFACTURING": "Proizvodnja i industrija",
+      "ENGINEERING": "Inženjerstvo i tehnika",
+      "AUTOMOTIVE": "Auto-servis i mehanika",
+      "TRANSPORT_LOGISTICS": "Transport i logistika",
+      "WAREHOUSE": "Magacin i skladište",
+      "HOSPITALITY_FOOD": "Ugostiteljstvo i hrana",
+      "TOURISM": "Turizam i putovanja",
+      "AGRICULTURE": "Poljoprivreda i stočarstvo",
+      "CLEANING_MAINTENANCE": "Čišćenje i održavanje",
+      "SECURITY": "Obezbeđenje i zaštita",
+      "BEAUTY_WELLNESS": "Lepota i wellness",
+      "SPORT_RECREATION": "Sport i rekreacija",
+      "ARTS_CULTURE": "Umetnost i kultura",
+      "TRANSLATION": "Prevođenje i lektura",
+      "SCIENCE_RESEARCH": "Nauka i istraživanje",
+      "REAL_ESTATE": "Nekretnine",
       "OTHER": "Ostalo"
+    },
+    "categorySynonyms": {
+      "IT_SOFTWARE": [
+        "programer",
+        "developer",
+        "dev",
+        "frontend",
+        "backend",
+        "full stack",
+        "mobilni",
+        "android",
+        "ios",
+        "qa",
+        "tester",
+        "softver"
+      ],
+      "IT_INFRASTRUCTURE": [
+        "devops",
+        "sistem administrator",
+        "sistemac",
+        "helpdesk",
+        "tehnička podrška",
+        "mreža",
+        "cloud",
+        "sigurnost",
+        "it"
+      ],
+      "DATA_AI": [
+        "analitičar",
+        "data",
+        "podaci",
+        "bi",
+        "izveštaji",
+        "mašinsko učenje",
+        "ai",
+        "statistika"
+      ],
+      "DESIGN_CREATIVE": [
+        "dizajner",
+        "grafički",
+        "ux",
+        "ui",
+        "ilustrator",
+        "video",
+        "montaža",
+        "3d",
+        "animacija"
+      ],
+      "MEDIA_JOURNALISM": [
+        "novinar",
+        "urednik",
+        "snimatelj",
+        "radio",
+        "televizija",
+        "portal",
+        "dopisnik"
+      ],
+      "MARKETING_PR": [
+        "marketing",
+        "reklama",
+        "oglašavanje",
+        "smm",
+        "društvene mreže",
+        "copywriter",
+        "seo",
+        "pr",
+        "odnosi s javnošću"
+      ],
+      "SALES": [
+        "prodaja",
+        "komercijalista",
+        "akvizicija",
+        "terenska prodaja",
+        "predstavnik",
+        "b2b",
+        "account"
+      ],
+      "RETAIL": [
+        "prodavac",
+        "prodavačica",
+        "kasir",
+        "kasirka",
+        "radnja",
+        "market",
+        "prodavnica",
+        "izlaganje robe"
+      ],
+      "CUSTOMER_SUPPORT": [
+        "podrška",
+        "korisnički servis",
+        "kol centar",
+        "call center",
+        "operater",
+        "agent",
+        "reklamacije"
+      ],
+      "ADMIN_OFFICE": [
+        "administrator",
+        "administrativni",
+        "sekretarica",
+        "referent",
+        "arhiva",
+        "unos podataka",
+        "kancelarija",
+        "back office"
+      ],
+      "FINANCE_ACCOUNTING": [
+        "računovođa",
+        "knjigovođa",
+        "finansije",
+        "revizor",
+        "kontrolor",
+        "blagajnik",
+        "bankar",
+        "poreski"
+      ],
+      "LEGAL": [
+        "pravnik",
+        "advokat",
+        "pripravnik",
+        "notar",
+        "pravni savetnik",
+        "usklađenost"
+      ],
+      "HR": [
+        "hr",
+        "kadrovska",
+        "regruter",
+        "zapošljavanje",
+        "ljudski resursi",
+        "obuke"
+      ],
+      "PROJECT_PRODUCT": [
+        "projektni menadžer",
+        "pm",
+        "product owner",
+        "scrum",
+        "koordinator",
+        "agile",
+        "produkt"
+      ],
+      "EDUCATION": [
+        "nastavnik",
+        "profesor",
+        "učitelj",
+        "vaspitač",
+        "instruktor",
+        "pedagog",
+        "škola",
+        "vrtić",
+        "časovi",
+        "obuka"
+      ],
+      "HEALTHCARE": [
+        "lekar",
+        "doktor",
+        "medicinska sestra",
+        "tehničar",
+        "farmaceut",
+        "apoteka",
+        "stomatolog",
+        "fizioterapeut",
+        "laborant"
+      ],
+      "CARE_SERVICES": [
+        "čuvanje dece",
+        "dadilja",
+        "nega starih",
+        "negovateljica",
+        "pomoć u kući",
+        "gerontodomaćica",
+        "personalni asistent"
+      ],
+      "CONSTRUCTION": [
+        "građevina",
+        "zidar",
+        "tesar",
+        "armirač",
+        "fasader",
+        "keramičar",
+        "izolater",
+        "gradilište",
+        "poslovođa"
+      ],
+      "SKILLED_TRADES": [
+        "vodoinstalater",
+        "električar",
+        "moler",
+        "farbar",
+        "stolar",
+        "bravar",
+        "varilac",
+        "majstor",
+        "servis",
+        "montaža",
+        "klima",
+        "popravka"
+      ],
+      "MANUFACTURING": [
+        "proizvodnja",
+        "fabrika",
+        "pogon",
+        "operater mašine",
+        "šivačica",
+        "tekstil",
+        "montažer",
+        "pakovanje",
+        "kontrola kvaliteta"
+      ],
+      "ENGINEERING": [
+        "inženjer",
+        "mašinski",
+        "elektro",
+        "građevinski",
+        "tehnolog",
+        "projektant",
+        "cad",
+        "konstruktor",
+        "energetika"
+      ],
+      "AUTOMOTIVE": [
+        "automehaničar",
+        "autoelektričar",
+        "vulkanizer",
+        "autolimar",
+        "autoperionica",
+        "servis vozila",
+        "mehaničar"
+      ],
+      "TRANSPORT_LOGISTICS": [
+        "vozač",
+        "šofer",
+        "kamion",
+        "kombi",
+        "dostavljač",
+        "kurir",
+        "taksi",
+        "špediter",
+        "logistika",
+        "cd kategorija"
+      ],
+      "WAREHOUSE": [
+        "magacioner",
+        "skladište",
+        "viljuškar",
+        "viljuškarista",
+        "komisionar",
+        "utovar",
+        "istovar",
+        "inventar"
+      ],
+      "HOSPITALITY_FOOD": [
+        "konobar",
+        "kuvar",
+        "pomoćni kuvar",
+        "šanker",
+        "barista",
+        "picer",
+        "pekar",
+        "poslastičar",
+        "restoran",
+        "kafić",
+        "kuhinja"
+      ],
+      "TOURISM": [
+        "turizam",
+        "recepcioner",
+        "hotel",
+        "turistički vodič",
+        "agencija",
+        "animator",
+        "rezervacije"
+      ],
+      "AGRICULTURE": [
+        "poljoprivreda",
+        "berba",
+        "berač",
+        "ratar",
+        "traktorista",
+        "stočarstvo",
+        "farma",
+        "plastenik",
+        "voćnjak",
+        "veterinar",
+        "agronom"
+      ],
+      "CLEANING_MAINTENANCE": [
+        "čišćenje",
+        "higijeničar",
+        "spremačica",
+        "domar",
+        "održavanje objekata",
+        "čistačica",
+        "pranje"
+      ],
+      "SECURITY": [
+        "obezbeđenje",
+        "zaštitar",
+        "čuvar",
+        "portir",
+        "video nadzor",
+        "redar"
+      ],
+      "BEAUTY_WELLNESS": [
+        "frizer",
+        "frizerka",
+        "kozmetičar",
+        "maser",
+        "manikir",
+        "pedikir",
+        "salon",
+        "spa",
+        "depilacija"
+      ],
+      "SPORT_RECREATION": [
+        "trener",
+        "fitnes",
+        "teretana",
+        "instruktor",
+        "spasilac",
+        "plivanje",
+        "sport"
+      ],
+      "ARTS_CULTURE": [
+        "muzičar",
+        "glumac",
+        "fotograf",
+        "kustos",
+        "pozorište",
+        "muzej",
+        "dj",
+        "scenograf"
+      ],
+      "TRANSLATION": [
+        "prevodilac",
+        "prevod",
+        "sudski tumač",
+        "lektor",
+        "korektor",
+        "titlovanje"
+      ],
+      "SCIENCE_RESEARCH": [
+        "istraživač",
+        "laboratorija",
+        "laborant",
+        "naučni saradnik",
+        "istraživanje tržišta"
+      ],
+      "REAL_ESTATE": [
+        "nekretnine",
+        "agent za nekretnine",
+        "procenitelj",
+        "izdavanje",
+        "prodaja stanova"
+      ],
+      "OTHER": []
     },
     "period": {
       "HOUR": "Na sat",
@@ -267,9 +663,11 @@
       "category": "Oblast",
       "keywords": "Ključne reči",
       "location": "Lokacija",
-      "jobType": "Tip posla",
-      "workplaceType": "Tip rada",
-      "experienceLevel": "Nivo iskustva",
+      "jobType": "Tip zaposlenja",
+      "workingHours": "Radno vreme",
+      "workplaceType": "Model rada",
+      "experienceLevel": "Radno iskustvo",
+      "unspecified": "Nije navedeno",
       "salaryMin": "Od",
       "salaryMax": "Do",
       "salaryCurrency": "Valuta",
@@ -281,6 +679,9 @@
     "create": {
       "title": "Novi oglas za posao",
       "subtitle": "Sačuvajte skicu i vratite se kasnije, ili objavite oglas odmah.",
+      "lengthHint": "Od {{min}} do {{max}} karaktera.",
+      "categorySearch": "Pretražite oblasti",
+      "categoryNoMatch": "Nema oblasti za taj pojam. Izaberite „Ostalo“, a tačan naziv posla upišite u polje „Naziv pozicije“.",
       "saveDraft": "Sačuvaj kao skicu",
       "publish": "Objavi",
       "publishing": "Objavljivanje...",
@@ -308,9 +709,10 @@
     "filters": {
       "posted": "Objavljeno",
       "sort": "Sortiraj",
-      "workplace": "Način rada",
-      "employment": "Vrsta zaposlenja",
-      "experience": "Nivo iskustva",
+      "workplace": "Model rada",
+      "employment": "Tip zaposlenja",
+      "hours": "Radno vreme",
+      "experience": "Radno iskustvo",
       "salary": "Samo sa platom",
       "more": "Više filtera",
       "all": "Sve",
@@ -326,9 +728,6 @@
         "recommended": "Preporučeno",
         "date_desc": "Najnovije prvo",
         "date_asc": "Najstarije prvo"
-      },
-      "employmentOpt": {
-        "contractGig": "Ugovor / Honorarno"
       }
     },
     "card": {

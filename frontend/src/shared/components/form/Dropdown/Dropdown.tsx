@@ -1,16 +1,9 @@
 import './Dropdown.scss'
-import type { ReactNode } from 'react'
-import { IconCheck } from '@tabler/icons-react'
 import usePopover from '@shared/hooks/usePopover'
 import { useFieldContext } from '../FieldShell/fieldContext'
 import { SelectTrigger } from '../SelectTrigger'
-
-export interface DropdownOption {
-  value: string
-  label: string
-  /** Arbitrary node before the label in the panel; the caller builds it. */
-  leading?: ReactNode
-}
+import DropdownPanel from './DropdownPanel'
+import type { DropdownNoMatch, DropdownOption } from './dropdownOption'
 
 interface DropdownProps {
   /** Accessible name only - never a visible caption. A `FieldShell` above supplies its own. */
@@ -29,6 +22,11 @@ interface DropdownProps {
   loading?: boolean
   /** panel text once loading has finished and there is still nothing to pick */
   emptyLabel?: string
+  /** Pins a filter input at the top of the panel. Single-select only. */
+  searchable?: boolean
+  searchPlaceholder?: string
+  /** Offered when the filter matches nothing. */
+  noMatch?: DropdownNoMatch
   className?: string
 }
 
@@ -50,6 +48,9 @@ const Dropdown = ({
   disabled = false,
   loading = false,
   emptyLabel,
+  searchable = false,
+  searchPlaceholder,
+  noMatch,
   className,
 }: DropdownProps) => {
   const field = useFieldContext()
@@ -91,52 +92,6 @@ const Dropdown = ({
   // its own the trigger's name would be the value alone.
   const labelledBy = field ? `${field.labelId} ${field.controlId}` : undefined
 
-  const panelBody = (() => {
-    if (loading) {
-      return (
-        <li className="dropdown-placeholder" role="presentation">
-          {[0, 1, 2].map((row) => (
-            <span key={row} className="dropdown-placeholder-bar" />
-          ))}
-        </li>
-      )
-    }
-    if (options.length === 0) {
-      return emptyLabel ? (
-        <li className="dropdown-empty" role="presentation">
-          {emptyLabel}
-        </li>
-      ) : null
-    }
-    return options.map((option) => {
-      const active = isSelected(option.value)
-      return (
-        <li key={option.value}>
-          <button
-            type="button"
-            role="option"
-            aria-selected={active}
-            className={`dropdown-option${active ? ' is-selected' : ''}`}
-            onClick={() => handleSelect(option.value)}
-          >
-            {multiple && (
-              <span className={`dropdown-check${active ? ' is-checked' : ''}`} aria-hidden>
-                {active && <IconCheck />}
-              </span>
-            )}
-            {option.leading}
-            <span className="dropdown-option-label">{option.label}</span>
-            {!multiple && active && (
-              <span className="dropdown-option-hint" aria-hidden>
-                <IconCheck />
-              </span>
-            )}
-          </button>
-        </li>
-      )
-    })
-  })()
-
   return (
     <div className={['dropdown', className].filter(Boolean).join(' ')} ref={rootRef}>
       <SelectTrigger
@@ -158,16 +113,20 @@ const Dropdown = ({
       </SelectTrigger>
 
       {open && (
-        <ul
-          ref={panelRef}
-          className={`dropdown-panel scroll-container${openAbove ? ' is-above' : ''}`}
-          role="listbox"
-          aria-label={label}
-          aria-multiselectable={multiple}
-          aria-busy={loading || undefined}
-        >
-          {panelBody}
-        </ul>
+        <DropdownPanel
+          panelRef={panelRef}
+          above={openAbove}
+          label={label}
+          options={options}
+          isSelected={isSelected}
+          onSelect={handleSelect}
+          multiple={multiple}
+          loading={loading}
+          emptyLabel={emptyLabel}
+          filtering={searchable && !multiple}
+          searchPlaceholder={searchPlaceholder}
+          noMatch={noMatch}
+        />
       )}
     </div>
   )

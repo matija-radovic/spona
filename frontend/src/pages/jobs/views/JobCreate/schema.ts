@@ -17,29 +17,17 @@ import type { CreateJobPayload, CreateJobStatus } from '@utils/api/jobs'
 import {
   APPLICATION_TYPE_VALUES,
   EXPERIENCE_LEVEL_VALUES,
+  JOB_CATEGORY_VALUES,
   JOB_TYPE_VALUES,
   SALARY_CURRENCY_VALUES,
   SALARY_PERIOD_VALUES,
+  WORKING_HOURS_VALUES,
   WORKPLACE_TYPE_VALUES,
 } from '@pages/jobs/lib/jobEnums'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
 
-const JOB_CATEGORY_VALUES = [
-  'SOFTWARE_ENGINEER',
-  'FRONTEND_DEVELOPER',
-  'BACKEND_DEVELOPER',
-  'PRODUCT_DESIGNER',
-  'PRODUCT_MANAGER',
-  'DATA_ANALYST',
-  'DEVOPS_ENGINEER',
-  'QA_ENGINEER',
-  'MARKETING_SPECIALIST',
-  'SALES_REPRESENTATIVE',
-  'HR_RECRUITER',
-  'PROJECT_MANAGER',
-  'OTHER',
-] as const
+const orNull = <T extends string>(value: T | ''): T | null => (value === '' ? null : value)
 
 /** Amounts are typed, so they travel as strings and are parsed once, here. */
 const toAmount = (raw: string): number | null => {
@@ -70,13 +58,14 @@ export const buildJobSchema = (t: Translate, draft = false) =>
       description: z
         .string()
         .max(JOB_DESCRIPTION_MAX, t('errors.maxLength', { max: JOB_DESCRIPTION_MAX })),
-      category: z.enum(JOB_CATEGORY_VALUES).or(z.literal('')),
       keywords: z
         .array(z.string().max(JOB_KEYWORD_MAX, t('errors.maxLength', { max: JOB_KEYWORD_MAX })))
         .max(JOB_KEYWORDS_MAX, t('errors.keywordMax', { max: JOB_KEYWORDS_MAX })),
-      jobType: z.enum(JOB_TYPE_VALUES),
-      workplaceType: z.enum(WORKPLACE_TYPE_VALUES),
-      experienceLevel: z.enum(EXPERIENCE_LEVEL_VALUES),
+      category: z.enum(JOB_CATEGORY_VALUES).or(z.literal('')),
+      jobType: z.enum(JOB_TYPE_VALUES).or(z.literal('')),
+      workplaceType: z.enum(WORKPLACE_TYPE_VALUES).or(z.literal('')),
+      workingHours: z.enum(WORKING_HOURS_VALUES).or(z.literal('')),
+      experienceLevel: z.enum(EXPERIENCE_LEVEL_VALUES).or(z.literal('')),
       location: z.string().max(JOB_LOCATION_MAX, t('errors.maxLength', { max: JOB_LOCATION_MAX })),
       salaryMin: z.string(),
       salaryMax: z.string(),
@@ -133,6 +122,8 @@ export const buildJobSchema = (t: Translate, draft = false) =>
       if (values.title.trim() === '') required('title')
       if (values.description.trim() === '') required('description')
       if (values.category === '') required('category')
+      if (values.jobType === '') required('jobType')
+      if (values.workplaceType === '') required('workplaceType')
       if (values.location.trim() === '') required('location')
       if (values.applicationType === 'EXTERNAL_URL' && values.externalUrl.trim() === '') {
         required('externalUrl')
@@ -151,11 +142,12 @@ export type JobFormData = z.infer<ReturnType<typeof buildJobSchema>>
 export const JOB_DEFAULTS: JobFormData = {
   title: '',
   description: '',
-  category: '',
   keywords: [],
-  jobType: 'FULL_TIME',
-  workplaceType: 'ONSITE',
-  experienceLevel: 'MEDIOR',
+  category: '',
+  jobType: '',
+  workplaceType: '',
+  workingHours: '',
+  experienceLevel: '',
   location: '',
   salaryMin: '',
   salaryMax: '',
@@ -179,11 +171,12 @@ export const toCreateJobPayload = (
     status,
     title: values.title.trim(),
     description: values.description.trim(),
-    category: values.category === '' ? 'OTHER' : values.category,
     keywords: values.keywords,
-    jobType: values.jobType,
-    workplaceType: values.workplaceType,
-    experienceLevel: values.experienceLevel,
+    category: orNull(values.category),
+    jobType: orNull(values.jobType),
+    workplaceType: orNull(values.workplaceType),
+    workingHours: orNull(values.workingHours),
+    experienceLevel: orNull(values.experienceLevel),
     location: values.location.trim(),
     salary:
       min === null || Number.isNaN(min)

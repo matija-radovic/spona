@@ -2,14 +2,23 @@ import './PostingFields.scss'
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Dropdown, FieldGroup, FieldShell, Input, TagInput } from '@shared/components'
-import { jobCategoryOptions } from '@utils/constants/jobRoles'
-import { JOB_KEYWORD_MAX, JOB_KEYWORDS_MAX } from '@utils/constants/validation'
+import {
+  JOB_DESCRIPTION_MAX,
+  JOB_DESCRIPTION_MIN,
+  JOB_KEYWORD_MAX,
+  JOB_KEYWORDS_MAX,
+  JOB_TITLE_MAX,
+  JOB_TITLE_MIN,
+} from '@utils/constants/validation'
 import {
   EXPERIENCE_LEVEL_VALUES,
   JOB_TYPE_VALUES,
   SALARY_CURRENCY_VALUES,
   SALARY_PERIOD_VALUES,
+  WORKING_HOURS_VALUES,
   WORKPLACE_TYPE_VALUES,
+  categoryOptions,
+  enumOptionsWithEmpty,
   enumOptions,
 } from '@pages/jobs/lib/jobEnums'
 import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
@@ -23,16 +32,25 @@ interface PostingFieldsProps {
 const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
   const { t } = useTranslation()
 
-  const categories = jobCategoryOptions(t('jobs.category.OTHER'))
+  const unspecified = t('jobs.fields.unspecified')
+  const categories = categoryOptions(t)
   const currencies = SALARY_CURRENCY_VALUES.map((value) => ({ value, label: value }))
 
   return (
     <div className="posting-fields">
-      <FieldShell label={t('jobs.fields.title')} required>
+      <FieldShell
+        label={t('jobs.fields.title')}
+        hint={t('jobs.create.lengthHint', { min: JOB_TITLE_MIN, max: JOB_TITLE_MAX })}
+        required
+      >
         <Input error={errors.title?.message} {...register('title')} />
       </FieldShell>
 
-      <FieldShell label={t('jobs.fields.description')} required>
+      <FieldShell
+        label={t('jobs.fields.description')}
+        hint={t('jobs.create.lengthHint', { min: JOB_DESCRIPTION_MIN, max: JOB_DESCRIPTION_MAX })}
+        required
+      >
         <Input multiline rows={10} error={errors.description?.message} {...register('description')} />
       </FieldShell>
 
@@ -43,15 +61,22 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           render={({ field }) => (
             <FieldShell
               label={t('jobs.fields.category')}
+              className="posting-fields-wide"
               required
               htmlLabel={false}
               error={errors.category?.message}
             >
               <Dropdown
+                searchable
                 label={t('jobs.fields.category')}
                 options={categories}
                 value={field.value}
-                placeholder={t('jobs.fields.category')}
+                placeholder={unspecified}
+                searchPlaceholder={t('jobs.create.categorySearch')}
+                noMatch={{
+                  option: { value: 'OTHER', label: t('jobs.category.OTHER') },
+                  hint: t('jobs.create.categoryNoMatch'),
+                }}
                 onChange={(next) => field.onChange(next)}
               />
             </FieldShell>
@@ -64,13 +89,35 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           render={({ field }) => (
             <FieldShell
               label={t('jobs.fields.jobType')}
+              required
               htmlLabel={false}
               error={errors.jobType?.message}
             >
               <Dropdown
                 label={t('jobs.fields.jobType')}
-                options={enumOptions(JOB_TYPE_VALUES, 'jobs.type', t)}
+                options={enumOptionsWithEmpty(JOB_TYPE_VALUES, 'jobs.type', t)}
                 value={field.value}
+                placeholder={unspecified}
+                onChange={(next) => field.onChange(next)}
+              />
+            </FieldShell>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="workingHours"
+          render={({ field }) => (
+            <FieldShell
+              label={t('jobs.fields.workingHours')}
+              htmlLabel={false}
+              error={errors.workingHours?.message}
+            >
+              <Dropdown
+                label={t('jobs.fields.workingHours')}
+                options={enumOptionsWithEmpty(WORKING_HOURS_VALUES, 'jobs.hours', t)}
+                value={field.value}
+                placeholder={unspecified}
                 onChange={(next) => field.onChange(next)}
               />
             </FieldShell>
@@ -83,13 +130,15 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
           render={({ field }) => (
             <FieldShell
               label={t('jobs.fields.workplaceType')}
+              required
               htmlLabel={false}
               error={errors.workplaceType?.message}
             >
               <Dropdown
                 label={t('jobs.fields.workplaceType')}
-                options={enumOptions(WORKPLACE_TYPE_VALUES, 'jobs.workplace', t)}
+                options={enumOptionsWithEmpty(WORKPLACE_TYPE_VALUES, 'jobs.workplace', t)}
                 value={field.value}
+                placeholder={unspecified}
                 onChange={(next) => field.onChange(next)}
               />
             </FieldShell>
@@ -107,8 +156,9 @@ const PostingFields = ({ register, control, errors }: PostingFieldsProps) => {
             >
               <Dropdown
                 label={t('jobs.fields.experienceLevel')}
-                options={enumOptions(EXPERIENCE_LEVEL_VALUES, 'jobs.experience', t)}
+                options={enumOptionsWithEmpty(EXPERIENCE_LEVEL_VALUES, 'jobs.experience', t)}
                 value={field.value}
+                placeholder={unspecified}
                 onChange={(next) => field.onChange(next)}
               />
             </FieldShell>
