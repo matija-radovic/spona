@@ -10,6 +10,7 @@
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
 // uniformly. Magic inputs make the failure/empty paths reachable:
 //   - fetchProfile : handle === "nepostojeci" -> 404 Not Found
+//   - fetchProfile : handle === "bez-oglasa"  -> own profile, no job postings
 //   - searchActors : q === "prazno"           -> empty page (0 results)
 //   - setFollow    : empty actorId            -> 400 Bad Request
 // -----------------------------------------------------------------------------
@@ -53,6 +54,11 @@ export type ProfileDto =
       isFollowedByViewer?: boolean
       /** True when this is the viewer's own profile (or an org they can edit). */
       viewerCanEdit?: boolean
+      /** Server-computed from the role matrix, absent meaning false. Separate
+       *  from `viewerCanEdit` because the two diverge in opposite directions: a
+       *  RECRUITER manages an organization's postings and not its profile, an
+       *  EDITOR the reverse. */
+      viewerCanManageJobPostings?: boolean
     }
   | {
       actorType: 'org'
@@ -68,6 +74,7 @@ export type ProfileDto =
       createdAt: string
       isFollowedByViewer?: boolean
       viewerCanEdit?: boolean
+      viewerCanManageJobPostings?: boolean
     }
 
 /** Actor search-result summary. Stripped down from `ProfileDto` to the fields
@@ -144,8 +151,9 @@ const CONTACTS_FULL: ContactEntry[] = [
 // ── Named mock profiles (specific shapes the panes/tabs need to exercise) ──────
 // Keyed by handle. `my-account` and `moja-kompanija` are the editable "own" cases
 // - log in with one of those usernames to preview your own profile (the real
-// backend derives viewerCanEdit from the auth token; the mock keys it off the
-// handle).
+// backend derives both authority flags from the auth token; the mock keys them
+// off the handle). They are also the two actors whose postings pane renders its
+// owner shape, which jobs.ts mirrors by actor id.
 
 const USER_PROFILES: Record<string, ProfileDto> = {
   'my-account': {
@@ -161,6 +169,24 @@ const USER_PROFILES: Record<string, ProfileDto> = {
     following: 87,
     createdAt: iso(420),
     viewerCanEdit: true,
+    viewerCanManageJobPostings: true,
+  },
+  'bez-oglasa': {
+    actorType: 'user',
+    // The `-empty` suffix is what jobs.ts reads to serve no postings at all: a
+    // manager with nothing published, whose profile therefore has no postings tab.
+    id: 'user-bez-oglasa-empty',
+    username: 'bez-oglasa',
+    fullName: 'Petar Petrović',
+    bio: 'Tek sam se registrovao.',
+    avatarUrl: null,
+    location: null,
+    otherContactInfo: [],
+    followers: 3,
+    following: 11,
+    createdAt: iso(4),
+    viewerCanEdit: true,
+    viewerCanManageJobPostings: true,
   },
   marko: {
     actorType: 'user',
@@ -220,6 +246,7 @@ const ORG_PROFILES: Record<string, ProfileDto> = {
     followers: 96,
     createdAt: iso(300),
     viewerCanEdit: true,
+    viewerCanManageJobPostings: true,
   },
   'vega-it': {
     actorType: 'org',

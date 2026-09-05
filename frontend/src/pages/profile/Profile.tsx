@@ -2,9 +2,9 @@ import './Profile.scss'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
 import { fetchProfile, type ActorRefDto, type ProfileDto } from '@utils/api/profiles'
-import { fetchActorJobPostings, type JobListItemDto } from '@utils/api/jobs'
+import { fetchActorJobPostings, type SavedJobItemDto } from '@utils/api/jobs'
 import { ProfileHeader } from './components/ProfileHeader'
 import { ProfileTabs, ProfileTab, type ProfileTabItem } from './components/ProfileTabs'
 import { ActivityPane } from './panes/ActivityPane'
@@ -14,7 +14,8 @@ import { SavedJobsPane } from './panes/SavedJobsPane'
 
 interface ProfileBodyProps {
   profile: ProfileDto
-  postings: JobListItemDto[]
+  /** Null when the postings request failed; the tab is then simply absent. */
+  postings: PagedResponse<SavedJobItemDto> | null
 }
 
 /**
@@ -37,7 +38,7 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   if (profile.otherContactInfo.length > 0) {
     tabs.push({ key: ProfileTab.CONTACTS, label: t('profile.tabs.contacts') })
   }
-  if (postings.length > 0) {
+  if (postings && postings.content.length > 0) {
     tabs.push({ key: ProfileTab.JOB_POSTINGS, label: t('profile.tabs.jobPostings') })
   }
   if (profile.actorType === 'user' && profile.viewerCanEdit) {
@@ -55,7 +56,13 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
       <section className="profile-pane">
         {active === ProfileTab.ACTIVITY && <ActivityPane actorId={profile.id} owner={owner} />}
         {active === ProfileTab.CONTACTS && <ContactPane entries={profile.otherContactInfo} />}
-        {active === ProfileTab.JOB_POSTINGS && <JobPostingsPane postings={postings} />}
+        {active === ProfileTab.JOB_POSTINGS && postings && (
+          <JobPostingsPane
+            actorId={profile.id}
+            canManage={profile.viewerCanManageJobPostings ?? false}
+            initialPage={postings}
+          />
+        )}
         {active === ProfileTab.SAVED_JOBS && <SavedJobsPane />}
       </section>
     </div>
@@ -66,42 +73,35 @@ interface ProfileProps {
   actorType: 'user' | 'org'
 }
 
-/**
- * Public profile showcase loader for a user or organization. Loads the profile
- * and the actor's public job postings in parallel; loading is derived from
- * `loadedHandle` so the effect only setStates in async callbacks (the JobDetail
- * discipline). A postings failure degrades to [] so the page never breaks because
- * a secondary list errored (§6, §16.14).
- */
 const Profile = ({ actorType }: ProfileProps) => {
   const { t } = useTranslation()
   const params = useParams()
   const handle = actorType === 'user' ? params.username : params.slug
 
   const [profile, setProfile] = useState<ProfileDto | null>(null)
-  const [postings, setPostings] = useState<JobListItemDto[]>([])
+  const [postings, setPostings] = useState<PagedResponse<SavedJobItemDto> | null>(null)
   const [problem, setProblem] = useState<ProblemDetail | null>(null)
   const [loadedHandle, setLoadedHandle] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (!handle) return
     let alive = true
-    // The postings query is keyed by the URL handle (the backend resolves the
-    // actor); both requests run concurrently.
-    Promise.allSettled([fetchProfile(actorType, handle), fetchActorJobPostings(handle)]).then(
-      ([profileRes, postingsRes]) => {
-        if (!alive) return
-        if (profileRes.status === 'fulfilled') {
-          setProfile(profileRes.value)
-          setPostings(postingsRes.status === 'fulfilled' ? postingsRes.value : [])
-          setProblem(null)
-        } else {
-          setProfile(null)
-          setProblem(parseProblem(profileRes.reason))
-        }
-        setLoadedHandle(handle)
-      },
-    )
+    const profileRequest = fetchProfile(actorType, handle)
+    const postingsRequest = profileRequest.then((res) => fetchActorJobPostings(res.id))
+
+    Promise.allSettled([profileRequest, postingsRequest]).then(([profileRes, postingsRes]) => {
+      if (!alive) return
+      if (profileRes.status === 'fulfilled') {
+        setProfile(profileRes.value)
+        setPostings(postingsRes.status === 'fulfilled' ? postingsRes.value : null)
+        setProblem(null)
+      } else {
+        setProfile(null)
+        setPostings(null)
+        setProblem(parseProblem(profileRes.reason))
+      }
+      setLoadedHandle(handle)
+    })
     return () => {
       alive = false
     }

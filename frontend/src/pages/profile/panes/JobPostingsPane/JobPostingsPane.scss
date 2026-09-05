@@ -1,10 +1,75 @@
-// Reuses the JobCard component; replicates the thin list-gap rhythm locally
-// (do not @extend across page SCSS files - profile-page.r1 §10.4).
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
+
 .job-postings-pane {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 1rem;
+
+  .job-postings-pane-controls {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.7rem;
+
+    @media #{mq.$m-phone} {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  .job-postings-pane-divider {
+    flex: 0 0 auto;
+    width: 1px;
+    height: 1.6rem;
+    background-color: c.$border-line;
+
+    @media #{mq.$m-phone} {
+      display: none;
+    }
+  }
+
+  .job-postings-pane-sort {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+  }
+
+  .job-postings-pane-sort .select-trigger {
+    font-size: 0.82rem;
+  }
+
+  .job-postings-pane-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .job-postings-pane-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .job-postings-pane-sentinel {
+    height: 1px;
+  }
+
+  .job-postings-pane-state,
+  .job-postings-pane-empty {
+    @include m.state-block;
+  }
+
+  .job-postings-pane-more {
+    @include m.load-more-row;
+  }
+
+  .job-postings-pane-more-error {
+    color: c.$danger-text;
+  }
 }

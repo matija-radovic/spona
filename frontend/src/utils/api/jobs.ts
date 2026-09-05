@@ -14,6 +14,8 @@
 //                      (a DRAFT also forces viewerCan* true - see below)
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
+//   - fetchActorJobPostings : actorId in VIEWER_POSTING_STATUSES -> the owner's
+//                      shape: every status, and the parameters answered
 //   - createJob   : title containing "greska"  -> 422 rejection
 //   - createJob   : title containing "tudja"   -> 403 (createdForId refused)
 //
@@ -51,6 +53,10 @@ export type WorkplaceType = 'ONSITE' | 'REMOTE' | 'HYBRID' | 'FIELD' | 'OTHER'
 
 export type ApplicationType = 'CONTACT_ONLY' | 'EXTERNAL_URL' | 'CV_DROP'
 export type JobStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
+
+/** Sort of an actor's own postings. `updated_*` reads `Job.updatedAt`, which is
+ *  never served in a DTO - the value only travels towards the server. */
+export type JobPostingsSort = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc'
 
 /** The minimum experience the posting asks for, as a threshold rather than a
  *  band: a poster wanting 8 years reaches for "over 5" and is not forced to
@@ -146,6 +152,9 @@ export interface JobListItemDto {
   location: string
   salary: Salary | null
   createdAt: string
+  /** Poster-authored tags, at most ten. Pills on a card, plain text on the
+   *  detail page (design-choices.md §A pill holds a value from a closed set). */
+  keywords?: string[]
 }
 
 export interface JobDetailDto extends JobListItemDto {
@@ -164,7 +173,6 @@ export interface JobDetailDto extends JobListItemDto {
   contactInformation: ContactEntry[] | null
   externalUrl: string | null
   description: string
-  keywords?: string[]
   createdForBio?: string | null
   createdForFollowedByViewer?: boolean
   /** Management authority, computed server-side from the caller's token: the
@@ -179,9 +187,18 @@ export interface JobDetailDto extends JobListItemDto {
   viewerCanDelete?: boolean
 }
 
-/** JobListItemDto + status, so the profile Saved-jobs pane filters client-side. */
+/** JobListItemDto + status, for the two profile panes whose rows are not all
+ *  OPEN: the Saved-jobs pane filters on it, the postings pane draws a capsule
+ *  from it. The public list and the search results are served OPEN only. */
 export interface SavedJobItemDto extends JobListItemDto {
   status: JobStatus
+}
+
+/** Owner-only parameters, answered with a `400` rather than narrowed for anyone
+ *  else - so the public shape sends neither. */
+export interface ActorJobPostingsQuery {
+  status?: JobStatus
+  sort?: JobPostingsSort
 }
 
 export interface JobApplication {
@@ -249,6 +266,18 @@ const MAGIC_DRAFT_SLUG = 'nacrt'
  *  what makes the authority flags reachable; the real API reads them off the
  *  JWT and never off the poster's handle. */
 const VIEWER_ORG_HANDLE = 'moja-kompanija'
+/** The two actors profiles.ts hands `viewerCanManageJobPostings`: one status per
+ *  posting they own. The org has all three so the capsule renders; the user has
+ *  no CLOSED one, which is what makes the filtered-to-nothing state reachable.
+ *  The real API decides this off the caller's token. */
+const VIEWER_POSTING_STATUSES: Readonly<Record<string, readonly JobStatus[]>> = {
+  // Twelve, so the owner shape pages at all.
+  'org-moja': [
+    'OPEN', 'DRAFT', 'CLOSED', 'OPEN', 'DRAFT', 'OPEN',
+    'CLOSED', 'OPEN', 'DRAFT', 'OPEN', 'OPEN', 'DRAFT',
+  ],
+  'user-my-account': ['DRAFT', 'OPEN', 'OPEN'],
+}
 const MAX_MOCK_PAGES = 3
 
 const TITLES = [
@@ -381,6 +410,10 @@ const buildListItem = (index: number): JobListItemDto => {
   const isUser = index % 3 === 0
   const hasSalary = index % 2 === 0
   const createdFor: JobPosterDto = isUser ? { actorType: 'user' } : ORGS[index % ORGS.length]
+  // Every fifth posting states none, so the card's "no keywords row" branch is
+  // as reachable as the row itself.
+  // Every fifth posting states none, so the card's no-keywords branch is reachable.
+  const keywordCount = index % 5 === 0 ? 0 : 2 + (index % 3)
 
   return {
     id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
@@ -390,6 +423,9 @@ const buildListItem = (index: number): JobListItemDto => {
     location: LOCATIONS[index % LOCATIONS.length],
     salary: hasSalary ? mockSalary(index) : null,
     createdAt: new Date(Date.now() - index * 36 * 60 * 60 * 1000).toISOString(),
+    ...(keywordCount > 0
+      ? { keywords: KEYWORDS.slice(index % 4, (index % 4) + keywordCount) }
+      : {}),
   }
 }
 
@@ -590,25 +626,121 @@ export const fetchJobsByIds = async (
     .filter((item): item is SavedJobItemDto => item !== null)
 }
 
+/** An actor's own postings were published by that actor, so the poster is
+ *  stamped from the id rather than left to buildListItem's rotation. A fallback
+ *  org has no entry in ORGS and keeps whatever the rotation picked. */
+const postingPoster = (actorId: string): JobPosterDto | null =>
+  ORGS.find((org) => org.id === actorId) ??
+  (actorId.startsWith('user-') ? { actorType: 'user' } : null)
+
+/** A DRAFT or CLOSED row carries its marker in the slug, so opening it from the
+ *  pane lands on a detail page in the same status. */
+const buildPosting = (
+  index: number,
+  status: JobStatus,
+  order: number,
+  poster: JobPosterDto | null,
+): SavedJobItemDto => {
+  const base = buildListItem(index)
+  const marker = status === 'DRAFT' ? MAGIC_DRAFT_SLUG : MAGIC_CLOSED_SLUG
+  return {
+    ...base,
+    ...(poster ? { createdFor: poster } : {}),
+    status,
+    slug:
+      status === 'OPEN' ? base.slug : `${slugify(base.title)}-${marker}-${index + 1000 + order}`,
+    createdAt: new Date(Date.now() - order * 30 * 60 * 60 * 1000).toISOString(),
+  }
+}
+
+/** Stays inside the mock, as the column stays inside the database. Derived from
+ *  the row so filtering never restamps it. */
+const mockUpdatedAt = (item: SavedJobItemDto): number =>
+  new Date(item.createdAt).getTime() + (hashString(item.slug) % 5) * 12 * 60 * 60 * 1000
+
+const sortPostings = (rows: SavedJobItemDto[], sort: JobPostingsSort): SavedJobItemDto[] => {
+  const byUpdated = sort.startsWith('updated')
+  const ascending = sort.endsWith('_asc')
+  const stampOf = (item: SavedJobItemDto): number =>
+    byUpdated ? mockUpdatedAt(item) : new Date(item.createdAt).getTime()
+
+  return [...rows].sort((a, b) => (ascending ? stampOf(a) - stampOf(b) : stampOf(b) - stampOf(a)))
+}
+
+const postingsHref = (
+  actorId: string,
+  params: ActorJobPostingsQuery | undefined,
+  page: number,
+  size: number,
+): string => {
+  const sp = new URLSearchParams()
+  sp.set('page', String(page))
+  sp.set('size', String(size))
+  if (params?.status) sp.set('status', params.status)
+  if (params?.sort) sp.set('sort', params.sort)
+  return `/api/actors/${actorId}/jobs?${sp.toString()}`
+}
+
+/** Every posting the caller is allowed to see, before paging. */
+const allPostingsFor = (
+  actorId: string,
+  params?: ActorJobPostingsQuery,
+): SavedJobItemDto[] => {
+  if (actorId.endsWith('-empty')) return []
+
+  const seed = hashString(actorId)
+  const owned = VIEWER_POSTING_STATUSES[actorId]
+  const poster = postingPoster(actorId)
+
+  if (!owned) {
+    // Some actors return [] (no postings, or hidden by privacy - indistinguishable).
+    if (seed % 3 === 0) return []
+    const count = (seed % 9) + 4 // 4..12 postings
+    const base = seed % TITLES.length
+    return Array.from({ length: count }, (_, i) => buildPosting(base + i, 'OPEN', i, poster))
+  }
+
+  const rows = owned
+    .map((status, i) => buildPosting((seed + i) % TITLES.length, status, i, poster))
+    .filter((row) => !params?.status || row.status === params.status)
+  return sortPostings(rows, params?.sort ?? 'created_desc')
+}
+
 /**
- * MOCK - would be: const { data } = await api.get(`/actors/${actorId}/jobs`)
- * The actor's PUBLIC job postings: OPEN only, newest first, bare array (a
- * profile's open postings are a bounded set - no paging speculatively). An empty
- * array covers BOTH "has no postings" and "postings hidden by
- * PrivacySettings.showJobPostings" - the two are indistinguishable by design, so
- * the mock does not model the flag at all (§9).
+ * MOCK - would be:
+ *   const { data } = await api.get(`/actors/${actorId}/jobs`, { params: { page, size, ...params } })
+ * One route, two audiences. Anyone else gets the actor's PUBLIC postings, OPEN
+ * only, and an empty page there covers BOTH "has no postings" and "postings
+ * hidden by PrivacySettings.showJobPostings" - indistinguishable by design, so
+ * the mock does not model the flag at all. Someone who may manage them gets
+ * every status plus `status` and `sort`, which the real route answers with a
+ * `400` for anyone else rather than narrowing.
  */
-export const fetchActorJobPostings = async (actorId: string): Promise<JobListItemDto[]> => {
+export const fetchActorJobPostings = async (
+  actorId: string,
+  params?: ActorJobPostingsQuery,
+  page = 1,
+  size = 10,
+): Promise<PagedResponse<SavedJobItemDto>> => {
   await delay(400)
 
-  // Some actors return [] (no postings, or hidden by privacy - indistinguishable).
-  const seed = hashString(actorId)
-  if (actorId.endsWith('-empty') || seed % 3 === 0) return []
+  const all = allPostingsFor(actorId, params)
+  const totalElements = all.length
+  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size)
+  const last = page >= totalPages
+  const content = all.slice((page - 1) * size, page * size)
 
-  const count = (seed % 4) + 2 // 2..5 postings
-  const base = seed % TITLES.length
-  return Array.from({ length: count }, (_, i) => {
-    const item = buildListItem(base + i)
-    return { ...item, createdAt: new Date(Date.now() - i * 30 * 60 * 60 * 1000).toISOString() }
-  })
+  return {
+    _links: {
+      self: { href: postingsHref(actorId, params, page, size) },
+      ...(page > 1 ? { prev: { href: postingsHref(actorId, params, page - 1, size) } } : {}),
+      ...(last ? {} : { next: { href: postingsHref(actorId, params, page + 1, size) } }),
+    },
+    content,
+    page,
+    size,
+    totalElements,
+    totalPages,
+    last,
+  }
 }

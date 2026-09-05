@@ -199,9 +199,7 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
         <section className="job-detail-description">{job.description}</section>
 
         {job.keywords && job.keywords.length > 0 && (
-          <p className="job-detail-keywords">
-            {t('jobs.keywords')}: {job.keywords.join(' · ')}
-          </p>
+          <p className="job-detail-keywords">{job.keywords.join(' · ')}</p>
         )}
       </article>
 
