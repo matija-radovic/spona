@@ -3,14 +3,18 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { IconCheck } from '@tabler/icons-react'
+import {
+  Button,
+  ButtonVariant,
+  SaveBar,
+  SectionPanel,
+  UnsavedChangesModal,
+} from '@shared/components'
+import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
 import { updatePrivacy, type PrivacyDto } from '@utils/api/settings'
-import { SettingsSaveBar } from '../../../components/SettingsSaveBar'
-import { SettingsSection } from '../../../components/SettingsSection'
-import { UnsavedChangesModal } from '../../../components/UnsavedChangesModal'
 import { canEditOrgProfile } from '../../../lib/permissions'
 import { useSettingsContext } from '../../../lib/settingsOutletContext'
-import useUnsavedGuard from '../../../lib/useUnsavedGuard'
 
 const PrivacySection = () => {
   const { t } = useTranslation()
@@ -48,7 +52,7 @@ const PrivacySection = () => {
   })
 
   return (
-    <SettingsSection title={t('settings.privacy.title')} className="privacy-section">
+    <SectionPanel title={t('settings.privacy.title')} className="privacy-section">
       <form className="settings-form" onSubmit={handleSubmit(persist)} noValidate>
         {!canEdit && <p className="settings-note">{t('settings.readOnly')}</p>}
 
@@ -69,12 +73,16 @@ const PrivacySection = () => {
         </label>
 
         {canEdit && (
-          <SettingsSaveBar isDirty={isDirty} isSaving={isSubmitting} error={error} />
+          <SaveBar error={error}>
+            <Button type="submit" variant={ButtonVariant.PRIMARY} disabled={!isDirty || isSubmitting}>
+              {isSubmitting ? t('common.saving') : t('settings.save')}
+            </Button>
+          </SaveBar>
         )}
       </form>
 
       <UnsavedChangesModal guard={guard} />
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

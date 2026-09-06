@@ -52,23 +52,8 @@
     text-overflow: ellipsis;
   }
 
-  .job-card-status {
-    @include m.surface-panel(999px);
-
-    flex: 0 0 auto;
-    padding: 0.25rem 0.65rem;
+  .job-status-chip {
     font-size: 0.7rem;
-
-    &.is-draft {
-      color: c.$text-muted;
-      background-color: c.$fill-muted;
-    }
-
-    &.is-closed {
-      color: c.$danger-text;
-      background-color: c.$danger-wash;
-      border-color: c.$danger-border;
-    }
   }
 
   .job-card-poster {

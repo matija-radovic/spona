@@ -1,18 +1,18 @@
 import { useTranslation } from 'react-i18next'
-import { Button, ButtonVariant } from '@shared/components'
-import { SettingsModal } from '../SettingsModal'
-import type { UnsavedGuard } from '../../lib/useUnsavedGuard'
+import { Button, ButtonVariant } from '@shared/components/form/Button'
+import { Modal } from '@shared/components/overlay/Modal'
+import type { UnsavedGuard } from '@shared/hooks/useUnsavedGuard'
 
 interface UnsavedChangesModalProps {
   guard: UnsavedGuard
 }
 
 /** Esc and the backdrop mean "stay": they leave the edits intact and send nothing. */
-const UnsavedChangesModal =({ guard }: UnsavedChangesModalProps) => {
+const UnsavedChangesModal = ({ guard }: UnsavedChangesModalProps) => {
   const { t } = useTranslation()
 
   return (
-    <SettingsModal
+    <Modal
       isOpen={guard.isOpen}
       onClose={guard.stay}
       title={t('settings.unsaved.title')}
@@ -28,7 +28,7 @@ const UnsavedChangesModal =({ guard }: UnsavedChangesModalProps) => {
       }
     >
       <p>{t('settings.unsaved.body')}</p>
-    </SettingsModal>
+    </Modal>
   )
 }
 

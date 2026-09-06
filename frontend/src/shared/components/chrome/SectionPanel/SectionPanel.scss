@@ -1,23 +1,23 @@
 @use '@css/colors' as c;
 
-.settings-section {
+.section-panel {
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
 }
 
-.settings-section-head {
+.section-panel-head {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 
-  .settings-section-title {
+  .section-panel-title {
     padding-bottom: 0.7rem;
     color: c.$text-strong;
     border-bottom: 1px solid c.$border-line;
   }
 
-  .settings-section-hint {
+  .section-panel-hint {
     font-size: 0.82rem;
     line-height: 1.45;
     color: c.$text-muted;

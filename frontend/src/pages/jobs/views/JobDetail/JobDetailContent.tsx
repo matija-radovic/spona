@@ -23,7 +23,9 @@ import { formatSalary } from '@pages/jobs/lib/formatSalary'
 import { useCvApply } from '@pages/jobs/lib/useCvApply'
 import { ContactApply } from '@pages/jobs/components/ContactApply'
 import { CvDropApply } from '@pages/jobs/components/CvDropApply'
+import { DeleteJobDialog } from '@pages/jobs/components/DeleteJobDialog'
 import { JobRail } from '@pages/jobs/components/JobRail'
+import { JobStatusChip } from '@pages/jobs/components/JobStatusChip'
 
 interface JobDetailContentProps {
   job: JobDetailDto
@@ -41,6 +43,7 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
   const wideEnoughForRail = useMediaQuery(MQ.exceptTablet)
 
   const [saved, setSaved] = useState(() => isJobSaved(job.id))
+  const [deleting, setDeleting] = useState(false)
 
   const favorited = isAuthenticated && saved
 
@@ -62,8 +65,10 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
 
   const { createdFor } = job
   const org = createdFor.actorType === 'org' ? createdFor : null
+  const isOpenToApplicants = job.status !== 'CLOSED'
+  
   // The drop target is the WHOLE panel, not just the apply row.
-  const isCvDrop = job.applicationType === 'CV_DROP'
+  const isCvDrop = job.applicationType === 'CV_DROP' && isOpenToApplicants
   const rail = detailOnly && wideEnoughForRail ? org : null
 
   const actions = (
@@ -84,6 +89,12 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
         items={contentMenuItems({
           path: `/jobs/${job.slug}`,
           copyLabel: t('common.copyLink'),
+          editLabel: t('jobs.manageJob'),
+          deleteLabel: t('jobs.deleteJob'),
+          canEdit: job.viewerCanEdit,
+          canDelete: job.viewerCanDelete,
+          onEdit: () => navigate(`/jobs/${job.slug}/manage`),
+          onDelete: () => setDeleting(true),
         })}
       />
     </div>
@@ -117,11 +128,7 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
           <div className="job-detail-head-main">
             <div className="job-detail-title-row">
               <h2 className="job-detail-title">{job.title}</h2>
-              {job.status !== 'OPEN' && (
-                <span className={`job-detail-status-chip is-${job.status.toLowerCase()}`}>
-                  {t(`jobs.status.${job.status}`)}
-                </span>
-              )}
+              <JobStatusChip status={job.status} />
             </div>
 
             {org ? (
@@ -174,14 +181,18 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
         </header>
 
         <section className="job-detail-apply">
-          {job.applicationType === 'CONTACT_ONLY' && (
+          {!isOpenToApplicants && (
+            <p className="job-detail-apply-closed">{t('jobs.applicationsClosed')}</p>
+          )}
+
+          {isOpenToApplicants && job.applicationType === 'CONTACT_ONLY' && (
             <>
               <h3 className="job-detail-apply-title">{t('jobs.contactEmployer')}</h3>
               <ContactApply entries={job.contactInformation ?? []} />
             </>
           )}
 
-          {job.applicationType === 'EXTERNAL_URL' && job.externalUrl && (
+          {isOpenToApplicants && job.applicationType === 'EXTERNAL_URL' && job.externalUrl && (
             <Button
               variant={ButtonVariant.PRIMARY}
               href={job.externalUrl}
@@ -210,6 +221,8 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
           followedByViewer={job.createdForFollowedByViewer}
         />
       )}
+
+      <DeleteJobDialog job={job} isOpen={deleting} onClose={() => setDeleting(false)} />
     </div>
   )
 }

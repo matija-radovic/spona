@@ -4,6 +4,7 @@ import { IconBuilding, IconMapPin, IconCoin } from '@tabler/icons-react'
 import useFormat from '@shared/hooks/useFormat'
 import type { JobListItemDto, JobStatus } from '@utils/api/jobs'
 import { formatSalary } from '@pages/jobs/lib/formatSalary'
+import { JobStatusChip } from '@pages/jobs/components/JobStatusChip'
 
 /** What fits beside the logo tile at the list column's narrow end. */
 const KEYWORDS_SHOWN = 3
@@ -33,11 +34,7 @@ const JobCard = ({ job, isActive, onSelect }: JobCardProps) => {
       <div className="job-card-body">
         <div className="job-card-title-row">
           <h3 className="job-card-title">{job.title}</h3>
-          {job.status && job.status !== 'OPEN' && (
-            <span className={`job-card-status is-${job.status.toLowerCase()}`}>
-              {t(`jobs.status.${job.status}`)}
-            </span>
-          )}
+          {job.status && <JobStatusChip status={job.status} />}
         </div>
 
         <span className="job-card-poster">

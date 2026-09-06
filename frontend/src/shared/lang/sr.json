@@ -216,6 +216,10 @@
     "applyNow": "Prijavite se",
     "contactEmployer": "Kontaktirajte poslodavca",
     "applyExternal": "Prijavite se na sajtu kompanije",
+    "applicationsClosed": "Prijave za ovaj oglas su zatvorene.",
+    "applyTypeLocked": "Način prijave se ne menja nakon objave oglasa.",
+    "manageJob": "Uredi oglas",
+    "deleteJob": "Obriši oglas",
     "noJobs": "Nema dostupnih oglasa.",
     "status": {
       "DRAFT": "Nacrt",
@@ -692,13 +696,52 @@
       "salaryHint": "Opciono. Ostavite „Do“ prazno ako je iznos tačan, a ne raspon.",
       "applyTitle": "Kako se kandidati prijavljuju?",
       "applyType": "Način prijave",
-      "contactHint": "Kandidati vas kontaktiraju direktno preko podataka ispod.",
+      "contactHint": "Kandidati vas kontaktiraju putem unetih podataka ispod.",
       "useSavedContacts": "Dodaj sačuvane kontakte",
       "externalHint": "Kandidati odlaze na sajt van Spone.",
-      "cvDropHint": "Prijave će vam stići u sanduče ovog oglasa.",
-      "draftSaved": "Skica je sačuvana.",
-      "draftSavedBody": "Skica se ne prikazuje u pretrazi niti na javnom profilu. Dostupna je preko ove adrese.",
-      "viewPosting": "Otvori oglas"
+      "cvDropHint": "Prijave će vam stići u sanduče ovog oglasa."
+    },
+    "manage": {
+      "nav": {
+        "label": "Upravljanje oglasom",
+        "posting": "Oglas",
+        "applications": "Prijave"
+      },
+      "viewPosting": "Pogledaj oglas",
+      "identityFixed": "Objavljivač se ne menja nakon objave.",
+      "posting": {
+        "title": "Podaci o oglasu"
+      },
+      "apply": {
+        "title": "Prijave",
+        "draftHint": "Prijave se beleže samo kada kandidati šalju CV preko Spone. Posle objavljivanja posla nije moguće promeniti način prijave."
+      },
+      "publish": "Objavi",
+      "close": "Zatvori oglas",
+      "reopen": "Ponovo otvori",
+      "closeConfirm": {
+        "title": "Zatvoriti oglas?",
+        "body": "Oglas nestaje sa javne liste i prestaje da prima prijave. Stranica ostaje dostupna, a oglas možete ponovo otvoriti.",
+        "confirm": "Zatvori oglas"
+      },
+      "delete": {
+        "title": "Brisanje oglasa",
+        "hint": "Oglas se briše trajno, zajedno sa svim prijavama koje su na njega stigle.",
+        "button": "Obriši oglas",
+        "confirmTitle": "Obrisati oglas?",
+        "body": "Oglas „{{title}}“ se briše trajno.",
+        "bodyWithApplications": "Oglas „{{title}}“ i {{count}} prijava koje su na njega stigle brišu se trajno.",
+        "confirm": "Obriši oglas"
+      },
+      "inbox": {
+        "title": "Pristigle prijave",
+        "count": "{{count}} prijava",
+        "candidate": "Kandidat",
+        "submitted": "Prijavljen",
+        "cv": "CV",
+        "download": "Preuzmi CV",
+        "empty": "Još nema prijava na ovaj oglas."
+      }
     },
     "search": {
       "placeholder": "Pretražite poslove, kompanije, ključne reči...",

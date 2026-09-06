@@ -81,48 +81,4 @@ $identity-row: 3.65rem;
       flex-wrap: wrap;
     }
   }
-
-  .job-create-saved {
-    @include m.state-block(0.7rem, 2rem 1rem);
-
-    .job-create-saved-mark {
-      --icon-size: 1.4rem;
-
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 3rem;
-      height: 3rem;
-      color: c.$text-on-accent;
-      background-color: c.$success;
-      border-radius: 50%;
-    }
-
-    .job-create-saved-title {
-      margin: 0.3rem 0 0;
-      font-size: 1.2rem;
-      color: c.$text-strong;
-    }
-
-    .job-create-saved-body {
-      margin: 0;
-      max-width: 32rem;
-      font-size: 0.85rem;
-      line-height: 1.45;
-    }
-
-    .job-create-saved-slug {
-      padding: 0.35rem 0.7rem;
-      font-size: 0.85rem;
-      color: c.$text-strong;
-      background-color: c.$fill-muted;
-      border-radius: 8px;
-    }
-
-    .job-create-saved-actions {
-      display: flex;
-      gap: 0.6rem;
-      margin-top: 0.5rem;
-    }
-  }
 }

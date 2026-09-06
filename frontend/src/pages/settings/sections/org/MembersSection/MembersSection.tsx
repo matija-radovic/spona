@@ -2,6 +2,7 @@ import './MembersSection.scss'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconRefresh } from '@tabler/icons-react'
+import { SectionPanel } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
 import {
@@ -16,18 +17,12 @@ import {
   type OrganizationRole,
   type OrgMemberDto,
 } from '@utils/api/organizations'
-import { SettingsSection } from '../../../components/SettingsSection'
 import { canManageInvitations } from '../../../lib/permissions'
 import { useOrgSettingsContext } from '../../../lib/settingsOutletContext'
 import { MembersTable } from './MembersTable'
 import { InvitationsTable } from './InvitationsTable'
 import { InviteForm } from './InviteForm'
 
-/**
- * No save bar: every action applies immediately. Member edits are optimistic (one
- * field, legible revert); invitation actions refetch, since the client cannot guess
- * a new row's shape. `Osveži` is the manual catch-up - there are no sockets.
- */
 const MembersSection = () => {
   const { t } = useTranslation()
   const { settings } = useOrgSettingsContext()
@@ -176,7 +171,7 @@ const MembersSection = () => {
   )
 
   return (
-    <SettingsSection title={t('settings.members.title')} className="members-section">
+    <SectionPanel title={t('settings.members.title')} className="members-section">
       {!loaded && <p className="settings-note">{t('common.loading')}</p>}
 
       {loaded && (
@@ -227,7 +222,7 @@ const MembersSection = () => {
           </div>
         </>
       )}
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

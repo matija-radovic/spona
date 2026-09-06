@@ -35,7 +35,6 @@ const useUnsavedGuard = ({ isDirty, onSave, onDiscard }: UnsavedGuardOptions): U
     setIsSaving(true)
     try {
       const saved = await onSave()
-      // Success cancels the navigation rather than resuming it; a failure keeps the modal up.
       if (saved) blocker.reset?.()
     } finally {
       setIsSaving(false)

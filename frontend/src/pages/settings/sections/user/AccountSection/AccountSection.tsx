@@ -2,7 +2,7 @@ import './AccountSection.scss'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconKey, IconMail, IconUser } from '@tabler/icons-react'
-import { SettingsSection } from '../../../components/SettingsSection'
+import { SectionPanel } from '@shared/components'
 import { useUserSettingsContext } from '../../../lib/settingsOutletContext'
 import { CredentialRow } from './CredentialRow'
 import { UsernameForm } from './UsernameForm'
@@ -21,7 +21,7 @@ const AccountSection = () => {
     setOpenRow((current) => (current === key ? null : key))
 
   return (
-    <SettingsSection title={t('settings.account.title')} className="account-section">
+    <SectionPanel title={t('settings.account.title')} className="account-section">
       <div className="account-credentials">
         <CredentialRow
           icon={<IconUser />}
@@ -59,7 +59,7 @@ const AccountSection = () => {
       </div>
 
       <DeleteAccountCard />
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

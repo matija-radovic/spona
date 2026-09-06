@@ -1,4 +1,5 @@
 import './ApplyFields.scss'
+import type { ReactNode } from 'react'
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { IconInbox } from '@tabler/icons-react'
@@ -12,7 +13,7 @@ import {
 } from '@shared/components'
 import type { ContactEntry } from '@shared/components'
 import { APPLICATION_TYPE_VALUES } from '@pages/jobs/lib/jobEnums'
-import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
+import type { JobFormData } from '@pages/jobs/lib/jobSchema'
 
 /** Entries the publisher already has on file, minus the ones already added. */
 const missingFrom = (current: ContactEntry[], saved: readonly ContactEntry[]): ContactEntry[] =>
@@ -24,10 +25,21 @@ interface ApplyFieldsProps {
   errors: FieldErrors<JobFormData>
   /** The publishing actor's saved contact entries, offered as a starting point. */
   savedContacts?: readonly ContactEntry[]
+  /** Lock the current pick, edits are available. User can't change the pick*/
+  typeLocked?: boolean
+  /** Stands in for the CV-drop note, which configures nothing */
+  cvDropPanel?: ReactNode
 }
 
 /** The application-type picker and the chosen type's panel */
-const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFieldsProps) => {
+const ApplyFields = ({
+  register,
+  control,
+  errors,
+  savedContacts = [],
+  typeLocked = false,
+  cvDropPanel,
+}: ApplyFieldsProps) => {
   const { t } = useTranslation()
 
   return (
@@ -41,20 +53,31 @@ const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFie
               label={t('jobs.create.applyTitle')}
               htmlLabel={false}
               className="apply-fields-picker"
+              hint={typeLocked ? t('jobs.applyTypeLocked') : undefined}
             >
-              <div className="apply-fields-toggles" role="group" aria-label={t('jobs.create.applyType')}>
-                {APPLICATION_TYPE_VALUES.map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`apply-fields-toggle${typeField.value === value ? ' is-active' : ''}`}
-                    onClick={() => typeField.onChange(value)}
-                    aria-pressed={typeField.value === value}
-                  >
-                    {t(`jobs.application.${value}`)}
-                  </button>
-                ))}
-              </div>
+              {typeLocked ? (
+                <span className="apply-fields-locked">
+                  {t(`jobs.application.${typeField.value}`)}
+                </span>
+              ) : (
+                <div
+                  className="apply-fields-toggles"
+                  role="group"
+                  aria-label={t('jobs.create.applyType')}
+                >
+                  {APPLICATION_TYPE_VALUES.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`apply-fields-toggle${typeField.value === value ? ' is-active' : ''}`}
+                      onClick={() => typeField.onChange(value)}
+                      aria-pressed={typeField.value === value}
+                    >
+                      {t(`jobs.application.${value}`)}
+                    </button>
+                  ))}
+                </div>
+              )}
             </FieldShell>
 
             <div className="apply-fields-panel">
@@ -109,12 +132,13 @@ const ApplyFields = ({ register, control, errors, savedContacts = [] }: ApplyFie
                 </FieldShell>
               )}
 
-              {typeField.value === 'CV_DROP' && (
-                <p className="apply-fields-note">
-                  <IconInbox aria-hidden />
-                  {t('jobs.create.cvDropHint')}
-                </p>
-              )}
+              {typeField.value === 'CV_DROP' &&
+                (cvDropPanel ?? (
+                  <p className="apply-fields-note">
+                    <IconInbox aria-hidden />
+                    {t('jobs.create.cvDropHint')}
+                  </p>
+                ))}
             </div>
           </>
         )}

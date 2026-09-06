@@ -2,16 +2,23 @@ import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
+import {
+  AvatarPicker,
+  Button,
+  ButtonVariant,
+  ContactInfoWidget,
+  FieldShell,
+  Input,
+  SaveBar,
+  SectionPanel,
+  UnsavedChangesModal,
+} from '@shared/components'
 import { useUser } from '@shared/contexts'
+import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
 import { updateProfile } from '@utils/api/settings'
 import { uploadAvatar } from '@utils/api/uploads'
-import { SettingsSaveBar } from '../../../components/SettingsSaveBar'
-import { SettingsSection } from '../../../components/SettingsSection'
-import { UnsavedChangesModal } from '../../../components/UnsavedChangesModal'
 import { useUserSettingsContext } from '../../../lib/settingsOutletContext'
-import useUnsavedGuard from '../../../lib/useUnsavedGuard'
 import {
   buildUserProfileSchema,
   toUpdateProfilePayload,
@@ -66,7 +73,7 @@ const UserProfileSection = () => {
   })
 
   return (
-    <SettingsSection title={t('settings.profile.title')} description={t('settings.profile.hint')}>
+    <SectionPanel title={t('settings.profile.title')} description={t('settings.profile.hint')}>
       <form className="settings-form" onSubmit={handleSubmit(persist)} noValidate>
         <Controller
           control={control}
@@ -113,11 +120,15 @@ const UserProfileSection = () => {
           )}
         />
 
-        <SettingsSaveBar isDirty={isDirty} isSaving={isSubmitting} error={error} />
+        <SaveBar error={error}>
+          <Button type="submit" variant={ButtonVariant.PRIMARY} disabled={!isDirty || isSubmitting}>
+            {isSubmitting ? t('common.saving') : t('settings.save')}
+          </Button>
+        </SaveBar>
       </form>
 
       <UnsavedChangesModal guard={guard} />
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

@@ -7,21 +7,23 @@ import {
   ActorAvatar,
   ActorAvatarSize,
   AvatarPicker,
+  Button,
+  ButtonVariant,
   ContactInfoWidget,
   ContactValue,
   contactTypeOption,
   FieldShell,
   Input,
+  SaveBar,
+  SectionPanel,
+  UnsavedChangesModal,
 } from '@shared/components'
+import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
 import { updateOrgProfile } from '@utils/api/organizations'
 import { uploadAvatar } from '@utils/api/uploads'
-import { SettingsSaveBar } from '../../../components/SettingsSaveBar'
-import { SettingsSection } from '../../../components/SettingsSection'
-import { UnsavedChangesModal } from '../../../components/UnsavedChangesModal'
 import { canEditOrgProfile } from '../../../lib/permissions'
 import { useOrgSettingsContext } from '../../../lib/settingsOutletContext'
-import useUnsavedGuard from '../../../lib/useUnsavedGuard'
 import {
   buildOrgProfileSchema,
   toOrgProfileData,
@@ -29,11 +31,6 @@ import {
   type OrgProfileData,
 } from './schema'
 
-/**
- * EDITOR and RECRUITER get the same layout read-only. `AvatarPicker` and
- * `ContactInfoWidget` have no read-only mode, so those two are swapped for
- * `ActorAvatar` and `ContactValue` rather than mounted and disabled.
- */
 const OrgProfileSection = () => {
   const { t } = useTranslation()
   const { settings, refetch } = useOrgSettingsContext()
@@ -78,7 +75,7 @@ const OrgProfileSection = () => {
   })
 
   return (
-    <SettingsSection
+    <SectionPanel
       title={t('settings.profile.title')}
       description={t('settings.profile.orgHint')}
       className="org-profile-section"
@@ -185,12 +182,16 @@ const OrgProfileSection = () => {
         )}
 
         {canEdit && (
-          <SettingsSaveBar isDirty={isDirty} isSaving={isSubmitting} error={error} />
+          <SaveBar error={error}>
+            <Button type="submit" variant={ButtonVariant.PRIMARY} disabled={!isDirty || isSubmitting}>
+              {isSubmitting ? t('common.saving') : t('settings.save')}
+            </Button>
+          </SaveBar>
         )}
       </form>
 
       <UnsavedChangesModal guard={guard} />
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

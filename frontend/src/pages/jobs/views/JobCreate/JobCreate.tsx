@@ -4,22 +4,32 @@ import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button, ButtonVariant, FieldShell, PostAsSelect, PostAsSurface } from '@shared/components'
+import {
+  Button,
+  ButtonVariant,
+  FieldShell,
+  PostAsSelect,
+  PostAsSurface,
+  UnsavedChangesModal,
+} from '@shared/components'
 import type { ContactEntry } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import useMyOrganizations from '@shared/hooks/useMyOrganizations'
 import usePostAs from '@shared/hooks/usePostAs'
+import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { createJob, type CreateJobStatus } from '@utils/api/jobs'
 import { fetchOrgSettings } from '@utils/api/organizations'
 import { fetchUserSettings } from '@utils/api/settings'
 import { parseProblem } from '@utils/api/types'
 import { canPublishAs } from '@pages/settings/lib/permissions'
-import useUnsavedGuard from '@pages/settings/lib/useUnsavedGuard'
-import { UnsavedChangesModal } from '@pages/settings/components/UnsavedChangesModal'
 import { ApplyFields } from '@pages/jobs/components/ApplyFields'
 import { PostingFields } from '@pages/jobs/components/PostingFields'
-import DraftSaved from './DraftSaved'
-import { buildJobSchema, JOB_DEFAULTS, toCreateJobPayload, type JobFormData } from './schema'
+import {
+  buildJobSchema,
+  JOB_DEFAULTS,
+  toCreateJobPayload,
+  type JobFormData,
+} from '@pages/jobs/lib/jobSchema'
 
 const JobCreate = () => {
   const { t } = useTranslation()
@@ -37,8 +47,7 @@ const JobCreate = () => {
 
   const [savedContacts, setSavedContacts] = useState<readonly ContactEntry[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [draftSlug, setDraftSlug] = useState<string | null>(null)
-  const [publishedSlug, setPublishedSlug] = useState<string | null>(null)
+  const [destination, setDestination] = useState<string | null>(null)
 
   const intent = useRef<CreateJobStatus>('OPEN')
 
@@ -83,8 +92,7 @@ const JobCreate = () => {
     try {
       const job = await createJob(toCreateJobPayload(values, postAs.createdForId, status))
       reset(values)
-      if (status === 'OPEN') setPublishedSlug(job.slug)
-      else setDraftSlug(job.slug)
+      setDestination(status === 'OPEN' ? `/jobs/${job.slug}` : `/jobs/${job.slug}/manage`)
       return true
     } catch (caught) {
       const problem = parseProblem(caught)
@@ -103,8 +111,8 @@ const JobCreate = () => {
   })
 
   useEffect(() => {
-    if (publishedSlug) navigate(`/jobs/${publishedSlug}`, { replace: true })
-  }, [publishedSlug, navigate])
+    if (destination) navigate(destination, { replace: true })
+  }, [destination, navigate])
 
   return (
     <div className="job-create">
@@ -114,73 +122,69 @@ const JobCreate = () => {
           <p className="job-create-sub">{t('jobs.create.subtitle')}</p>
         </header>
 
-        {draftSlug ? (
-          <DraftSaved slug={draftSlug} />
-        ) : (
-          <form
-            className="job-create-form"
-            onSubmit={(event) => handleSubmit(persist)(event)}
-            noValidate
-          >
-            <div className="job-create-identity">
-              {!loading && publishable.length > 0 && (
-                <FieldShell label={t('jobs.create.postingAs')} htmlLabel={false}>
-                  <PostAsSelect
-                    organizations={publishable}
-                    value={postAs.value}
-                    onChange={postAs.setValue}
-                    disabled={isSubmitting}
-                  />
-                </FieldShell>
-              )}
-            </div>
+        <form
+          className="job-create-form"
+          onSubmit={(event) => handleSubmit(persist)(event)}
+          noValidate
+        >
+          <div className="job-create-identity">
+            {!loading && publishable.length > 0 && (
+              <FieldShell label={t('jobs.create.postingAs')} htmlLabel={false}>
+                <PostAsSelect
+                  organizations={publishable}
+                  value={postAs.value}
+                  onChange={postAs.setValue}
+                  disabled={isSubmitting}
+                />
+              </FieldShell>
+            )}
+          </div>
 
-            <PostingFields register={register} control={control} errors={errors} />
+          <PostingFields register={register} control={control} errors={errors} />
 
-            <section className="job-create-apply">
-              <ApplyFields
-                register={register}
-                control={control}
-                errors={errors}
-                savedContacts={savedContacts}
-              />
-            </section>
+          <section className="job-create-apply">
+            <ApplyFields
+              register={register}
+              control={control}
+              errors={errors}
+              savedContacts={savedContacts}
+            />
+          </section>
 
-            {error && <p className="job-create-error">{error}</p>}
+          {error && <p className="job-create-error">{error}</p>}
 
-            <div className="job-create-actions">
-              <Button
-                variant={ButtonVariant.GHOST}
-                onClick={() => navigate('/jobs')}
-                disabled={isSubmitting}
-              >
-                {t('common.cancel')}
-              </Button>
+          <div className="job-create-actions">
+            <Button
+              variant={ButtonVariant.GHOST}
+              onClick={() => navigate('/jobs')}
+              disabled={isSubmitting}
+            >
+              {t('common.cancel')}
+            </Button>
 
-              <Button
-                type="submit"
-                variant={ButtonVariant.SECONDARY}
-                onClick={() => {
-                  intent.current = 'DRAFT'
-                }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? t('common.saving') : t('jobs.create.saveDraft')}
-              </Button>
+            <Button
+              type="submit"
+              variant={ButtonVariant.SECONDARY}
+              onClick={() => {
+                intent.current = 'DRAFT'
+              }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t('common.saving') : t('jobs.create.saveDraft')}
+            </Button>
 
-              <Button
-                type="submit"
-                variant={ButtonVariant.PRIMARY}
-                onClick={() => {
-                  intent.current = 'OPEN'
-                }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? t('jobs.create.publishing') : t('jobs.create.publish')}
-              </Button>
-            </div>
-          </form>
-        )}
+            <Button
+              type="submit"
+              variant={ButtonVariant.PRIMARY}
+              onClick={() => {
+                intent.current = 'OPEN'
+              }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t('jobs.create.publishing') : t('jobs.create.publish')}
+            </Button>
+          </div>
+        </form>
       </div>
 
       <UnsavedChangesModal guard={guard} />

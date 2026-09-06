@@ -25,6 +25,16 @@
     }
   }
 
+  .apply-fields-locked {
+    @include m.surface-panel(999px);
+
+    align-self: flex-start;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    color: c.$text-strong;
+  }
+
   .apply-fields-panel {
     display: flex;
     flex-direction: column;

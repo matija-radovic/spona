@@ -93,25 +93,6 @@ $logo-size: 3.5rem;
     color: c.$text-strong;
   }
 
-  .job-detail-status-chip {
-    @include m.surface-panel(999px);
-
-    flex: 0 0 auto;
-    padding: 0.25rem 0.65rem;
-    font-size: 0.75rem;
-
-    &.is-draft {
-      color: c.$text-muted;
-      background-color: c.$fill-muted;
-    }
-
-    &.is-closed {
-      color: c.$danger-text;
-      background-color: c.$danger-wash;
-      border-color: c.$danger-border;
-    }
-  }
-
   .job-detail-poster {
     align-self: flex-start;
     font-size: 0.95rem;
@@ -226,6 +207,12 @@ $logo-size: 3.5rem;
       font-size: 1rem;
       font-weight: 600;
       color: c.$text-primary;
+    }
+
+    .job-detail-apply-closed {
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: c.$text-muted;
     }
   }
 

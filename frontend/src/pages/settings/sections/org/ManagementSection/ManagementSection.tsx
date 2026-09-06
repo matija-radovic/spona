@@ -11,6 +11,7 @@ import {
   Dropdown,
   FieldShell,
   Input,
+  SectionPanel,
   type DropdownOption,
 } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
@@ -24,7 +25,6 @@ import {
   type OrgMemberDto,
 } from '@utils/api/organizations'
 import { SettingsModal } from '../../../components/SettingsModal'
-import { SettingsSection } from '../../../components/SettingsSection'
 import { isOwner } from '../../../lib/permissions'
 import { useOrgSettingsContext } from '../../../lib/settingsOutletContext'
 
@@ -148,7 +148,7 @@ const ManagementSection = () => {
   }
 
   return (
-    <SettingsSection title={t('settings.org.title')} className="management-section">
+    <SectionPanel title={t('settings.org.title')} className="management-section">
       <form className="settings-card" onSubmit={onRename} noValidate>
         <h5 className="settings-card-title">{t('settings.org.slug.title')}</h5>
 
@@ -275,7 +275,7 @@ const ManagementSection = () => {
 
         {modalError && <p className="settings-modal-error">{modalError}</p>}
       </SettingsModal>
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

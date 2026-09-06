@@ -1,6 +1,6 @@
 import './Profile.scss'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
 import { fetchProfile, type ActorRefDto, type ProfileDto } from '@utils/api/profiles'
@@ -26,7 +26,15 @@ interface ProfileBodyProps {
  */
 const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   const { t } = useTranslation()
-  const [active, setActive] = useState<ProfileTab>(ProfileTab.ACTIVITY)
+  const location = useLocation()
+
+  const hasPostings = !!postings && postings.content.length > 0
+  const requested = (location.state as { tab?: ProfileTab } | null)?.tab
+  const [active, setActive] = useState<ProfileTab>(
+    requested === ProfileTab.JOB_POSTINGS && hasPostings
+      ? ProfileTab.JOB_POSTINGS
+      : ProfileTab.ACTIVITY,
+  )
 
   const owner = useMemo<ActorRefDto>(() => {
     const name = profile.actorType === 'user' ? profile.fullName : profile.displayName
@@ -38,7 +46,7 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   if (profile.otherContactInfo.length > 0) {
     tabs.push({ key: ProfileTab.CONTACTS, label: t('profile.tabs.contacts') })
   }
-  if (postings && postings.content.length > 0) {
+  if (hasPostings) {
     tabs.push({ key: ProfileTab.JOB_POSTINGS, label: t('profile.tabs.jobPostings') })
   }
   if (profile.actorType === 'user' && profile.viewerCanEdit) {

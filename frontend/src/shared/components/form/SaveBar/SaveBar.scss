@@ -1,6 +1,6 @@
 @use '@css/colors' as c;
 
-.settings-save-bar {
+.save-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -9,7 +9,7 @@
   padding-top: 0.8rem;
   border-top: 1px solid c.$border-line;
 
-  .settings-save-bar-error {
+  .save-bar-error {
     flex: 1 1 12rem;
     font-size: 0.8rem;
     color: c.$danger-text;

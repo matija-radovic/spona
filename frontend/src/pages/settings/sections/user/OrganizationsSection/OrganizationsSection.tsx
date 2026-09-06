@@ -3,7 +3,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconPlus } from '@tabler/icons-react'
-import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant, Tooltip } from '@shared/components'
+import {
+  ActorAvatar,
+  ActorAvatarSize,
+  Button,
+  ButtonVariant,
+  SectionPanel,
+  Tooltip,
+} from '@shared/components'
 import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
 import { parseProblem } from '@utils/api/types'
@@ -17,7 +24,6 @@ import {
   type MyOrganizationDto,
 } from '@utils/api/memberships'
 import { SettingsModal } from '../../../components/SettingsModal'
-import { SettingsSection } from '../../../components/SettingsSection'
 import { RoleChip } from '../../../components/RoleChip'
 import { useUserSettingsContext } from '../../../lib/settingsOutletContext'
 
@@ -116,7 +122,7 @@ const OrganizationsSection = () => {
   )
 
   return (
-    <SettingsSection title={t('settings.organizations.title')} className="organizations-section">
+    <SectionPanel title={t('settings.organizations.title')} className="organizations-section">
       {error && <p className="settings-inline-error">{error}</p>}
 
       {!loaded && <p className="settings-note">{t('common.loading')}</p>}
@@ -314,7 +320,7 @@ const OrganizationsSection = () => {
         </p>
         {leaveError && <p className="settings-modal-error">{leaveError}</p>}
       </SettingsModal>
-    </SettingsSection>
+    </SectionPanel>
   )
 }
 

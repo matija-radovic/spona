@@ -1,99 +1,14 @@
 @use '@css/colors' as c;
-@use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
-$sidebar-width: 220px;
-
 .settings-layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.6rem;
   padding: 1.4rem 0 3rem;
-
-  @media #{mq.$phone} {
-    flex-direction: column;
-    // Column direction makes `align-items` the horizontal sizer; without it both panes shrink.
-    align-items: stretch;
-    gap: 1rem;
-  }
 
   .settings-status {
     width: 100%;
     padding: 4rem 1rem;
     text-align: center;
     color: c.$text-muted;
-  }
-
-  .settings-sidebar {
-    flex: 0 0 $sidebar-width;
-    width: $sidebar-width;
-    position: sticky;
-    top: 1.4rem;
-
-    @media #{mq.$phone} {
-      position: static;
-      flex: 0 0 auto;
-      width: 100%;
-      min-width: 0;
-    }
-  }
-
-  .settings-sidebar-lane {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-
-    @media #{mq.$phone} {
-      flex-direction: row;
-      gap: 0.45rem;
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      padding-bottom: 0.35rem;
-      scrollbar-width: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-  }
-
-  .settings-sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 0.75rem;
-    font-size: 0.85rem;
-    line-height: var(--control-line-height);
-    font-weight: 500;
-    color: c.$text-muted;
-    text-decoration: none;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
-
-    &:hover {
-      color: c.$text-primary;
-      background-color: c.$overlay-hover;
-    }
-
-    &.is-active {
-      color: c.$accent;
-      background-color: c.$accent-wash;
-      border-color: c.$accent-muted;
-    }
-
-    @media #{mq.$phone} {
-      flex: 0 0 auto;
-      white-space: nowrap;
-      background-color: c.$surface-4;
-      border-color: c.$border-panel;
-      border-radius: 999px;
-    }
-  }
-
-  .settings-layout-main {
-    flex: 1 1 auto;
-    min-width: 0;
   }
 
   .settings-block {

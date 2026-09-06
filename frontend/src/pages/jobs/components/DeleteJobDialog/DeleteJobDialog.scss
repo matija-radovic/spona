@@ -1,0 +1,9 @@
+@use '@css/colors' as c;
+
+.job-delete-dialog {
+  .job-delete-error {
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    color: c.$danger-text;
+  }
+}

@@ -5,7 +5,15 @@ import { DefaultLayout, AuthLayout } from '@shared/components'
 import { UserProvider } from '@shared/contexts'
 import { IndexGate, GuestRoute, ProtectedRoute } from '@shared/components/-routing/RouteGuards'
 import AuthBoundary from '@shared/components/-routing/AuthBoundary'
-import { JobsLayout, JobsHint, JobDetail, JobCreate } from '@pages/jobs'
+import {
+  JobsLayout,
+  JobsHint,
+  JobDetail,
+  JobCreate,
+  JobManage,
+  PostingSection,
+  ApplicationsSection,
+} from '@pages/jobs'
 import ActorSearch from '@pages/actors'
 import Profile from '@pages/profile'
 import Feed from '@pages/feed'
@@ -81,6 +89,12 @@ const router = createBrowserRouter(
             <Route path='feed' element={<Feed />} />
             <Route path='jobs/new' element={<JobCreate />} />
             <Route path='invitations' element={<Invitations />} />
+
+            <Route path='jobs/:slug/manage' element={<JobManage />}>
+              <Route index element={<Navigate to='posting' replace />} />
+              <Route path='posting' element={<PostingSection />} />
+              <Route path='applications' element={<ApplicationsSection />} />
+            </Route>
           </Route>
 
           {TestRoute && (

@@ -13,7 +13,12 @@ import {
   JOB_TITLE_MIN,
 } from '@utils/constants/validation'
 import { isSafeHref, WEB_PROTOCOLS } from '@utils/safeUrl'
-import type { CreateJobPayload, CreateJobStatus } from '@utils/api/jobs'
+import type {
+  CreateJobPayload,
+  CreateJobStatus,
+  JobDetailDto,
+  UpdateJobPayload,
+} from '@utils/api/jobs'
 import {
   APPLICATION_TYPE_VALUES,
   EXPERIENCE_LEVEL_VALUES,
@@ -23,7 +28,7 @@ import {
   SALARY_PERIOD_VALUES,
   WORKING_HOURS_VALUES,
   WORKPLACE_TYPE_VALUES,
-} from '@pages/jobs/lib/jobEnums'
+} from './jobEnums'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
 
@@ -158,17 +163,39 @@ export const JOB_DEFAULTS: JobFormData = {
   externalUrl: '',
 }
 
-export const toCreateJobPayload = (
-  values: JobFormData,
-  createdForId: string,
-  status: CreateJobStatus,
-): CreateJobPayload => {
+type SalaryCurrency = JobFormData['salaryCurrency']
+type SalaryPeriodValue = JobFormData['salaryPeriod']
+
+const toCurrency = (raw: string | undefined): SalaryCurrency =>
+  SALARY_CURRENCY_VALUES.find((value) => value === raw) ?? JOB_DEFAULTS.salaryCurrency
+
+const toPeriod = (raw: string | undefined): SalaryPeriodValue =>
+  SALARY_PERIOD_VALUES.find((value) => value === raw) ?? JOB_DEFAULTS.salaryPeriod
+
+export const toJobFormData = (job: JobDetailDto): JobFormData => ({
+  title: job.title,
+  description: job.description,
+  keywords: job.keywords ?? [],
+  category: job.category ?? '',
+  jobType: job.jobType ?? '',
+  workplaceType: job.workplaceType ?? '',
+  workingHours: job.workingHours ?? '',
+  experienceLevel: job.experienceLevel ?? '',
+  location: job.location,
+  salaryMin: job.salary ? String(job.salary.min) : '',
+  salaryMax: job.salary?.max == null ? '' : String(job.salary.max),
+  salaryCurrency: toCurrency(job.salary?.currency),
+  salaryPeriod: toPeriod(job.salary?.period),
+  applicationType: job.applicationType,
+  contactInformation: job.contactInformation ?? [],
+  externalUrl: job.externalUrl ?? '',
+})
+
+export const toUpdateJobPayload = (values: JobFormData): UpdateJobPayload => {
   const min = toAmount(values.salaryMin)
   const max = toAmount(values.salaryMax)
 
   return {
-    createdForId,
-    status,
     title: values.title.trim(),
     description: values.description.trim(),
     keywords: values.keywords,
@@ -193,3 +220,13 @@ export const toCreateJobPayload = (
     externalUrl: values.applicationType === 'EXTERNAL_URL' ? values.externalUrl.trim() : null,
   }
 }
+
+export const toCreateJobPayload = (
+  values: JobFormData,
+  createdForId: string,
+  status: CreateJobStatus,
+): CreateJobPayload => ({
+  ...toUpdateJobPayload(values),
+  createdForId,
+  status,
+})

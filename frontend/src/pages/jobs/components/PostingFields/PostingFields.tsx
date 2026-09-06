@@ -21,7 +21,7 @@ import {
   enumOptionsWithEmpty,
   enumOptions,
 } from '@pages/jobs/lib/jobEnums'
-import type { JobFormData } from '@pages/jobs/views/JobCreate/schema'
+import type { JobFormData } from '@pages/jobs/lib/jobSchema'
 
 interface PostingFieldsProps {
   register: UseFormRegister<JobFormData>

@@ -1,0 +1,71 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+
+$nav-width: 220px;
+
+.section-nav {
+  flex: 0 0 $nav-width;
+  width: $nav-width;
+  position: sticky;
+  top: 1.4rem;
+
+  @media #{mq.$phone} {
+    position: static;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .section-nav-lane {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    @media #{mq.$phone} {
+      flex-direction: row;
+      gap: 0.45rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      padding-bottom: 0.35rem;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+
+  .section-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    font-weight: 500;
+    color: c.$text-muted;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+
+    &:hover {
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
+    }
+
+    &.is-active {
+      color: c.$accent;
+      background-color: c.$accent-wash;
+      border-color: c.$accent-muted;
+    }
+
+    @media #{mq.$phone} {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      background-color: c.$surface-4;
+      border-color: c.$border-panel;
+      border-radius: 999px;
+    }
+  }
+}

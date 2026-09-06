@@ -1,9 +1,10 @@
+import './Settings.scss'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { SectionLayout } from '@shared/components'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
 import { fetchOrgSettings, type OrgSettingsDto } from '@utils/api/organizations'
-import SettingsLayout from './SettingsLayout'
 import { ORG_SECTIONS, OWNER_ONLY_SECTION } from './lib/sections'
 import { isOwner } from './lib/permissions'
 import type { OrgSettingsOutletContext } from './lib/settingsOutletContext'
@@ -64,7 +65,14 @@ const OrgSettings = () => {
 
   const context: OrgSettingsOutletContext = { kind: 'org', settings, refetch: load }
 
-  return <SettingsLayout sections={sections} context={context} />
+  return (
+    <SectionLayout
+      sections={sections}
+      context={context}
+      navLabel={t('nav.settings')}
+      className="container settings-layout"
+    />
+  )
 }
 
 export default OrgSettings

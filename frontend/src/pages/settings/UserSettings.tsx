@@ -1,10 +1,11 @@
+import './Settings.scss'
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { SectionLayout } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
 import { fetchUserSettings, type UserSettingsDto } from '@utils/api/settings'
-import SettingsLayout from './SettingsLayout'
 import { USER_SECTIONS } from './lib/sections'
 import type { UserSettingsOutletContext } from './lib/settingsOutletContext'
 
@@ -59,7 +60,14 @@ const UserSettings = () => {
 
   const context: UserSettingsOutletContext = { kind: 'user', settings, refetch: load }
 
-  return <SettingsLayout sections={USER_SECTIONS} context={context} />
+  return (
+    <SectionLayout
+      sections={USER_SECTIONS}
+      context={context}
+      navLabel={t('nav.settings')}
+      className="container settings-layout"
+    />
+  )
 }
 
 export default UserSettings
