@@ -67,7 +67,7 @@ const InvitationsTable = ({
                   <span className="members-identity-text">
                     <span className="members-identity-name">{invitation.email}</span>
                     <span className="members-identity-handle is-muted">
-                      {t('settings.invitations.notRegistered')}
+                      {t('settings.invitations.byEmail')}
                     </span>
                   </span>
                 )}

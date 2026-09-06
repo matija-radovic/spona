@@ -978,7 +978,7 @@
       "sentAt": "Datum",
       "invitedAs": "Pozvan/a kao",
       "statusLabel": "Status",
-      "notRegistered": "nema nalog, pridružiće se nakon registracije",
+      "byEmail": "pozvan/a putem email adrese",
       "waiting": "Na čekanju",
       "declined": "Odbijena",
       "cancel": "Otkaži pozivnicu",

@@ -103,9 +103,9 @@ export interface OrgMemberDto {
 export interface InvitationDto {
   id: string
   status: 'WAITING' | 'DECLINED'
-  /** Set once the invitation resolves to a real account. */
+  /** Set when the invitation was addressed to a profile. */
   invitee: { username: string; fullName: string; avatarUrl: string | null } | null
-  /** Set instead of `invitee` while an email invitation is unclaimed. */
+  /** Set instead of `invitee` when it was addressed to an email address. */
   email: string | null
   role: OrganizationRole
   createdAt: string
