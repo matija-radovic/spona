@@ -24,6 +24,7 @@ import {
   transferOwnership,
   type OrgMemberDto,
 } from '@utils/api/organizations'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { SettingsModal } from '../../../components/SettingsModal'
 import { isOwner } from '../../../lib/permissions'
 import { useOrgSettingsContext } from '../../../lib/settingsOutletContext'
@@ -94,7 +95,7 @@ const ManagementSection = () => {
 
   const adminOptions: DropdownOption[] = admins.map((member) => ({
     value: member.userId,
-    label: `${member.fullName} (@${member.username})`,
+    label: `${actorDisplayName(member.fullName, member.username)} (@${member.username})`,
   }))
 
   const closeModals = () => {

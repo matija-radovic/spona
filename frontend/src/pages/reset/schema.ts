@@ -1,12 +1,20 @@
 import { z } from 'zod'
-import { PASSWORD_MIN, PASSWORD_MAX, PASSWORD_REGEX } from '@utils/constants/validation'
+import {
+  PASSWORD_MIN,
+  PASSWORD_MAX,
+  PASSWORD_REGEX,
+  EMAIL_MAX,
+} from '@utils/constants/validation'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
 
 /** "Forgot password" request: just the address the link is mailed to. */
 export const buildRequestResetSchema = (t: Translate) =>
   z.object({
-    email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
+    email: z
+      .email(t('errors.invalidEmail'))
+      .min(1, t('errors.required'))
+      .max(EMAIL_MAX, t('errors.maxLength', { max: EMAIL_MAX })),
   })
 
 export type RequestResetData = z.infer<ReturnType<typeof buildRequestResetSchema>>

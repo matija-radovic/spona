@@ -9,6 +9,7 @@ import {
   type DropdownOption,
 } from '@shared/components'
 import type { OrganizationRole } from '@utils/api/organizations'
+import { INVITE_IDENTIFIER_MAX } from '@utils/constants/validation'
 import { assignableRoles } from '../../../../lib/permissions'
 
 interface InviteFormProps {
@@ -54,6 +55,7 @@ const InviteForm =({ viewerRole, onInvite }: InviteFormProps) => {
         <Input
           error={error ?? undefined}
           value={identifier}
+          maxLength={INVITE_IDENTIFIER_MAX}
           onChange={(event) => setIdentifier(event.target.value)}
         />
       </FieldShell>

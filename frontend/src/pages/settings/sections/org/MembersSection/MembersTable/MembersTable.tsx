@@ -10,6 +10,7 @@ import {
 } from '@shared/components'
 import useFormat from '@shared/hooks/useFormat'
 import type { OrganizationRole, OrgMemberDto } from '@utils/api/organizations'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { RoleChip, RoleChipSize } from '../../../../components/RoleChip'
 import { assignableRoles, canManageMember } from '../../../../lib/permissions'
 
@@ -62,10 +63,12 @@ const MembersTable = ({
                     avatarUrl={member.avatarUrl}
                     actorType="user"
                     size={ActorAvatarSize.SM}
-                    alt={member.fullName}
+                    alt={actorDisplayName(member.fullName, member.username)}
                   />
                   <span className="members-identity-text">
-                    <span className="members-identity-name">{member.fullName}</span>
+                    <span className="members-identity-name">
+                      {actorDisplayName(member.fullName, member.username)}
+                    </span>
                     <Link className="members-identity-handle" to={`/users/${member.username}`}>
                       @{member.username}
                     </Link>

@@ -6,6 +6,7 @@ import {
   PASSWORD_MAX,
   PASSWORD_REGEX,
   SLUG_REGEX,
+  EMAIL_MAX,
 } from '@utils/constants/validation'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
@@ -23,7 +24,10 @@ export type UsernameData = z.infer<ReturnType<typeof buildUsernameSchema>>
 
 export const buildEmailSchema = (t: Translate) =>
   z.object({
-    email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
+    email: z
+      .email(t('errors.invalidEmail'))
+      .min(1, t('errors.required'))
+      .max(EMAIL_MAX, t('errors.maxLength', { max: EMAIL_MAX })),
     currentPassword: z.string().min(1, t('errors.required')),
   })
 

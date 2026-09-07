@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ActorAvatar, ActorAvatarSize, FollowButton } from '@shared/components'
 import { actorPath } from '@utils/actorPath'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { truncateText } from '@utils/truncateText'
 import type { ActorSearchItemDto } from '@utils/api/profiles'
 
@@ -42,7 +43,7 @@ const ActorSearchRow = ({ item }: ActorSearchRowProps) => {
       <Link to={actorPath(item)} className="actor-row-main">
         <ActorAvatar avatarUrl={item.avatarUrl} actorType={item.actorType} size={ActorAvatarSize.SM} />
         <span className="actor-row-identity">
-          <span className="actor-row-name">{item.name}</span>
+          <span className="actor-row-name">{actorDisplayName(item.name, item.handle)}</span>
           {item.actorType === 'user' && <span className="actor-row-handle">@{item.handle}</span>}
         </span>
       </Link>

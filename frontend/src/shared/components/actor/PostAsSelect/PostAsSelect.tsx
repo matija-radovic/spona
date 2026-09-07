@@ -6,6 +6,7 @@ import { useUser } from '@shared/contexts'
 import { MQ } from '@shared/css/mediaqueries'
 import useMediaQuery from '@shared/hooks/useMediaQuery'
 import type { MyOrganizationDto } from '@utils/api/memberships'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import type { PostAsValue } from './postAsValue'
 
 const MYSELF = ''
@@ -32,7 +33,7 @@ const PostAsSelect = ({ organizations, value, onChange, disabled, className }: P
   const options: DropdownOption[] = [
     {
       value: MYSELF,
-      label: user.fullName,
+      label: actorDisplayName(user.fullName, user.username),
       leading: (
         <ActorAvatar avatarUrl={user.avatarUrl || null} actorType="user" size={ActorAvatarSize.XS} />
       ),
@@ -56,7 +57,7 @@ const PostAsSelect = ({ organizations, value, onChange, disabled, className }: P
       options={options}
       value={value ?? MYSELF}
       onChange={(next) => onChange(next === MYSELF ? null : (next as string))}
-      placeholder={user.fullName}
+      placeholder={actorDisplayName(user.fullName, user.username)}
       maxLabelChars={isPhone ? MAX_LABEL_CHARS_PHONE : MAX_LABEL_CHARS}
       disabled={disabled}
       className={['post-as-select', className].filter(Boolean).join(' ')}

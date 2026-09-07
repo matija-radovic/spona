@@ -6,6 +6,7 @@ import { useUser } from '@shared/contexts'
 import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
 import { fetchProfile, type ActorRefDto, type ProfileDto } from '@utils/api/profiles'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { fetchActorJobPostings, type SavedJobItemDto } from '@utils/api/jobs'
 import { ProfileHeader } from './components/ProfileHeader'
 import { ProfileTabs, ProfileTab, type ProfileTabItem } from './components/ProfileTabs'
@@ -33,8 +34,11 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   )
 
   const owner = useMemo<ActorRefDto>(() => {
-    const name = profile.actorType === 'user' ? profile.fullName : profile.displayName
     const handle = profile.actorType === 'user' ? profile.username : profile.slug
+    const name = actorDisplayName(
+      profile.actorType === 'user' ? profile.fullName : profile.displayName,
+      handle,
+    )
     return { actorType: profile.actorType, id: profile.id, name, handle, avatarUrl: profile.avatarUrl }
   }, [profile])
 

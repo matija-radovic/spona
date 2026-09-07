@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ActorAvatar, ActorAvatarSize } from '@shared/components/actor/ActorAvatar'
 import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import type { ActorRefDto } from '@utils/api/profiles'
 
 interface ActorBylineProps {
@@ -27,7 +28,7 @@ const ActorByline = ({ actor, createdAt, size = ActorAvatarSize.SM, className }:
     >
       <ActorAvatar avatarUrl={actor.avatarUrl} actorType={actor.actorType} size={size} />
       <span className="actor-byline-identity">
-        <span className="actor-byline-name">{actor.name}</span>
+        <span className="actor-byline-name">{actorDisplayName(actor.name, actor.handle)}</span>
         <span className="actor-byline-sub" title={format.date(createdAt, 'dateTime')}>
           {actor.actorType === 'user'
             ? `@${actor.handle} â€¢ ${format.date(createdAt, 'short')}`

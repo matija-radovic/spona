@@ -1086,6 +1086,7 @@
     "notANumber": "Unesite broj.",
     "salaryMinRequired": "Unesite donji iznos; oglas „do X“ ne postoji.",
     "salaryMaxBelowMin": "Gornji iznos ne može biti manji od donjeg.",
+    "salaryTooLarge": "Iznos je prevelik.",
     "invalidUrl": "Nevažeća adresa veb sajta.",
     "loginFailed": "Pogrešno korisničko ime ili lozinka.",
     "serverError": "Greška servera. Pokušajte ponovo.",

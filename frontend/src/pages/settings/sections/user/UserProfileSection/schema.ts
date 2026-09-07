@@ -1,16 +1,15 @@
 import { z } from 'zod'
 import {
+  BIO_MAX,
   CONTACT_DESC_MAX,
   CONTACT_VALUE_MAX,
   CONTACT_MAX_ENTRIES,
+  FULL_NAME_MAX,
+  LOCATION_MAX,
 } from '@utils/constants/validation'
 import type { UserSettingsDto, UpdateProfilePayload } from '@utils/api/settings'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
-
-export const FULL_NAME_MAX = 120
-export const BIO_MAX = 500
-export const LOCATION_MAX = 120
 
 const contactInfoSchema = (t: Translate) =>
   z

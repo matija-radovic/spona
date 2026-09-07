@@ -13,6 +13,7 @@ import {
 import useCopyLink from '@shared/hooks/useCopyLink'
 import useMyOrganizations from '@shared/hooks/useMyOrganizations'
 import { actorPath } from '@utils/actorPath'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { canPublishAs } from '@utils/postAs'
 import { safeHref, displayUrl, WEB_PROTOCOLS } from '@utils/safeUrl'
 import type { ProfileDto } from '@utils/api/profiles'
@@ -34,8 +35,8 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   }
 
   const isUser = profile.actorType === 'user'
-  const name = isUser ? profile.fullName : profile.displayName
   const handle = isUser ? profile.username : profile.slug
+  const name = actorDisplayName(isUser ? profile.fullName : profile.displayName, handle)
   const bio = isUser ? profile.bio : profile.description
   const website = isUser ? null : safeHref(profile.website, { protocols: WEB_PROTOCOLS })
   const settingsPath = isUser ? `/users/${handle}/settings` : `/companies/${handle}/settings`

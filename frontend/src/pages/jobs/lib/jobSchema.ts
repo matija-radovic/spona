@@ -11,6 +11,7 @@ import {
   JOB_LOCATION_MAX,
   JOB_TITLE_MAX,
   JOB_TITLE_MIN,
+  SALARY_MAX,
 } from '@utils/constants/validation'
 import { isSafeHref, WEB_PROTOCOLS } from '@utils/safeUrl'
 import type {
@@ -98,6 +99,13 @@ export const buildJobSchema = (t: Translate, draft = false) =>
       if (min === null && max !== null) {
         ctx.addIssue({ code: 'custom', path: ['salaryMin'], message: t('errors.salaryMinRequired') })
       }
+      const overCeiling = (path: 'salaryMin' | 'salaryMax', amount: number | null) => {
+        if (amount !== null && !Number.isNaN(amount) && amount > SALARY_MAX) {
+          ctx.addIssue({ code: 'custom', path: [path], message: t('errors.salaryTooLarge') })
+        }
+      }
+      overCeiling('salaryMin', min)
+      overCeiling('salaryMax', max)
       if (typeof min === 'number' && typeof max === 'number' && !Number.isNaN(min) && !Number.isNaN(max) && max < min) {
         ctx.addIssue({ code: 'custom', path: ['salaryMax'], message: t('errors.salaryMaxBelowMin') })
       }

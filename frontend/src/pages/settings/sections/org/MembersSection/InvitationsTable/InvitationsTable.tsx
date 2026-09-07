@@ -4,6 +4,7 @@ import { IconX } from '@tabler/icons-react'
 import { ActorAvatar, ActorAvatarSize } from '@shared/components'
 import useFormat from '@shared/hooks/useFormat'
 import type { InvitationDto } from '@utils/api/organizations'
+import { actorDisplayName } from '@utils/actorDisplayName'
 import { RoleChip } from '../../../../components/RoleChip'
 
 interface InvitationsTableProps {
@@ -51,10 +52,12 @@ const InvitationsTable = ({
                       avatarUrl={invitation.invitee.avatarUrl}
                       actorType="user"
                       size={ActorAvatarSize.SM}
-                      alt={invitation.invitee.fullName}
+                      alt={actorDisplayName(invitation.invitee.fullName, invitation.invitee.username)}
                     />
                     <span className="members-identity-text">
-                      <span className="members-identity-name">{invitation.invitee.fullName}</span>
+                      <span className="members-identity-name">
+                        {actorDisplayName(invitation.invitee.fullName, invitation.invitee.username)}
+                      </span>
                       <Link
                         className="members-identity-handle"
                         to={`/users/${invitation.invitee.username}`}

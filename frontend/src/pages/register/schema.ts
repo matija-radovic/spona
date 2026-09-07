@@ -6,9 +6,13 @@ import {
   PASSWORD_MAX,
   SLUG_REGEX,
   PASSWORD_REGEX,
+  BIO_MAX,
   CONTACT_DESC_MAX,
   CONTACT_VALUE_MAX,
   CONTACT_MAX_ENTRIES,
+  EMAIL_MAX,
+  FULL_NAME_MAX,
+  LOCATION_MAX,
 } from '@utils/constants/validation'
 
 type Translate = (key: string, opts?: Record<string, unknown>) => string
@@ -37,7 +41,10 @@ export const buildRegisterSchema = (t: Translate) =>
         .min(USERNAME_MIN, t('errors.rangeLength', { min: USERNAME_MIN, max: USERNAME_MAX }))
         .max(USERNAME_MAX, t('errors.rangeLength', { min: USERNAME_MIN, max: USERNAME_MAX }))
         .regex(SLUG_REGEX, t('errors.usernameFormat')),
-      email: z.email(t('errors.invalidEmail')).min(1, t('errors.required')),
+      email: z
+        .email(t('errors.invalidEmail'))
+        .min(1, t('errors.required'))
+        .max(EMAIL_MAX, t('errors.maxLength', { max: EMAIL_MAX })),
       password: z
         .string()
         .min(PASSWORD_MIN, t('errors.rangeLength', { min: PASSWORD_MIN, max: PASSWORD_MAX }))
@@ -45,10 +52,10 @@ export const buildRegisterSchema = (t: Translate) =>
         .regex(PASSWORD_REGEX, t('errors.passwordFormat')),
       confirmPassword: z.string().min(1, t('errors.required')),
       // Personal stage - all optional.
-      fullName: z.string().max(120, t('errors.maxLength', { max: 120 })),
-      bio: z.string().max(500, t('errors.maxLength', { max: 500 })),
+      fullName: z.string().max(FULL_NAME_MAX, t('errors.maxLength', { max: FULL_NAME_MAX })),
+      bio: z.string().max(BIO_MAX, t('errors.maxLength', { max: BIO_MAX })),
       avatarUrl: z.string(),
-      location: z.string().max(120, t('errors.maxLength', { max: 120 })),
+      location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
       otherContactInfo: contactInfoSchema(t),
     })
     .refine((data) => data.password === data.confirmPassword, {

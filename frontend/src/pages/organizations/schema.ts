@@ -6,6 +6,11 @@ import {
   CONTACT_DESC_MAX,
   CONTACT_VALUE_MAX,
   CONTACT_MAX_ENTRIES,
+  LOCATION_MAX,
+  ORG_DESCRIPTION_MAX,
+  ORG_DISPLAY_NAME_MAX,
+  ORG_LEGAL_NAME_MAX,
+  ORG_WEBSITE_MAX,
 } from '@utils/constants/validation'
 import type { CreateOrganizationPayload } from '@utils/api/organizations'
 
@@ -35,15 +40,23 @@ export const buildCreateOrgSchema = (t: Translate) =>
       .min(SLUG_MIN, t('errors.rangeLength', { min: SLUG_MIN, max: SLUG_MAX }))
       .max(SLUG_MAX, t('errors.rangeLength', { min: SLUG_MIN, max: SLUG_MAX }))
       .regex(SLUG_REGEX, t('errors.slugFormat')),
-    displayName: z.string().min(1, t('errors.required')).max(120, t('errors.maxLength', { max: 120 })),
-    legalName: z.string().min(1, t('errors.required')).max(160, t('errors.maxLength', { max: 160 })),
-    description: z.string().max(1000, t('errors.maxLength', { max: 1000 })),
+    displayName: z
+      .string()
+      .min(1, t('errors.required'))
+      .max(ORG_DISPLAY_NAME_MAX, t('errors.maxLength', { max: ORG_DISPLAY_NAME_MAX })),
+    legalName: z
+      .string()
+      .min(1, t('errors.required'))
+      .max(ORG_LEGAL_NAME_MAX, t('errors.maxLength', { max: ORG_LEGAL_NAME_MAX })),
+    description: z
+      .string()
+      .max(ORG_DESCRIPTION_MAX, t('errors.maxLength', { max: ORG_DESCRIPTION_MAX })),
     website: z
       .string()
-      .max(200, t('errors.maxLength', { max: 200 }))
+      .max(ORG_WEBSITE_MAX, t('errors.maxLength', { max: ORG_WEBSITE_MAX }))
       .refine((value) => value === '' || /^https?:\/\/.+/.test(value), t('errors.invalidUrl')),
     avatarUrl: z.string(),
-    location: z.string().max(120, t('errors.maxLength', { max: 120 })),
+    location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
     otherContactInfo: contactInfoSchema(t),
   })
 

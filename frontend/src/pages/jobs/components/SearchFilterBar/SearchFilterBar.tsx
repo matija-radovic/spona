@@ -18,6 +18,7 @@ import {
   type FilterConfig,
   type FilterState,
 } from '@pages/jobs/lib/filters'
+import { SEARCH_Q_MAX } from '@utils/constants/validation'
 
 interface SearchFilterBarProps {
   filters: FilterState
@@ -129,6 +130,7 @@ const SearchFilterBar = ({ filters, onSearch, isMobile }: SearchFilterBarProps) 
           type="search"
           placeholder={t('jobs.search.placeholder')}
           enterKeyHint="search"
+          maxLength={SEARCH_Q_MAX}
           aria-label={t('jobs.search.placeholder')}
           {...register('q')}
         />
