@@ -1,12 +1,12 @@
 import { useRef, useState, type DragEvent } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useUser } from '@shared/contexts'
+import { rememberAfterAuth } from '@utils/afterAuth'
 import { CV_ACCEPTED_EXT, CV_ACCEPTED_TYPES, CV_MAX_BYTES } from '@utils/constants/validation'
 import { submitApplication } from '@utils/api/jobs'
 import { parseProblem } from '@utils/api/types'
 
-// NOTE: this object intentionally holds NO ref — the file-input ref stays local
-// to CvDropApply. A returned ref makes the react-hooks/refs lint treat every
-// `cv.*` read during render as a ref access.
 export interface CvApply {
   file: File | null
   /** client-validation reason, else the last server failure, else null */
@@ -18,6 +18,7 @@ export interface CvApply {
   dragActive: boolean
   tooltipOpen: boolean
   acceptTypes: string
+  requireAuth: () => boolean
   /** hand a picked/dropped file to the flow (validates immediately) */
   onFile: (file: File) => void
   dismissTooltip: () => void
@@ -38,6 +39,9 @@ export interface CvApply {
  */
 export const useCvApply = (jobId: string): CvApply => {
   const { t } = useTranslation()
+  const { isAuthenticated } = useUser()
+  const navigate = useNavigate()
+  const location = useLocation()
   const dragCounter = useRef(0)
 
   const [file, setFile] = useState<File | null>(null)
@@ -58,6 +62,13 @@ export const useCvApply = (jobId: string): CvApply => {
     return null
   }
 
+  const requireAuth = (): boolean => {
+    if (isAuthenticated) return false
+    rememberAfterAuth(`${location.pathname}${location.search}`)
+    navigate('/login')
+    return true
+  }
+
   const acceptFile = (candidate: File) => {
     setFile(candidate)
     setServerError(null)
@@ -67,7 +78,7 @@ export const useCvApply = (jobId: string): CvApply => {
   }
 
   const handleSubmit = async () => {
-    if (!file || submitting) return
+    if (!file || submitting || requireAuth()) return
     const error = validateCv(file)
     if (error) {
       setClientError(error)
@@ -99,6 +110,7 @@ export const useCvApply = (jobId: string): CvApply => {
     dragActive,
     tooltipOpen,
     acceptTypes: CV_ACCEPTED_TYPES.join(','),
+    requireAuth,
     onFile: acceptFile,
     dismissTooltip: () => setTooltipOpen(false),
     handleSubmit,
@@ -119,7 +131,8 @@ export const useCvApply = (jobId: string): CvApply => {
         dragCounter.current = 0
         setDragActive(false)
         const dropped = event.dataTransfer.files?.[0]
-        if (dropped) acceptFile(dropped)
+        if (!dropped || requireAuth()) return
+        acceptFile(dropped)
       },
     },
   }

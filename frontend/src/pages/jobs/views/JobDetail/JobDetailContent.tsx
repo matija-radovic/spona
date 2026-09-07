@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   IconArrowLeft,
@@ -17,6 +17,7 @@ import { MQ } from '@shared/css/mediaqueries'
 import useFormat from '@shared/hooks/useFormat'
 import useMediaQuery from '@shared/hooks/useMediaQuery'
 import { actorPath } from '@utils/actorPath'
+import { rememberAfterAuth } from '@utils/afterAuth'
 import { type JobDetailDto } from '@utils/api/jobs'
 import { isJobSaved, toggleSavedJob } from '@utils/savedJobs'
 import { formatSalary } from '@pages/jobs/lib/formatSalary'
@@ -38,6 +39,7 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
   const { t } = useTranslation()
   const format = useFormat()
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useUser()
   const cv = useCvApply(job.id)
   const wideEnoughForRail = useMediaQuery(MQ.exceptTablet)
@@ -49,6 +51,7 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
 
   const onToggleFavorite = () => {
     if (!isAuthenticated) {
+      rememberAfterAuth(`${location.pathname}${location.search}`)
       navigate('/login')
       return
     }
@@ -65,8 +68,8 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
 
   const { createdFor } = job
   const org = createdFor.actorType === 'org' ? createdFor : null
-  const isOpenToApplicants = job.status !== 'CLOSED'
-  
+  const isOpenToApplicants = job.status === 'OPEN'
+
   // The drop target is the WHOLE panel, not just the apply row.
   const isCvDrop = job.applicationType === 'CV_DROP' && isOpenToApplicants
   const rail = detailOnly && wideEnoughForRail ? org : null
@@ -182,7 +185,9 @@ const JobDetailContent = ({ job, isMobile, detailOnly, onBack }: JobDetailConten
 
         <section className="job-detail-apply">
           {!isOpenToApplicants && (
-            <p className="job-detail-apply-closed">{t('jobs.applicationsClosed')}</p>
+            <p className="job-detail-apply-note">
+              {t(job.status === 'DRAFT' ? 'jobs.applicationsDraft' : 'jobs.applicationsClosed')}
+            </p>
           )}
 
           {isOpenToApplicants && job.applicationType === 'CONTACT_ONLY' && (

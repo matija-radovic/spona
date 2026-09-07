@@ -24,6 +24,11 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
     if (picked) cv.onFile(picked)
   }
 
+  const onChoose = () => {
+    if (cv.requireAuth()) return
+    inputRef.current?.click()
+  }
+
   if (cv.success) {
     return (
       <div className="cv-apply cv-apply-success">
@@ -46,7 +51,7 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
       <Button
         variant={ButtonVariant.SECONDARY}
         size={ButtonSize.SMALL}
-        onClick={() => inputRef.current?.click()}
+        onClick={onChoose}
       >
         <IconUpload aria-hidden />
         {t('jobs.apply.chooseFile')}

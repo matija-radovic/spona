@@ -233,6 +233,7 @@
     "contactEmployer": "Kontaktirajte poslodavca",
     "applyExternal": "Prijavite se na sajtu kompanije",
     "applicationsClosed": "Prijave za ovaj oglas su zatvorene.",
+    "applicationsDraft": "Oglas još nije objavljen. Prijave se primaju tek nakon objave.",
     "applyTypeLocked": "Način prijave se ne menja nakon objave oglasa.",
     "manageJob": "Uredi oglas",
     "deleteJob": "Obriši oglas",

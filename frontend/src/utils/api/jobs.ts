@@ -15,6 +15,7 @@
 //   - fetchJobBySlug : slug containing "prijave" -> a CV_DROP posting the viewer
 //                      owns, with a full inbox; "bez-prijava" -> the same, empty
 //   - submitApplication : filename contains "fail" -> 413 rejection
+//   - submitApplication : a posting that is not OPEN -> 409 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
 //   - fetchActorJobPostings : an actor whose postings the viewer manages -> the
 //                      owner's shape: every status, and the parameters answered
@@ -859,6 +860,10 @@ export const fetchJobApplications = async (
 
 /**
  * MOCK - would be: const { data } = await api.post(`/jobs/${jobId}/applications`, form)
+ * Only an OPEN posting takes applications (backend-contract.md §8 rule 20): a
+ * DRAFT has not been published and a CLOSED one has stopped asking. The real
+ * route answers 404 rather than 409 for a draft the caller may not edit, which is
+ * a response the mock cannot produce - it owns every draft it serves.
  * A filename containing "fail" is rejected so the error UI is testable.
  */
 export const submitApplication = async (
@@ -866,6 +871,11 @@ export const submitApplication = async (
   file: File,
 ): Promise<JobApplicationDto> => {
   await delay(600)
+
+  const held = jobStore.get(jobId)
+  if (held && held.status !== 'OPEN') {
+    return rejectProblem(409, 'Ovaj oglas ne prima prijave.', 'Conflict')
+  }
   if (file.name.toLowerCase().includes('fail')) {
     return rejectProblem(413, 'Fajl je odbijen. Pokušajte sa manjim PDF-om.', 'Payload Too Large')
   }
