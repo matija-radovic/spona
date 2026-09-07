@@ -3,6 +3,7 @@ import { useRef, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconCheck, IconX, IconUpload, IconFileText } from '@tabler/icons-react'
 import { Button, ButtonVariant, ButtonSize } from '@shared/components/form/Button'
+import { Tooltip } from '@shared/components/overlay/Tooltip'
 import type { CvApply } from '@pages/jobs/lib/useCvApply'
 
 interface CvDropApplyProps {
@@ -62,27 +63,28 @@ const CvDropApply = ({ cv }: CvDropApplyProps) => {
           <IconFileText aria-hidden />
           <span className="cv-apply-file-name">{cv.file.name}</span>
 
-          <span
-            className={`cv-apply-indicator-wrap${cv.tooltipOpen ? ' is-open' : ''} ${
-              cv.errorText ? 'is-invalid' : 'is-valid'
-            }`}
-            onMouseLeave={cv.dismissTooltip}
-          >
-            <button
-              type="button"
-              className="cv-apply-indicator"
-              onClick={cv.dismissTooltip}
-              aria-label={cv.errorText ?? t('jobs.apply.selected')}
-              tabIndex={cv.errorText ? 0 : -1}
+          {cv.errorText ? (
+            <Tooltip
+              label={cv.errorText}
+              open={cv.tooltipOpen}
+              onOpenChange={cv.setTooltipOpen}
+              className="cv-apply-indicator-wrap is-invalid"
             >
-              {cv.showValid ? <IconCheck aria-hidden /> : <IconX aria-hidden />}
-            </button>
-            {cv.errorText && (
-              <span className="cv-apply-tooltip" role="tooltip">
-                {cv.errorText}
+              <span className="cv-apply-indicator" role="img" aria-label={cv.errorText}>
+                <IconX aria-hidden />
               </span>
-            )}
-          </span>
+            </Tooltip>
+          ) : (
+            <span className="cv-apply-indicator-wrap is-valid">
+              <span
+                className="cv-apply-indicator"
+                role="img"
+                aria-label={t('jobs.apply.selected')}
+              >
+                <IconCheck aria-hidden />
+              </span>
+            </span>
+          )}
         </span>
       )}
 

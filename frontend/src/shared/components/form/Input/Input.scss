@@ -105,26 +105,10 @@
 
   &.is-invalid .input-indicator {
     background-color: c.$danger;
-    cursor: pointer;
+    cursor: help; // it carries the reason in a tooltip
   }
 
   &.is-valid .input-indicator {
     background-color: c.$success;
-  }
-
-  .input-tooltip {
-    @include m.field-tooltip;
-
-    max-width: 16rem;
-
-    &::after {
-      right: 0.5rem;
-    }
-  }
-
-  .input-indicator-wrap:hover .input-tooltip,
-  .input-indicator-wrap.is-open .input-tooltip {
-    opacity: 1;
-    visibility: visible;
   }
 }

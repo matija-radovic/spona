@@ -1,13 +1,7 @@
 import './Input.scss'
-import {
-  forwardRef,
-  useId,
-  useState,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-  type Ref,
-} from 'react'
+import { forwardRef, useId, type ComponentPropsWithoutRef, type ReactNode, type Ref } from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
+import { Tooltip } from '@shared/components/overlay/Tooltip'
 import { useFieldContext } from '../FieldShell/fieldContext'
 import { InputShape } from './inputShape'
 
@@ -54,7 +48,6 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
   ) => {
     const field = useFieldContext()
     const generatedId = useId()
-    const [tooltipOpen, setTooltipOpen] = useState(false)
 
     const fieldId = id ?? field?.controlId ?? generatedId
     const status: FieldStatus = error ? 'invalid' : valid ? 'valid' : 'idle'
@@ -96,23 +89,12 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
           {trailing && <span className="input-trailing">{trailing}</span>}
         </div>
 
-        {status === 'invalid' && (
-          <div
-            className={`input-indicator-wrap${tooltipOpen ? ' is-open' : ''}`}
-            onMouseLeave={() => setTooltipOpen(false)}
-          >
-            <button
-              type="button"
-              className="input-indicator"
-              onClick={() => setTooltipOpen((open) => !open)}
-              aria-label={error}
-            >
+        {error && (
+          <Tooltip label={error} className="input-indicator-wrap">
+            <span className="input-indicator" role="img" aria-label={error}>
               <IconX aria-hidden="true" />
-            </button>
-            <span className="input-tooltip" role="tooltip">
-              {error}
             </span>
-          </div>
+          </Tooltip>
         )}
 
         {status === 'valid' && (

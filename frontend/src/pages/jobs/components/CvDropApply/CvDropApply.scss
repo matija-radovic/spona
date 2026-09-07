@@ -2,7 +2,6 @@
 @use '@css/mixins' as m;
 
 .cv-apply {
-  // One row: [choose file] [selected file + validity] [submit].
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -52,26 +51,9 @@
 
   .cv-apply-indicator-wrap.is-invalid .cv-apply-indicator {
     background-color: c.$danger;
-    cursor: pointer;
+    cursor: help; // it carries the reason in a tooltip
   }
 
-  .cv-apply-tooltip {
-    @include m.field-tooltip;
-
-    max-width: 15rem;
-
-    &::after {
-      right: 0.6rem;
-    }
-  }
-
-  .cv-apply-indicator-wrap:hover .cv-apply-tooltip,
-  .cv-apply-indicator-wrap.is-open .cv-apply-tooltip {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  // ── Success (replaces the whole cluster) ─────────────────────────────────────
   &.cv-apply-success {
     gap: 0.5rem;
     line-height: var(--control-line-height);

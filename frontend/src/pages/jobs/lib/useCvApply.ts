@@ -11,17 +11,17 @@ export interface CvApply {
   file: File | null
   /** client-validation reason, else the last server failure, else null */
   errorText: string | null
-  showValid: boolean
   applyDisabled: boolean
   submitting: boolean
   success: boolean
   dragActive: boolean
+  /** a fresh error reveals the bubble; from there the Tooltip drives it */
   tooltipOpen: boolean
+  setTooltipOpen: (open: boolean) => void
   acceptTypes: string
   requireAuth: () => boolean
   /** hand a picked/dropped file to the flow (validates immediately) */
   onFile: (file: File) => void
-  dismissTooltip: () => void
   handleSubmit: () => void
   /** spread onto the element that should act as the drop target */
   dropHandlers: {
@@ -103,16 +103,15 @@ export const useCvApply = (jobId: string): CvApply => {
   return {
     file,
     errorText,
-    showValid: file !== null && errorText === null,
     applyDisabled: file === null || clientError !== null || submitting,
     submitting,
     success,
     dragActive,
     tooltipOpen,
+    setTooltipOpen,
     acceptTypes: CV_ACCEPTED_TYPES.join(','),
     requireAuth,
     onFile: acceptFile,
-    dismissTooltip: () => setTooltipOpen(false),
     handleSubmit,
     dropHandlers: {
       onDragEnter: (event) => {

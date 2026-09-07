@@ -1,5 +1,6 @@
 import './Tooltip.scss'
 import {
+  useCallback,
   useEffect,
   useId,
   useRef,
@@ -27,6 +28,10 @@ interface TooltipProps {
   align?: TooltipAlign
   /** Lands on the anchor: size it, or swap its `display` for an inline host. */
   className?: string
+  /** Drives the bubble from outside, e.g. to announce an error the moment it lands. */
+  open?: boolean
+  /** Required with `open`: the hover, the tap and Escape all report through it. */
+  onOpenChange?: (open: boolean) => void
 }
 
 /**
@@ -36,11 +41,27 @@ interface TooltipProps {
  * A `disabled` child works too, it swallows its own pointer events in every engine,
  * so the anchor listens on its behalf. See the SCSS.
  */
-const Tooltip = ({ label, children, align = TooltipAlign.RIGHT, className }: TooltipProps) => {
+const Tooltip = ({
+  label,
+  children,
+  align = TooltipAlign.RIGHT,
+  className,
+  open: openProp,
+  onOpenChange,
+}: TooltipProps) => {
   const anchorRef = useRef<HTMLSpanElement>(null)
-  const [open, setOpen] = useState(false)
+  const [ownOpen, setOwnOpen] = useState(false)
   const byTouch = useRef(false) // Tap opens it, Tap closes it
   const bubbleId = useId()
+
+  const open = openProp ?? ownOpen
+  const setOpen = useCallback(
+    (next: boolean) => {
+      setOwnOpen(next)
+      onOpenChange?.(next)
+    },
+    [onOpenChange],
+  )
 
   const { above, panelRef } = usePopoverFlip(open, anchorRef)
 
@@ -60,7 +81,7 @@ const Tooltip = ({ label, children, align = TooltipAlign.RIGHT, className }: Too
       document.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('pointerdown', onPointerDown)
     }
-  }, [open])
+  }, [open, setOpen])
 
   const onEnter = (event: ReactPointerEvent) => {
     if (event.pointerType !== 'mouse') return
