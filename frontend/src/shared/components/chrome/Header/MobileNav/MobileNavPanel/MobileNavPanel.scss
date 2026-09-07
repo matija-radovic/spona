@@ -52,6 +52,8 @@ $header-height: calc(3.8rem + 1px);
       display: flex;
       align-items: center;
       gap: 0.7rem;
+      font-size: 0.9rem;
+      line-height: var(--control-line-height);
       color: c.$text-primary;
       text-decoration: none;
       font-weight: 500;
@@ -112,7 +114,6 @@ $header-height: calc(3.8rem + 1px);
 
     .mobile-nav-logout {
       font-family: inherit;
-      font-size: 1rem;
       background: transparent;
       border: none;
       cursor: pointer;
