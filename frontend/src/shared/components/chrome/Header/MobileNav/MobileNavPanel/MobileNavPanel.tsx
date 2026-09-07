@@ -2,7 +2,7 @@ import './MobileNavPanel.scss'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FOOTER_LINKS } from '@shared/components/chrome/Footer/footerLinks'
 import type { NavItem } from '../MobileNav'
@@ -75,19 +75,20 @@ const MobileNavPanel = ({ isOpen, onClose, items, isAuthenticated }: MobileNavPa
             {...panel}
           >
             <nav className="mobile-nav-links" aria-label={t('nav.menu')}>
-              {items.map(({ to, labelKey, icon: Icon, end }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  className={({ isActive }) =>
-                    `mobile-nav-link${isActive ? ' mobile-nav-link-active' : ''}`
-                  }
-                >
-                  <Icon className="mobile-nav-link-icon" aria-hidden />
-                  {t(labelKey)}
-                </NavLink>
-              ))}
+              {items.map(({ to, labelKey, icon: Icon, isActive }) => {
+                const active = isActive(location.pathname)
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    aria-current={active ? 'page' : undefined}
+                    className={`mobile-nav-link${active ? ' mobile-nav-link-active' : ''}`}
+                  >
+                    <Icon className="mobile-nav-link-icon" aria-hidden />
+                    {t(labelKey)}
+                  </Link>
+                )
+              })}
             </nav>
             <div className="mobile-nav-bottom">
               <ul className="mobile-nav-legal">

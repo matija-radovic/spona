@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { NavItem } from './MobileNav'
 
@@ -8,19 +8,23 @@ interface HeaderNavProps {
 
 const HeaderNav = ({ items }: HeaderNavProps) => {
   const { t } = useTranslation()
+  const { pathname } = useLocation()
   return (
     <ul className="header-nav">
-      {items.map(({ to, labelKey, end }) => (
-        <li key={to}>
-          <NavLink
-            to={to}
-            end={end}
-            className={({ isActive }) => `header-link${isActive ? ' header-link-active' : ''}`}
-          >
-            {t(labelKey)}
-          </NavLink>
-        </li>
-      ))}
+      {items.map(({ to, labelKey, isActive }) => {
+        const active = isActive(pathname)
+        return (
+          <li key={to}>
+            <Link
+              to={to}
+              aria-current={active ? 'page' : undefined}
+              className={`header-link${active ? ' header-link-active' : ''}`}
+            >
+              {t(labelKey)}
+            </Link>
+          </li>
+        )
+      })}
     </ul>
   )
 }
