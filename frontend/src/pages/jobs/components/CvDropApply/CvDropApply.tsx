@@ -11,7 +11,7 @@ interface CvDropApplyProps {
 }
 
 /**
- * Presentational apply controls â€” one row: [choose file] [selected file + validity]
+ * Presentational apply controls - one row: [choose file] [selected file + validity]
  * [submit]. State + the drop target live in `useCvApply` (the drop target is the
  * whole detail panel, wired up by JobDetail).
  */

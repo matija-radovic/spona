@@ -16,7 +16,7 @@ interface FilterCapsulesProps {
 
 /**
  * A dumb, single-select pill group. Shared by the Activity filter (Sve / Objave /
- * Komentari) and the Saved-jobs filter (Aktivni / ZavrÅ¡eni / Svi). Callers narrow
+ * Komentari) and the Saved-jobs filter (Aktivni / Završeni / Svi). Callers narrow
  * the emitted key back to their own union.
  */
 const FilterCapsules = ({ options, active, onChange, ariaLabel }: FilterCapsulesProps) => (

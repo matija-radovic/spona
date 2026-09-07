@@ -31,7 +31,7 @@ const ActorByline = ({ actor, createdAt, size = ActorAvatarSize.SM, className }:
         <span className="actor-byline-name">{actorDisplayName(actor.name, actor.handle)}</span>
         <span className="actor-byline-sub" title={format.date(createdAt, 'dateTime')}>
           {actor.actorType === 'user'
-            ? `@${actor.handle} â€¢ ${format.date(createdAt, 'short')}`
+            ? `@${actor.handle} • ${format.date(createdAt, 'short')}`
             : format.date(createdAt, 'short')}
         </span>
       </span>
