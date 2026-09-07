@@ -17,7 +17,7 @@ import {
 import ActorSearch from '@pages/actors'
 import Profile from '@pages/profile'
 import Feed from '@pages/feed'
-import Post from '@pages/posts'
+import { Post, PostCreate } from '@pages/posts'
 import {
   UserSettings,
   OrgSettings,
@@ -88,6 +88,7 @@ const router = createBrowserRouter(
           <Route element={<ProtectedRoute />}>
             <Route path='feed' element={<Feed />} />
             <Route path='jobs/new' element={<JobCreate />} />
+            <Route path='posts/new' element={<PostCreate />} />
             <Route path='invitations' element={<Invitations />} />
 
             <Route path='jobs/:slug/manage' element={<JobManage />}>

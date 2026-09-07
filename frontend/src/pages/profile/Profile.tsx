@@ -2,6 +2,8 @@ import './Profile.scss'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useUser } from '@shared/contexts'
+import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
 import { fetchProfile, type ActorRefDto, type ProfileDto } from '@utils/api/profiles'
 import { fetchActorJobPostings, type SavedJobItemDto } from '@utils/api/jobs'
@@ -18,12 +20,6 @@ interface ProfileBodyProps {
   postings: PagedResponse<SavedJobItemDto> | null
 }
 
-/**
- * The ready-state view. Keyed by handle in Profile so navigating between profiles
- * remounts it - which resets the active tab and lets the panes start fresh. The
- * tab strip is useState-driven (no routes); inactive panes unmount but their data
- * survives via props (postings) or module caches (activity, saved jobs).
- */
 const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   const { t } = useTranslation()
   const location = useLocation()
@@ -84,6 +80,7 @@ interface ProfileProps {
 const Profile = ({ actorType }: ProfileProps) => {
   const { t } = useTranslation()
   const params = useParams()
+  const { user } = useUser()
   const handle = actorType === 'user' ? params.username : params.slug
 
   const [profile, setProfile] = useState<ProfileDto | null>(null)
@@ -96,8 +93,15 @@ const Profile = ({ actorType }: ProfileProps) => {
     let alive = true
     const profileRequest = fetchProfile(actorType, handle)
     const postingsRequest = profileRequest.then((res) => fetchActorJobPostings(res.id))
+    const organizationsRequest = user
+      ? loadMyOrganizations(user.id, user.username)
+      : Promise.resolve([])
 
-    Promise.allSettled([profileRequest, postingsRequest]).then(([profileRes, postingsRes]) => {
+    Promise.allSettled([
+      profileRequest,
+      postingsRequest,
+      organizationsRequest,
+    ]).then(([profileRes, postingsRes]) => {
       if (!alive) return
       if (profileRes.status === 'fulfilled') {
         setProfile(profileRes.value)
@@ -113,7 +117,7 @@ const Profile = ({ actorType }: ProfileProps) => {
     return () => {
       alive = false
     }
-  }, [actorType, handle])
+  }, [actorType, handle, user])
 
   const loading = loadedHandle !== handle
 

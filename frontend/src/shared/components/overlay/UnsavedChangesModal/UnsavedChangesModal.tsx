@@ -5,29 +5,31 @@ import type { UnsavedGuard } from '@shared/hooks/useUnsavedGuard'
 
 interface UnsavedChangesModalProps {
   guard: UnsavedGuard
+  /** Primary control label */
+  saveLabel?: string
 }
 
 /** Esc and the backdrop mean "stay": they leave the edits intact and send nothing. */
-const UnsavedChangesModal = ({ guard }: UnsavedChangesModalProps) => {
+const UnsavedChangesModal = ({ guard, saveLabel }: UnsavedChangesModalProps) => {
   const { t } = useTranslation()
 
   return (
     <Modal
       isOpen={guard.isOpen}
       onClose={guard.stay}
-      title={t('settings.unsaved.title')}
+      title={t('common.unsaved.title')}
       footer={
         <>
           <Button variant={ButtonVariant.GHOST} onClick={guard.discard} disabled={guard.isSaving}>
-            {t('settings.unsaved.discard')}
+            {t('common.unsaved.discard')}
           </Button>
           <Button variant={ButtonVariant.PRIMARY} onClick={guard.save} disabled={guard.isSaving}>
-            {guard.isSaving ? t('common.saving') : t('settings.save')}
+            {guard.isSaving ? t('common.saving') : (saveLabel ?? t('common.saveChanges'))}
           </Button>
         </>
       }
     >
-      <p>{t('settings.unsaved.body')}</p>
+      <p>{t('common.unsaved.body')}</p>
     </Modal>
   )
 }

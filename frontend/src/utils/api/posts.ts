@@ -14,14 +14,18 @@
 //   - fetchPost      : postId === "post-404"   -> 404 Not Found
 //   - fetchPost      : postId === "post-mine"  -> authored by user-my-account,
 //                                                 both viewerCan* flags set
+//   - fetchPost      : any post the rotation gives the viewer or an organization
+//                      they own/administer also carries both flags, so an
+//                      org-authored editable post is reachable too
 //   - fetchComments  : postId === "post-empty" -> zero comments, empty thread
 //   - every post     : root comment #1 has 23 replies, to exercise the
 //                      load-more arithmetic and the sibling windows
-//   - every post     : every 4th comment is authored by user-my-account and
-//                      carries both viewerCan* flags (OWN_ACTOR_IDS in
-//                      activity.ts does the same job there)
+//   - every post     : every 4th comment is authored by user-my-account, and the
+//                      rotation also lands on organizations the viewer
+//                      administers; both carry the viewerCan* flags
 //   - createComment  : content containing "403" -> 403, which is how the
 //                      acting-identity cache invalidation path is reachable
+//   - createPost     : content containing "403" -> 403, same path from /posts/new
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -29,6 +33,7 @@
 import type { PagedResponse, ProblemDetail } from './types'
 import type { ActorRefDto } from './profiles'
 import type { ReactionSummaryDto } from './reactions'
+import { ORGANIZATIONS, PEOPLE, orgRef, personRef, viewerOwnsContentOf } from './mockActors'
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -91,6 +96,12 @@ export interface CommentQuery {
   exclude?: string
 }
 
+export interface CreatePostPayload {
+  content: string
+  /** The actor this is published as - never omitted, never null on the wire. */
+  createdForId: string
+}
+
 export interface CreateCommentPayload {
   content: string
   /** The actor this is published as - never omitted, never null on the wire. */
@@ -134,41 +145,28 @@ const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮
 const iso = (minutesAgo: number): string =>
   new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
 
-// Mock actors, matching the ids and handles profiles.ts serves so a byline links
-// somewhere real. `my-account` is the editable "own" identity there too.
+// Mock actors, drawn from the shared fixture so a byline links to a profile that
+// exists and carries the same name. `my-account` is the editable "own" identity.
 const AUTHORS: readonly ActorRefDto[] = [
-  { actorType: 'user', id: 'user-my-account', name: 'Ana Jovanović', handle: 'my-account', avatarUrl: null },
-  { actorType: 'user', id: 'user-marko', name: 'Marko Marković', handle: 'marko', avatarUrl: null },
-  { actorType: 'user', id: 'user-jelena', name: 'Jelena Petrović', handle: 'jelena', avatarUrl: null },
-  { actorType: 'org', id: 'org-moja', name: 'Moja Kompanija', handle: 'moja-kompanija', avatarUrl: null },
-  { actorType: 'org', id: 'org-nordeus', name: 'Nordeus', handle: 'nordeus', avatarUrl: null },
+  personRef('my-account'),
+  personRef('marko'),
+  personRef('jelena'),
+  orgRef('moja-kompanija'),
+  orgRef('nordeus'),
 ]
 
-const AUTHOR_BIOS: Readonly<Record<string, string>> = {
-  'user-my-account': 'Frontend inženjerka. Gradim pristupačne interfejse i volim dobar dizajn sistema.',
-  'user-marko': 'Backend developer. Java, Spring, PostgreSQL.',
-  'user-jelena': 'Product designer. Radim na proizvodima za region.',
-  'org-moja': 'Softverska agencija. Radimo web i mobilne aplikacije po meri.',
-  'org-nordeus': 'Gejming studio iz Beograda. Pravimo igre koje igraju milioni.',
-}
+const AUTHOR_BIOS: Readonly<Record<string, string>> = Object.fromEntries([
+  ...PEOPLE.filter((row) => row.bio).map((row) => [row.id, row.bio as string]),
+  ...ORGANIZATIONS.map((row) => [row.id, row.description]),
+])
 
-/** The actor whose content the mock viewer may edit and delete. */
-const OWN_ACTOR_ID = 'user-my-account'
-
-/** Resolves a `createdForId` to a byline. Ids the mock does not know about are
- *  derived the way the auth mock derives a user from a login identifier, so
- *  signing in as anyone produces a believable author. */
+/** Resolves a `createdForId` to a byline. Ids outside the fixture are unwound
+ *  with the same `<actorType>-<handle>` rule that built them, so posting as an
+ *  organization this file has never met still links to that organization. */
 const authorFor = (actorId: string): ActorRefDto => {
-  const known = AUTHORS.find((actor) => actor.id === actorId)
-  if (known) return known
+  const isOrg = actorId.startsWith('org-')
   const handle = actorId.replace(/^(user|org)-/, '')
-  return {
-    actorType: actorId.startsWith('org-') ? 'org' : 'user',
-    id: actorId,
-    name: handle,
-    handle,
-    avatarUrl: null,
-  }
+  return isOrg ? orgRef(handle) : personRef(handle)
 }
 
 const POST_BODIES = [
@@ -242,7 +240,7 @@ const buildPost = (postId: string): PostDto => {
     reactions: mockReactions(seed + 1),
     authorBio: AUTHOR_BIOS[author.id] ?? null,
     authorFollowedByViewer: seed % 3 === 0,
-    ...(own || author.id === OWN_ACTOR_ID ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+    ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }
 
@@ -254,8 +252,9 @@ const buildComment = (
   minutesAgo: number,
 ): ThreadCommentDto => {
   const bodies = parentId ? REPLY_BODIES : COMMENT_BODIES
-  // Every 4th comment is the viewer's own, so the edit/delete affordances are
-  // reachable in the mock. The real API reads both flags off the JWT.
+  // Every 4th comment is the viewer's own, and the rotation additionally lands on
+  // organizations they administer, so the edit/delete affordances are reachable
+  // on both kinds of authorship. The real API reads both flags off the JWT.
   const own = index % 4 === 3
   const author = own ? AUTHORS[0] : AUTHORS[(index + 1) % AUTHORS.length]
   return {
@@ -267,7 +266,7 @@ const buildComment = (
     createdAt: iso(minutesAgo),
     reactions: mockReactions(index + (parentId ? 2 : 0)),
     responseCount: 0, // stamped from the thread on every read
-    ...(own ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+    ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }
 
@@ -386,6 +385,42 @@ export const fetchPost = async (postId: string): Promise<PostDto> => {
     return rejectProblem(404, 'Objava ne postoji ili je obrisana.', 'Not Found')
   }
   return projectPost(seedPost(postId))
+}
+
+/**
+ * MOCK - would be: const { data } = await api.post('/posts', payload)
+ * `createdForId` is always sent and never null; the server re-checks the role
+ * matrix on every write, so a 403 here means the caller may not publish as that
+ * actor and must not be retried under a different identity.
+ *
+ * The row is written into BOTH stores. `posts` so the redirect to
+ * `/posts/{id}` finds the post that was just written instead of one `buildPost`
+ * invents out of the id hash, and `threads` so the new post opens on an empty
+ * discussion rather than the 26 comments `seedThread` would mint for an id it
+ * has not seen. Both flags are set, because the actor who just wrote a post may
+ * edit and delete it.
+ */
+export const createPost = async (payload: CreatePostPayload): Promise<PostDto> => {
+  await delay(460)
+  if (payload.content.includes(MAGIC_FORBIDDEN_CONTENT)) {
+    return rejectProblem(403, 'Ne možete objavljivati u ime te organizacije.', 'Forbidden')
+  }
+
+  const author = authorFor(payload.createdForId)
+  const created: PostDto = {
+    id: makeId(),
+    author,
+    content: payload.content,
+    createdAt: new Date().toISOString(),
+    commentCount: 0,
+    reactions: { top: [], othersCount: 0, total: 0 },
+    authorBio: AUTHOR_BIOS[author.id] ?? null,
+    viewerCanEdit: true,
+    viewerCanDelete: true,
+  }
+  posts.set(created.id, created)
+  threads.set(created.id, [])
+  return projectPost(created)
 }
 
 /**

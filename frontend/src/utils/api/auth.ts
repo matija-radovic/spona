@@ -15,6 +15,7 @@
 import type { ContactEntry } from '@shared/components'
 import { getToken } from '@utils/authToken'
 import type { ProblemDetail } from './types'
+import { findPerson, userIdFor } from './mockActors'
 
 type AdditionalContactInformation = ContactEntry[]
 
@@ -97,18 +98,24 @@ const identifierFromToken = (token: string): string | null => {
   }
 }
 
-const buildUser = (identifier: string): UserDto => ({
-  id: `user-${identifier}`,
-  actorType: 'user',
-  createdAt: new Date().toISOString(),
-  username: identifier,
-  fullName: identifier,
-  email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
-  bio: null,
-  avatarUrl: null,
-  location: null,
-  otherContactInfo: [],
-})
+/** Signing in as a fixture handle produces that person, so `user.id` matches the
+ *  profile, the memberships and every byline; anything else still resolves to a
+ *  believable account under the same `<actorType>-<handle>` id rule. */
+const buildUser = (identifier: string): UserDto => {
+  const known = findPerson(identifier)
+  return {
+    id: userIdFor(identifier),
+    actorType: 'user',
+    createdAt: new Date().toISOString(),
+    username: identifier,
+    fullName: known?.fullName ?? identifier,
+    email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
+    bio: known?.bio ?? null,
+    avatarUrl: null,
+    location: null,
+    otherContactInfo: [],
+  }
+}
 
 /**
  * MOCK - would be: const { data } = await api.post('/auth/login', payload)

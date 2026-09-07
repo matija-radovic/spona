@@ -7,7 +7,8 @@
 //
 // Magic inputs:
 //   - fetchActorActivity : actorId === "user-marko"  -> empty page (no activity)
-//   - fetchActorActivity : actorId in OWN_ACTOR_IDS  -> viewerCan* true on every item
+//   - fetchActorActivity : the viewer, or an org they own/administer -> viewerCan*
+//                      true on every item (`viewerOwnsContentOf`)
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -16,6 +17,7 @@ import type { PagedResponse } from './types'
 import type { ActorRefDto } from './profiles'
 import type { ReactionSummaryDto } from './reactions'
 import type { PostDto } from './posts'
+import { userIdFor, viewerOwnsContentOf } from './mockActors'
 
 // ── DTOs ────────────────────────────────────────────────────────────────────
 
@@ -52,12 +54,7 @@ export type ActivityKind = 'all' | 'posts' | 'comments'
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const MAGIC_EMPTY_ACTOR = 'user-marko'
-/** The actor ids behind the `my-account` / `moja-kompanija` handles in
- *  profiles.ts - the two editable "own" profiles. Browsing either one's activity
- *  is how the viewerCanEdit / viewerCanDelete affordances become reachable in the
- *  mock; the real API computes both from the JWT, never from the requested actor. */
-const OWN_ACTOR_IDS: readonly string[] = ['user-my-account', 'org-moja']
+const MAGIC_EMPTY_ACTOR = userIdFor('marko')
 const MAX_MOCK_PAGES = 3
 const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮'] as const
 
@@ -161,7 +158,7 @@ const hrefFor = (actorId: string, kind: string, page: number, size: number): str
  *   const { data } = await api.get(`/actors/${actorId}/activity`, { params: { kind, page, size } })
  * Results are capped at MAX_MOCK_PAGES so infinite scroll terminates. The `owner`
  * ref is stamped as each item's author (the real API embeds it server-side).
- * Items on an OWN_ACTOR_IDS profile come back with both authority flags set -
+ * Items on a profile whose content the viewer owns get both authority flags -
  * the real API reads them off the JWT, so no request parameter selects this.
  */
 export const fetchActorActivity = async (
@@ -179,7 +176,7 @@ export const fetchActorActivity = async (
   const last = page >= totalPages
   const count = totalElements === 0 || page > totalPages ? 0 : last ? totalElements - (page - 1) * size : size
 
-  const content = buildPage(owner, kind, page, size, OWN_ACTOR_IDS.includes(actorId)).slice(0, count)
+  const content = buildPage(owner, kind, page, size, viewerOwnsContentOf(actorId)).slice(0, count)
 
   return {
     _links: {

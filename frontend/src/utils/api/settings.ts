@@ -14,6 +14,7 @@
 
 import type { ContactEntry } from '@shared/components'
 import type { ProblemDetail } from './types'
+import { VIEWER, findPerson, userIdFor } from './mockActors'
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
 
@@ -88,11 +89,11 @@ let account: UserSettingsDto | null = null
 const seedAccount = (username: string): UserSettingsDto => {
   if (!account) {
     account = {
-      id: `user-${username}`,
+      id: userIdFor(username),
       username,
       email: `${username}@primer.rs`,
-      fullName: 'Ana Jovanović',
-      bio: 'Frontend inženjerka. Gradim pristupačne interfejse i volim dobar dizajn sistema.',
+      fullName: findPerson(username)?.fullName ?? VIEWER.fullName,
+      bio: findPerson(username)?.bio ?? VIEWER.bio,
       avatarUrl: null,
       location: 'Beograd',
       otherContactInfo: CONTACTS,

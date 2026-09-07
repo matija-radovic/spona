@@ -11,7 +11,7 @@ import {
 import { useUser } from '@shared/contexts'
 import useMyOrganizations from '@shared/hooks/useMyOrganizations'
 import usePostAs from '@shared/hooks/usePostAs'
-import { canPublishAs } from '@pages/settings/lib/permissions'
+import { canPublishAs } from '@utils/postAs'
 import { COMMENT_MAX } from '@utils/constants/validation'
 import { parseProblem } from '@utils/api/types'
 import { createComment, type ThreadCommentDto } from '@utils/api/posts'

@@ -2,9 +2,18 @@ import './ProfileHeader.scss'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconSettings, IconPlus, IconExternalLink, IconLink, IconCheck } from '@tabler/icons-react'
-import { ActorAvatar, ActorAvatarSize, Button, ButtonVariant, FollowButton } from '@shared/components'
+import {
+  ActorAvatar,
+  ActorAvatarSize,
+  Button,
+  ButtonVariant,
+  FollowButton,
+  PostAsSurface,
+} from '@shared/components'
 import useCopyLink from '@shared/hooks/useCopyLink'
+import useMyOrganizations from '@shared/hooks/useMyOrganizations'
 import { actorPath } from '@utils/actorPath'
+import { canPublishAs } from '@utils/postAs'
 import { safeHref, displayUrl, WEB_PROTOCOLS } from '@utils/safeUrl'
 import type { ProfileDto } from '@utils/api/profiles'
 
@@ -12,14 +21,9 @@ interface ProfileHeaderProps {
   profile: ProfileDto
 }
 
-/**
- * The profile page-content header: avatar cell, identity cell (name / handle •
- * location • site / follows / bio), and an actions cell that switches on
- * `viewerCanEdit`. Follow is optimistic (via FollowButton) and syncs the
- * follower count shown in the identity cell.
- */
 const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   const { t } = useTranslation()
+  const { organizations } = useMyOrganizations()
 
   const [following, setFollowing] = useState(profile.isFollowedByViewer ?? false)
   const [followers, setFollowers] = useState(profile.followers)
@@ -38,6 +42,20 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   const profileUrl = `${window.location.origin}${actorPath({ actorType: profile.actorType, handle })}`
 
   const subText = [isUser ? `@${handle}` : null, profile.location].filter(Boolean).join(' • ')
+
+  // On a user profile "may I publish as this actor" is "is this me"; on an organization
+  // it is the viewer's role, run through the matrix the destination's picker also runs.
+  const role = isUser
+    ? undefined
+    : organizations.find((row) => row.organization.id === profile.id)?.role
+  const canPostContent = isUser
+    ? !!profile.viewerCanEdit
+    : !!role && canPublishAs(role, PostAsSurface.CONTENT)
+  const canPostJob = isUser
+    ? !!profile.viewerCanEdit
+    : !!role && canPublishAs(role, PostAsSurface.JOB)
+
+  const actingAs = isUser ? '' : `?as=${profile.id}`
 
   const { copied, copy } = useCopyLink(profileUrl)
 
@@ -90,8 +108,8 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
 
       {/* Two groups of same-sized buttons: what you can do *with* this profile
           (settings on your own, follow on someone else's, plus the copy link),
-          then - only when you can edit it - the creation actions. The split is
-          spacing, not a rule (see the SCSS); visitors get a single group. */}
+          then the creation actions, gated one per surface. The split is spacing,
+          not a rule (see the SCSS); visitors get a single group. */}
       <div className="profile-head-actions">
         <div className="profile-head-action-group">
           {profile.viewerCanEdit ? (
@@ -113,12 +131,21 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
           </Button>
         </div>
 
-        {profile.viewerCanEdit && (
+        {(canPostContent || canPostJob) && (
           <div className="profile-head-action-group">
-            <Button variant={ButtonVariant.PRIMARY} to="/jobs/new">
-              <IconPlus aria-hidden />
-              {t('profile.createJob')}
-            </Button>
+            {canPostJob && (
+              <Button variant={ButtonVariant.PRIMARY} to={`/jobs/new${actingAs}`}>
+                <IconPlus aria-hidden />
+                {t('profile.createJob')}
+              </Button>
+            )}
+
+            {canPostContent && (
+              <Button variant={ButtonVariant.PRIMARY} to={`/posts/new${actingAs}`}>
+                <IconPlus aria-hidden />
+                {t('profile.createPost')}
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -19,6 +19,15 @@
 
 import type { ContactEntry } from '@shared/components'
 import type { PagedResponse, ProblemDetail } from './types'
+import {
+  ORGANIZATIONS,
+  findPerson,
+  orgIdFor,
+  orgViewerCanEdit,
+  orgViewerCanManagePostings,
+  userIdFor,
+  viewerRoleIn,
+} from './mockActors'
 
 // ── DTOs ────────────────────────────────────────────────────────────────────
 
@@ -149,19 +158,20 @@ const CONTACTS_FULL: ContactEntry[] = [
 ]
 
 // ── Named mock profiles (specific shapes the panes/tabs need to exercise) ──────
-// Keyed by handle. `my-account` and `moja-kompanija` are the editable "own" cases
-// - log in with one of those usernames to preview your own profile (the real
-// backend derives both authority flags from the auth token; the mock keys them
-// off the handle). They are also the two actors whose postings pane renders its
-// owner shape, which jobs.ts mirrors by actor id.
+// Keyed by handle. Identity (id, handle, display name, bio) comes from
+// `mockActors.ts` so a profile and a membership row cannot disagree about which
+// actor a handle is. `my-account` is the editable "own" user; the organizations
+// below are generated from the same fixture, and their two authority flags are
+// computed from the viewer's role there rather than hand-set per entry - the
+// real backend derives both from the auth token.
 
 const USER_PROFILES: Record<string, ProfileDto> = {
   'my-account': {
     actorType: 'user',
-    id: 'user-my-account',
+    id: userIdFor('my-account'),
     username: 'my-account',
     fullName: 'Ana Jovanović',
-    bio: 'Frontend inženjerka. Gradim pristupačne interfejse i volim dobar dizajn sistema.',
+    bio: findPerson('my-account')?.bio ?? null,
     avatarUrl: null,
     location: 'Beograd',
     otherContactInfo: CONTACTS_FULL.slice(0, 2),
@@ -175,10 +185,10 @@ const USER_PROFILES: Record<string, ProfileDto> = {
     actorType: 'user',
     // The `-empty` suffix is what jobs.ts reads to serve no postings at all: a
     // manager with nothing published, whose profile therefore has no postings tab.
-    id: 'user-bez-oglasa-empty',
+    id: userIdFor('bez-oglasa'),
     username: 'bez-oglasa',
     fullName: 'Petar Petrović',
-    bio: 'Tek sam se registrovao.',
+    bio: findPerson('bez-oglasa')?.bio ?? null,
     avatarUrl: null,
     location: null,
     otherContactInfo: [],
@@ -190,10 +200,10 @@ const USER_PROFILES: Record<string, ProfileDto> = {
   },
   marko: {
     actorType: 'user',
-    id: 'user-marko',
+    id: userIdFor('marko'),
     username: 'marko',
     fullName: 'Marko Marković',
-    bio: 'Backend developer. Java, Spring, PostgreSQL.',
+    bio: findPerson('marko')?.bio ?? null,
     avatarUrl: null,
     location: 'Novi Sad',
     otherContactInfo: [], // Contact tab hidden
@@ -204,10 +214,10 @@ const USER_PROFILES: Record<string, ProfileDto> = {
   },
   jelena: {
     actorType: 'user',
-    id: 'user-jelena',
+    id: userIdFor('jelena'),
     username: 'jelena',
     fullName: 'Jelena Petrović',
-    bio: 'Product designer.\nRadim na proizvodima za region.',
+    bio: findPerson('jelena')?.bio ?? null,
     avatarUrl: null,
     location: 'Niš',
     otherContactInfo: CONTACTS_FULL, // every type, incl. the non-linking ones
@@ -218,50 +228,46 @@ const USER_PROFILES: Record<string, ProfileDto> = {
   },
 }
 
-const ORG_PROFILES: Record<string, ProfileDto> = {
-  nordeus: {
+/** Contact shapes cycle so the tab is present on some organizations and absent
+ *  on others, which is the branch the Contact pane needs both sides of. */
+const ORG_CONTACT_SHAPES: readonly ContactEntry[][] = [
+  CONTACTS_FULL.slice(0, 3),
+  [],
+  CONTACTS_FULL.slice(0, 1),
+]
+
+/**
+ * One profile per fixture organization, so every role the viewer can hold has a
+ * page to hold it on. Both authority flags are computed from that role: an OWNER
+ * and an ADMIN may edit the profile, everyone but an EDITOR may manage the
+ * postings, and a non-member gets neither. Hand-setting them per entry is what
+ * let the profile and the membership list contradict each other.
+ *
+ * Built per request rather than once, because the role is session state:
+ * accepting an invitation has to change what this page says about the viewer.
+ */
+const orgProfile = (slug: string): ProfileDto | undefined => {
+  const index = ORGANIZATIONS.findIndex((row) => row.slug === slug)
+  if (index < 0) return undefined
+
+  const row = ORGANIZATIONS[index]
+  const role = viewerRoleIn(slug)
+  return {
     actorType: 'org',
-    id: 'org-nordeus',
-    slug: 'nordeus',
-    displayName: 'Nordeus',
-    description: 'Gejming studio iz Beograda. Pravimo igre koje igraju milioni.',
-    website: 'https://nordeus.com',
+    id: row.id,
+    slug: row.slug,
+    displayName: row.name,
+    description: row.description,
+    website: row.website,
     avatarUrl: null,
-    location: 'Beograd',
-    otherContactInfo: CONTACTS_FULL.slice(0, 3),
-    followers: 3400,
-    createdAt: iso(1500),
-    isFollowedByViewer: false,
-  },
-  'moja-kompanija': {
-    actorType: 'org',
-    id: 'org-moja',
-    slug: 'moja-kompanija',
-    displayName: 'Moja Kompanija',
-    description: 'Softverska agencija. Radimo web i mobilne aplikacije po meri.',
-    website: 'https://moja-kompanija.rs',
-    avatarUrl: null,
-    location: 'Beograd',
-    otherContactInfo: CONTACTS_FULL.slice(0, 1),
-    followers: 96,
-    createdAt: iso(300),
-    viewerCanEdit: true,
-    viewerCanManageJobPostings: true,
-  },
-  'vega-it': {
-    actorType: 'org',
-    id: 'org-vega',
-    slug: 'vega-it',
-    displayName: 'Vega IT',
-    description: 'IT kompanija sa timovima u Novom Sadu i Beogradu.',
-    website: null,
-    avatarUrl: null,
-    location: 'Novi Sad',
-    otherContactInfo: [], // Contact tab hidden
-    followers: 1800,
-    createdAt: iso(2000),
-    isFollowedByViewer: true,
-  },
+    location: row.location,
+    otherContactInfo: ORG_CONTACT_SHAPES[index % ORG_CONTACT_SHAPES.length],
+    followers: 96 + index * 470,
+    createdAt: iso(300 + index * 240),
+    isFollowedByViewer: role === null && index % 2 === 1,
+    viewerCanEdit: orgViewerCanEdit(role),
+    viewerCanManageJobPostings: orgViewerCanManagePostings(role),
+  }
 }
 
 /** Fallback org description pool, mirroring the tone of the named ORG_PROFILES
@@ -274,12 +280,16 @@ const ORG_FALLBACK_DESCRIPTIONS: Array<string | null> = [
   null,
 ]
 
-/** Deterministic fallback so any typed handle still renders a believable page. */
+/** Deterministic fallback so any typed handle still renders a believable page.
+ *  The id follows the same `<actorType>-<handle>` rule the named fixtures do,
+ *  not a hash: a fallback whose id nothing else can compute is an actor no other
+ *  mock can refer to. Nobody outside the fixture list is a member of anything,
+ *  so both authority flags stay absent. */
 const fallbackProfile = (actorType: 'user' | 'org', handle: string): ProfileDto => {
   const seed = hashString(handle)
   const locations = ['Beograd', 'Novi Sad', 'Niš', null, 'Kragujevac'] as const
   const shared = {
-    id: `${actorType}-${seed}`,
+    id: actorType === 'org' ? orgIdFor(handle) : userIdFor(handle),
     avatarUrl: null,
     location: locations[seed % locations.length],
     otherContactInfo: seed % 2 === 0 ? CONTACTS_FULL.slice(0, 2) : [],
@@ -313,7 +323,7 @@ const fallbackProfile = (actorType: 'user' | 'org', handle: string): ProfileDto 
  *  fallback. Shared by fetchProfile and the search projection so a result row
  *  and the profile page it links to draw from one source. */
 const resolveProfile = (actorType: 'user' | 'org', handle: string): ProfileDto =>
-  (actorType === 'org' ? ORG_PROFILES[handle] : USER_PROFILES[handle]) ??
+  (actorType === 'org' ? orgProfile(handle) : USER_PROFILES[handle]) ??
   fallbackProfile(actorType, handle)
 
 /**

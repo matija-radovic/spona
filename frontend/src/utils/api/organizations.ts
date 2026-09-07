@@ -2,9 +2,9 @@
 // MOCK "an organization I administer" service (backend spec §3.1/§3.2); the real
 // axios call is left commented above each mock body. Rejections are
 // `ProblemDetail` shapes, and these magic inputs reach every persona and failure:
-//   - fetchOrgSettings   : "moja-kompanija" / "nordeus" -> viewerRole OWNER
-//                          "vega-it"  -> ADMIN · "levi9" -> EDITOR
-//                          "zuhlke"   -> 403 (not a member; the guard bounces)
+//   - fetchOrgSettings   : "moja-kompanija" -> OWNER · "vega-it" -> ADMIN
+//                          "nordeus" -> EDITOR · "htec-group" -> RECRUITER
+//                          any other slug -> 403 (not a member; the guard bounces)
 //                          "nepostojeci" -> 404
 //   - changeOrgSlug      : nextSlug === "zauzeto"       -> 409 Conflict
 //   - transferOwnership  : confirmSlug !== slug         -> 422 Unprocessable
@@ -15,8 +15,10 @@
 //                          identifier === "marko"       -> 409 already a member
 //                          identifier containing "@"    -> 201, unresolved row
 //
-// `moja-kompanija` is OWNER here so the one clickable gear in the mocked app leads
-// into its own settings instead of bouncing.
+// Every role comes from `mockActors.ts`, which is where the profile, membership
+// and job mocks read the same organizations from. A slug the viewer holds no role
+// in is a `403` rather than a synthesized ADMIN seat: the settings page and the
+// profile head have to agree about who you are, and the head reads the role.
 //
 // The member and invitation lists are MUTABLE module state, seeded per slug on first
 // read; a pure mock would silently undo every successful action on the next `Osveži`.
@@ -29,6 +31,7 @@
 import type { ContactEntry } from '@shared/components'
 import type { PrivacyDto } from './settings'
 import type { ProblemDetail } from './types'
+import { PEOPLE, VIEWER, findOrg, orgIdFor, userIdFor, viewerRoleIn } from './mockActors'
 
 // ── Local enum mirror (the project mirrors backend enums as local unions) ──────
 
@@ -133,34 +136,14 @@ const iso = (daysAgo: number): string =>
   new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
 
 const MAGIC_NOT_FOUND_SLUG = 'nepostojeci'
-const MAGIC_FORBIDDEN_SLUG = 'zuhlke'
 const MAGIC_TAKEN_SLUG = 'zauzeto'
 const MAGIC_UNKNOWN_IDENTIFIER = 'nepostojeci'
 const MAGIC_EXISTING_MEMBER = 'marko'
 
 /** The one member whose every mutation fails, so the optimistic revert is testable. */
-export const MAGIC_FAILING_MEMBER_ID = 'user-luka'
+export const MAGIC_FAILING_MEMBER_ID = userIdFor('luka')
 
-/** Which persona a slug puts the viewer in; anything unlisted reads as ADMIN. */
-const VIEWER_ROLES: Readonly<Record<string, OrganizationRole>> = {
-  'moja-kompanija': 'OWNER',
-  nordeus: 'OWNER',
-  'vega-it': 'ADMIN',
-  levi9: 'EDITOR',
-  'htec-group': 'RECRUITER',
-}
-
-const viewerRoleFor = (slug: string): OrganizationRole => VIEWER_ROLES[slug] ?? 'ADMIN'
-
-/** Matches the own-profile handle in profiles.ts, so own-row immutability is easy to see. */
-const VIEWER_USERNAME = 'my-account'
-
-const ORG_SEEDS: Readonly<Record<string, { displayName: string; legalName: string }>> = {
-  'moja-kompanija': { displayName: 'Moja Kompanija', legalName: 'Moja Kompanija d.o.o.' },
-  nordeus: { displayName: 'Nordeus', legalName: 'Nordeus d.o.o. Beograd' },
-  'vega-it': { displayName: 'Vega IT', legalName: 'Vega IT Sourcing d.o.o.' },
-  levi9: { displayName: 'Levi9', legalName: 'Levi9 Global Sourcing d.o.o.' },
-}
+const VIEWER_USERNAME = VIEWER.username
 
 const titleFromSlug = (slug: string): string =>
   slug
@@ -175,42 +158,59 @@ const organizations = new Map<string, OrgSettingsDto>()
 const members = new Map<string, OrgMemberDto[]>()
 const invitations = new Map<string, InvitationDto[]>()
 
-/** Everyone but the viewer. Exactly one OWNER and two ADMINs, so transfer always has options. */
-const ROSTER: readonly { username: string; fullName: string; role: OrganizationRole }[] = [
-  { username: 'marko', fullName: 'Marko Marković', role: 'OWNER' },
-  { username: 'jelena', fullName: 'Jelena Petrović', role: 'ADMIN' },
-  { username: 'nikola', fullName: 'Nikola Ilić', role: 'ADMIN' },
-  { username: 'milica', fullName: 'Milica Kostić', role: 'EDITOR' },
-  { username: 'stefan', fullName: 'Stefan Nikolić', role: 'EDITOR' },
-  { username: 'ivana', fullName: 'Ivana Đorđević', role: 'RECRUITER' },
-  { username: 'luka', fullName: 'Luka Pavlović', role: 'RECRUITER' },
-  { username: 'dusan', fullName: 'Dušan Simić', role: 'EDITOR' },
-  { username: 'tijana', fullName: 'Tijana Ristić', role: 'RECRUITER' },
+/** Everyone but the viewer, by handle. Exactly one OWNER and two ADMINs, so
+ *  transfer always has options; the names come from the shared fixture. */
+const ROSTER: readonly { username: string; role: OrganizationRole }[] = [
+  { username: 'marko', role: 'OWNER' },
+  { username: 'jelena', role: 'ADMIN' },
+  { username: 'nikola', role: 'ADMIN' },
+  { username: 'milica', role: 'EDITOR' },
+  { username: 'stefan', role: 'EDITOR' },
+  { username: 'ivana', role: 'RECRUITER' },
+  { username: 'luka', role: 'RECRUITER' },
+  { username: 'dusan', role: 'EDITOR' },
+  { username: 'tijana', role: 'RECRUITER' },
 ]
 
-const seedMembers = (slug: string): OrgMemberDto[] => {
+const fullNameOf = (username: string): string =>
+  PEOPLE.find((row) => row.username === username)?.fullName ?? username
+
+/**
+ * The viewer's live role in an organization. A fixture organization answers from
+ * the shared membership state, so joining or leaving one is felt here too and a
+ * cached row cannot keep serving a role the viewer no longer holds. An
+ * organization created or renamed inside the session has no fixture entry, so it
+ * answers from its own stored row.
+ */
+const liveRoleOf = (slug: string): OrganizationRole | null =>
+  findOrg(slug) ? viewerRoleIn(slug) : (organizations.get(slug)?.viewerRole ?? null)
+
+/** As above, for the mutation paths: they all run after the settings page loaded
+ *  the org, so the last arm is only reachable by a direct call in a test. */
+const roleOf = (slug: string): OrganizationRole => liveRoleOf(slug) ?? 'ADMIN'
+
+const seedMembers = (slug: string, viewerRole: OrganizationRole = roleOf(slug)): OrgMemberDto[] => {
   const existing = members.get(slug)
   if (existing) return existing
 
-  const viewerRole = viewerRoleFor(slug)
   const viewerIsOwner = viewerRole === 'OWNER'
 
   const rows: OrgMemberDto[] = [
     {
-      userId: `user-${VIEWER_USERNAME}`,
+      userId: userIdFor(VIEWER_USERNAME),
       username: VIEWER_USERNAME,
-      fullName: 'Ana Jovanović',
+      fullName: VIEWER.fullName,
       avatarUrl: null,
       role: viewerRole,
       assignedAt: iso(320),
     },
     // Demote the founder when the viewer owns the org, keeping EXACTLY ONE OWNER row.
-    ...ROSTER.map((person, index) => ({
-      userId: `user-${person.username}`,
-      username: person.username,
-      fullName: person.fullName,
+    ...ROSTER.map((member, index) => ({
+      userId: userIdFor(member.username),
+      username: member.username,
+      fullName: fullNameOf(member.username),
       avatarUrl: null,
-      role: viewerIsOwner && person.role === 'OWNER' ? ('ADMIN' as OrganizationRole) : person.role,
+      role: viewerIsOwner && member.role === 'OWNER' ? ('ADMIN' as OrganizationRole) : member.role,
       assignedAt: iso(300 - index * 24),
     })),
   ]
@@ -260,28 +260,30 @@ const seedInvitations = (slug: string): InvitationDto[] => {
   return rows
 }
 
-const seedOrg = (slug: string): OrgSettingsDto => {
+/** Only ever called for a slug the viewer holds a role in; `fetchOrgSettings`
+ *  refuses the rest, so `viewerRole` is never invented here. */
+const seedOrg = (slug: string, viewerRole: OrganizationRole = roleOf(slug)): OrgSettingsDto => {
   const existing = organizations.get(slug)
   if (existing) return existing
 
-  const seed = ORG_SEEDS[slug]
-  const displayName = seed?.displayName ?? titleFromSlug(slug)
+  const seed = findOrg(slug)
+  const displayName = seed?.name ?? titleFromSlug(slug)
   const org: OrgSettingsDto = {
-    id: `org-${slug}`,
+    id: orgIdFor(slug),
     slug,
     displayName,
     legalName: seed?.legalName ?? `${displayName} d.o.o.`,
-    description: 'Softverska kompanija sa timovima u Beogradu i Novom Sadu.',
-    website: `https://${slug}.rs`,
+    description: seed?.description ?? 'Softverska kompanija sa timovima u Beogradu i Novom Sadu.',
+    website: seed?.website ?? `https://${slug}.rs`,
     avatarUrl: null,
-    location: 'Beograd',
+    location: seed?.location ?? 'Beograd',
     otherContactInfo: [
       { type: 'email', description: 'Kontakt', value: 'kontakt@primer.rs' },
       { type: 'phone', description: 'Telefon', value: '+381 11 234 567' },
     ],
     privacy: { showJobPostings: true },
-    viewerRole: viewerRoleFor(slug),
-    memberCount: seedMembers(slug).length,
+    viewerRole,
+    memberCount: seedMembers(slug, viewerRole).length,
   }
 
   organizations.set(slug, org)
@@ -308,7 +310,7 @@ export const createOrganization = async (
     return rejectProblem(409, 'Adresa organizacije je već zauzeta.', 'Conflict')
   }
   return {
-    id: `org-${payload.slug}`,
+    id: orgIdFor(payload.slug),
     actorType: 'org',
     createdAt: new Date().toISOString(),
     slug: payload.slug,
@@ -322,17 +324,23 @@ export const createOrganization = async (
   }
 }
 
-/** MOCK - would be: const { data } = await api.get(`/organizations/${slug}/settings`) */
+/**
+ * MOCK - would be: const { data } = await api.get(`/organizations/${slug}/settings`)
+ * Membership is the gate, and it is the same membership the profile head and the
+ * identity picker read: an organization the viewer holds no role in is a `403`,
+ * which `OrgSettings` turns into a bounce to the public profile.
+ */
 export const fetchOrgSettings = async (slug: string): Promise<OrgSettingsDto> => {
   await delay(430)
   if (slug === MAGIC_NOT_FOUND_SLUG) {
     return rejectProblem(404, 'Tražena organizacija ne postoji.', 'Not Found')
   }
-  if (slug === MAGIC_FORBIDDEN_SLUG) {
+  const viewerRole = liveRoleOf(slug)
+  if (!viewerRole) {
     return rejectProblem(403, 'Niste član ove organizacije.', 'Forbidden')
   }
-  const org = seedOrg(slug)
-  return { ...org, memberCount: seedMembers(slug).length }
+  const org = seedOrg(slug, viewerRole)
+  return { ...org, viewerRole, memberCount: seedMembers(slug, viewerRole).length }
 }
 
 /** MOCK - would be: const { data } = await api.put(`/organizations/${slug}`, payload) */

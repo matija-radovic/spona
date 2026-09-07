@@ -1,6 +1,15 @@
-import type { PostAsValue } from '@shared/components/actor/PostAsSelect/postAsValue'
+import type { OrganizationRole } from '@utils/api/organizations'
+import type { PostAsSurface, PostAsValue } from '@shared/components/actor/PostAsSelect/postAsValue'
 
-// To store an organization user previously acted as for ease of access
+const PUBLISH_AS: Readonly<Record<OrganizationRole, Readonly<Record<PostAsSurface, boolean>>>> = {
+  OWNER: { content: true, job: true },
+  ADMIN: { content: true, job: true },
+  EDITOR: { content: true, job: false },
+  RECRUITER: { content: false, job: true },
+}
+
+export const canPublishAs = (role: OrganizationRole, surface: PostAsSurface): boolean =>
+  PUBLISH_AS[role][surface]
 
 const keyFor = (userId: string) => `spona:post-as:${userId}`
 

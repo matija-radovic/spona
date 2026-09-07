@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Button,
   ButtonVariant,
@@ -21,7 +21,7 @@ import { createJob, type CreateJobStatus } from '@utils/api/jobs'
 import { fetchOrgSettings } from '@utils/api/organizations'
 import { fetchUserSettings } from '@utils/api/settings'
 import { parseProblem } from '@utils/api/types'
-import { canPublishAs } from '@pages/settings/lib/permissions'
+import { canPublishAs } from '@utils/postAs'
 import { ApplyFields } from '@pages/jobs/components/ApplyFields'
 import { PostingFields } from '@pages/jobs/components/PostingFields'
 import {
@@ -34,6 +34,7 @@ import {
 const JobCreate = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const { user } = useUser()
 
   const { organizations, loading, refresh } = useMyOrganizations()
@@ -41,7 +42,7 @@ const JobCreate = () => {
     () => organizations.filter((row) => canPublishAs(row.role, PostAsSurface.JOB)),
     [organizations],
   )
-  const postAs = usePostAs(publishable)
+  const postAs = usePostAs(publishable, params.get('as'))
   const actingOrgSlug =
     publishable.find((row) => row.organization.id === postAs.value)?.organization.handle ?? null
 

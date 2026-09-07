@@ -131,7 +131,7 @@ const PostingSection = () => {
                 : t('jobs.manage.publish')
               : isSubmitting
                 ? t('common.saving')
-                : t('settings.save')}
+                : t('common.saveChanges')}
           </Button>
         </SaveBar>
       </form>

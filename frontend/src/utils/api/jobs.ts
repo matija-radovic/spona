@@ -16,8 +16,8 @@
 //                      owns, with a full inbox; "bez-prijava" -> the same, empty
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
-//   - fetchActorJobPostings : actorId in VIEWER_POSTING_STATUSES -> the owner's
-//                      shape: every status, and the parameters answered
+//   - fetchActorJobPostings : an actor whose postings the viewer manages -> the
+//                      owner's shape: every status, and the parameters answered
 //   - createJob   : title containing "greska"  -> 422 rejection
 //   - createJob   : title containing "tudja"   -> 403 (createdForId refused)
 //   - updateJob   : title containing "greska"  -> 422 rejection
@@ -39,6 +39,15 @@ import type { ActorRefDto } from './profiles'
 import type { PagedResponse, ProblemDetail } from './types'
 import type { JobQuery } from '@pages/jobs/lib/filters'
 import { filtersToSearchParams } from '@pages/jobs/lib/filters'
+import {
+  ORGANIZATIONS,
+  VIEWER,
+  findOrgById,
+  orgRef,
+  orgViewerCanManagePostings,
+  personRef,
+  viewerRoleIn,
+} from './mockActors'
 
 // ── Local enum mirrors (the project mirrors backend enums as local unions) ─────
 
@@ -321,22 +330,28 @@ const SLUG_MARKERS: readonly string[] = [
   MAGIC_CLOSED_SLUG,
   MAGIC_DRAFT_SLUG,
 ]
-/** The org behind the editable `moja-kompanija` profile in profiles.ts. A job
- *  posted for it is the one case the mock can call the viewer's own, which is
- *  what makes the authority flags reachable; the real API reads them off the
- *  JWT and never off the poster's handle. */
+/** The org the viewer owns. A job posted for it is the one case the mock can
+ *  call the viewer's own, which is what makes the authority flags reachable; the
+ *  real API reads them off the JWT and never off the poster's handle. */
 const VIEWER_ORG_HANDLE = 'moja-kompanija'
-/** The two actors profiles.ts hands `viewerCanManageJobPostings`: one status per
- *  posting they own. The org has all three so the capsule renders; the user has
- *  no CLOSED one, which is what makes the filtered-to-nothing state reachable.
- *  The real API decides this off the caller's token. */
-const VIEWER_POSTING_STATUSES: Readonly<Record<string, readonly JobStatus[]>> = {
-  // Twelve, so the owner shape pages at all.
-  'org-moja': [
-    'OPEN', 'DRAFT', 'CLOSED', 'OPEN', 'DRAFT', 'OPEN',
-    'CLOSED', 'OPEN', 'DRAFT', 'OPEN', 'OPEN', 'DRAFT',
-  ],
-  'user-my-account': ['DRAFT', 'OPEN', 'OPEN'],
+/** Twelve statuses, so an owner's pane pages at all, and all three kinds so the
+ *  capsule renders. */
+const OWNER_STATUSES: readonly JobStatus[] = [
+  'OPEN', 'DRAFT', 'CLOSED', 'OPEN', 'DRAFT', 'OPEN',
+  'CLOSED', 'OPEN', 'DRAFT', 'OPEN', 'OPEN', 'DRAFT',
+]
+/** The statuses an actor's own postings pane serves, or undefined for the public
+ *  shape. Set for every actor profiles.ts hands `viewerCanManageJobPostings`: the
+ *  viewer, and every organization whose role manages postings (everyone but an
+ *  EDITOR). The viewer has no CLOSED posting, which is what makes the
+ *  filtered-to-nothing state reachable. Asked per request, since the role is
+ *  session state; the real API decides it off the caller's token. */
+const VIEWER_OWN_STATUSES: readonly JobStatus[] = ['DRAFT', 'OPEN', 'OPEN']
+
+const ownedStatusesFor = (actorId: string): readonly JobStatus[] | undefined => {
+  if (actorId === VIEWER.id) return VIEWER_OWN_STATUSES
+  const org = findOrgById(actorId)
+  return org && orgViewerCanManagePostings(viewerRoleIn(org.slug)) ? OWNER_STATUSES : undefined
 }
 const MAX_MOCK_PAGES = 3
 
@@ -351,33 +366,25 @@ const TITLES = [
   'Softverski inženjer',
 ]
 
-const ORGS: readonly (ActorRefDto & { actorType: 'org' })[] = [
-  { actorType: 'org', id: 'org-nordeus', name: 'Nordeus', handle: 'nordeus', avatarUrl: null },
-  { actorType: 'org', id: 'org-vega', name: 'Vega IT', handle: 'vega-it', avatarUrl: null },
-  { actorType: 'org', id: 'org-htec', name: 'HTEC Group', handle: 'htec-group', avatarUrl: null },
-  { actorType: 'org', id: 'org-levi9', name: 'Levi9', handle: 'levi9', avatarUrl: null },
-  { actorType: 'org', id: 'org-zuhlke', name: 'Zühlke', handle: 'zuhlke', avatarUrl: null },
-  { actorType: 'org', id: 'org-moja', name: 'Moja Kompanija', handle: VIEWER_ORG_HANDLE, avatarUrl: null },
-]
+const ORGS: readonly (ActorRefDto & { actorType: 'org' })[] = ORGANIZATIONS.map((row) => ({
+  ...orgRef(row.slug),
+  actorType: 'org' as const,
+}))
 
 /** Always people: `JobApplication` has no `createdForId`, so nobody applies in
- *  an organization's name. */
+ *  an organization's name. One id per person, so an applicant row and the
+ *  profile it links to are the same human. */
 const APPLICANTS: readonly ActorRefDto[] = [
-  { actorType: 'user', id: 'user-mila', name: 'Mila Jovanović', handle: 'mila.j', avatarUrl: null },
-  { actorType: 'user', id: 'user-stefan', name: 'Stefan Ilić', handle: 'stefan', avatarUrl: null },
-  { actorType: 'user', id: 'user-ana', name: 'Ana Petrović', handle: 'ana.p', avatarUrl: null },
-  { actorType: 'user', id: 'user-marko', name: 'Marko Nikolić', handle: 'marko99', avatarUrl: null },
-  { actorType: 'user', id: 'user-jelena', name: 'Jelena Savić', handle: 'jelena', avatarUrl: null },
+  personRef('mila'),
+  personRef('stefan'),
+  personRef('ana'),
+  personRef('marko'),
+  personRef('jelena'),
 ]
 
-const ORG_BIOS: Readonly<Record<string, string>> = {
-  'org-nordeus': 'Gejming studio iz Beograda. Pravimo igre koje igraju milioni.',
-  'org-vega': 'IT kompanija sa timovima u Novom Sadu i Beogradu.',
-  'org-htec': 'Inženjerska kuća koja gradi proizvode za klijente iz Evrope i SAD.',
-  'org-levi9': 'Tehnološki servis sa timovima u Srbiji, Rumuniji i Ukrajini.',
-  'org-zuhlke': 'Konsultantska kuća za inženjering i inovacije.',
-  'org-moja': 'Softverska agencija. Radimo web i mobilne aplikacije po meri.',
-}
+const ORG_BIOS: Readonly<Record<string, string>> = Object.fromEntries(
+  ORGANIZATIONS.map((row) => [row.id, row.description]),
+)
 
 const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
 /** Parallel to TITLES, so a mocked posting's occupational group matches its name. */
@@ -897,11 +904,15 @@ export const fetchJobsByIds = async (
 }
 
 /** An actor's own postings were published by that actor, so the poster is
- *  stamped from the id rather than left to buildListItem's rotation. A fallback
- *  org has no entry in ORGS and keeps whatever the rotation picked. */
-const postingPoster = (actorId: string): JobPosterDto | null =>
-  ORGS.find((org) => org.id === actorId) ??
-  (actorId.startsWith('user-') ? { actorType: 'user' } : null)
+ *  stamped from the id rather than left to buildListItem's rotation. The id is
+ *  unwound with the `<actorType>-<handle>` rule that built it, so an
+ *  organization outside the fixture still attributes its own postings. */
+const postingPoster = (actorId: string): JobPosterDto | null => {
+  if (actorId.startsWith('org-')) {
+    return { ...orgRef(actorId.slice('org-'.length)), actorType: 'org' as const }
+  }
+  return actorId.startsWith('user-') ? { actorType: 'user' } : null
+}
 
 /** A DRAFT or CLOSED row carries its marker in the slug, so opening it from the
  *  pane lands on a detail page in the same status. */
@@ -959,12 +970,15 @@ const allPostingsFor = (
   if (actorId.endsWith('-empty')) return []
 
   const seed = hashString(actorId)
-  const owned = VIEWER_POSTING_STATUSES[actorId]
+  const owned = ownedStatusesFor(actorId)
   const poster = postingPoster(actorId)
 
   if (!owned) {
-    // Some actors return [] (no postings, or hidden by privacy - indistinguishable).
-    if (seed % 3 === 0) return []
+    // A typed handle may return [] (no postings, or hidden by privacy - the two
+    // are indistinguishable by design). A fixture organization never does: which
+    // of the named companies has a postings tab must not depend on how its id
+    // happens to hash, or renaming one silently moves the empty case.
+    if (seed % 3 === 0 && !findOrgById(actorId)) return []
     const count = (seed % 9) + 4 // 4..12 postings
     const base = seed % TITLES.length
     return Array.from({ length: count }, (_, i) => buildPosting(base + i, 'OPEN', i, poster))

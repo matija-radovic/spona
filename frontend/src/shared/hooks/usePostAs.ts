@@ -13,12 +13,14 @@ interface PostAs {
 }
 
 /**
- * Remembers which organization you last posted as, re-checks that it's still allowed on this 
+ * Remembers which organization you last posted as, re-checks that it's still allowed on this
  * form every render, and hands the composer the actor id to send.
  */
-const usePostAs = (publishable: readonly MyOrganizationDto[]): PostAs => {
+const usePostAs = (publishable: readonly MyOrganizationDto[], requested?: PostAsValue): PostAs => {
   const { user } = useUser()
-  const [stored, setStored] = useState<PostAsValue>(() => (user ? getStoredPostAs(user.id) : null))
+  const [stored, setStored] = useState<PostAsValue>(
+    () => requested ?? (user ? getStoredPostAs(user.id) : null),
+  )
 
   const value = publishable.some((row) => row.organization.id === stored) ? stored : null
 

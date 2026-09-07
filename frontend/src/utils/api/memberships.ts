@@ -4,6 +4,11 @@
 // `ProblemDetail` shapes, and one magic input reaches the error branch:
 //   - leaveOrganization : the OWNER row's slug -> 409 "Prenesite vlasništvo…"
 //
+// The membership rows come from `mockActors.ts`, which is also where the profile,
+// settings and job mocks read the same organizations from - one role per
+// organization, one actor id per handle. A role declared here and contradicted
+// there is what made every organization read as "not mine" on its own profile.
+//
 // The lists are MUTABLE module state so an accept produces the membership card the
 // UI highlights and a refetch after leave/decline does not resurrect the row.
 // -----------------------------------------------------------------------------
@@ -13,6 +18,7 @@
 import type { ActorRefDto } from './profiles'
 import type { OrganizationRole } from './organizations'
 import type { ProblemDetail } from './types'
+import { ORGANIZATIONS, orgRef, personRef, setViewerRole, viewerMemberships, viewerRoleIn } from './mockActors'
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
 
@@ -58,82 +64,50 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 const iso = (daysAgo: number): string =>
   new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
 
-// Mock actor ids are derived from the handle so a given handle always refers to
-// the same actor across this module. The real backend supplies UUIDs.
-const org = (handle: string, name: string): ActorRefDto => ({
-  actorType: 'org',
-  id: `org-${handle}`,
-  name,
-  handle,
-  avatarUrl: null,
-})
-
-const person = (handle: string, name: string): ActorRefDto => ({
-  actorType: 'user',
-  id: `user-${handle}`,
-  name,
-  handle,
-  avatarUrl: null,
-})
+/** The organizations an invitation can come from: the ones the viewer does not
+ *  start in, so accepting one is a state change rather than a no-op. */
+const NON_MEMBER_ORGS = ORGANIZATIONS.filter((row) => row.initialViewerRole === null)
 
 // ── Mutable stores (see the header note) ──────────────────────────────────────
 
 let myOrganizations: MyOrganizationDto[] | null = null
 let myInvitations: MyInvitationDto[] | null = null
 
+/** Founder of the one organization the viewer owns; invited into the rest. */
+const INVITERS: readonly (ActorRefDto | null)[] = [
+  null,
+  personRef('marko'),
+  personRef('jelena'),
+  personRef('ivana'),
+]
+
 const seedOrganizations = (): MyOrganizationDto[] => {
   if (!myOrganizations) {
-    myOrganizations = [
-      {
-        organization: org('moja-kompanija', 'Moja Kompanija'),
-        role: 'OWNER',
-        joinedAt: iso(320),
-        roleUpdatedAt: iso(320),
-        invitedBy: null, // founder - created the organization at registration
+    myOrganizations = viewerMemberships().map((row, index) => {
+      const role = viewerRoleIn(row.slug) as OrganizationRole
+      return {
+        organization: orgRef(row.slug),
+        role,
+        joinedAt: iso(320 - index * 80),
+        roleUpdatedAt: iso(320 - index * 90),
+        invitedBy: INVITERS[index % INVITERS.length],
         memberCount: 10,
-        canManage: true,
-      },
-      {
-        organization: org('vega-it', 'Vega IT'),
-        role: 'ADMIN',
-        joinedAt: iso(148),
-        roleUpdatedAt: iso(67),
-        invitedBy: person('marko', 'Marko Marković'),
-        memberCount: 10,
-        canManage: true,
-      },
-      {
-        organization: org('htec-group', 'HTEC Group'),
-        role: 'RECRUITER',
-        joinedAt: iso(54),
-        roleUpdatedAt: iso(54),
-        invitedBy: person('jelena', 'Jelena Petrović'),
-        memberCount: 10,
-        canManage: false,
-      },
-    ]
+        canManage: role === 'OWNER' || role === 'ADMIN',
+      }
+    })
   }
   return myOrganizations
 }
 
 const seedInvitations = (): MyInvitationDto[] => {
   if (!myInvitations) {
-    myInvitations = [
-      {
-        id: 'my-inv-1',
-        organization: org('nordeus', 'Nordeus'),
-        role: 'EDITOR',
-        invitedBy: person('jelena', 'Jelena Petrović'),
-        createdAt: iso(2),
-      },
-      {
-        id: 'my-inv-2',
-        organization: org('levi9', 'Levi9'),
-        role: 'RECRUITER',
-        invitedBy: person('marko', 'Marko Marković'),
-        createdAt: iso(11),
-      },
-    ]
+    myInvitations = NON_MEMBER_ORGS.map((row, index) => ({
+      id: `my-inv-${index + 1}`,
+      organization: orgRef(row.slug),
+      role: (index % 2 === 0 ? 'EDITOR' : 'RECRUITER') as OrganizationRole,
+      invitedBy: index % 2 === 0 ? personRef('jelena') : personRef('marko'),
+      createdAt: iso(2 + index * 9),
+    }))
   }
   return myInvitations
 }
@@ -175,6 +149,7 @@ export const leaveOrganization = async (username: string, slug: string): Promise
   }
 
   myOrganizations = seedOrganizations().filter((entry) => entry.organization.handle !== slug)
+  setViewerRole(slug, null)
 }
 
 /** MOCK - would be: const { data } = await api.get(`/users/${username}/invitations`) */
@@ -202,7 +177,12 @@ export const acceptInvitation = async (id: string): Promise<void> => {
     (row) => row.organization.handle === invitation.organization.handle,
   )
   // Joining twice is not an error worth showing a person (backend spec §4.3).
-  if (!already) myOrganizations = [...seedOrganizations(), membershipFrom(invitation)]
+  if (already) return
+  myOrganizations = [...seedOrganizations(), membershipFrom(invitation)]
+  // The role is shared state: the profile head, the identity picker, the
+  // settings page and the postings pane all read it, so joining has to move it
+  // rather than only appending a row to this list.
+  setViewerRole(invitation.organization.handle, invitation.role)
 }
 
 /** MOCK - would be: await api.post(`/invitations/${id}/decline`) */

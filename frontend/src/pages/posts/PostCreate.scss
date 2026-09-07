@@ -1,0 +1,76 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
+
+$identity-row: 3.65rem;
+
+.post-create {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+
+  .post-create-card {
+    @include m.surface-panel(16px);
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 48rem;
+    padding: 2rem;
+
+    @media #{mq.$m-phone} {
+      padding: 1.5rem;
+    }
+  }
+
+  .post-create-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .post-create-sub {
+      margin: 0;
+      color: c.$text-muted;
+      font-size: 0.9rem;
+    }
+  }
+
+  .post-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .post-create-identity {
+    display: flex;
+    min-height: $identity-row;
+
+    .field-shell {
+      align-items: flex-start;
+    }
+  }
+
+  .post-create-error {
+    @include m.error-box;
+  }
+
+  .post-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+
+    .btn-ghost {
+      margin-right: auto;
+    }
+
+    @media #{mq.$m-phone} {
+      flex-wrap: wrap;
+    }
+  }
+}

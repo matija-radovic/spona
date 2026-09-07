@@ -5,9 +5,15 @@
   },
   "common": {
     "save": "Sačuvaj",
+    "saveChanges": "Sačuvaj izmene",
     "saving": "Čuvanje...",
     "saved": "Sačuvano",
     "cancel": "Otkaži",
+    "unsaved": {
+      "title": "Imate nesačuvane izmene.",
+      "body": "Ako odbacite izmene, one se ne mogu vratiti.",
+      "discard": "Odbaci izmene"
+    },
     "delete": "Obriši",
     "edit": "Uredi",
     "change": "Promeni",
@@ -174,6 +180,16 @@
     "reactions": "Reakcije"
   },
   "post": {
+    "create": {
+      "title": "Nova objava",
+      "subtitle": "Podelite novost, iskustvo ili pitanje.",
+      "postingAs": "Objavljujete kao:",
+      "content": "Sadržaj",
+      "lengthHint": "Najviše {{max}} karaktera.",
+      "placeholder": "Napišite nešto...",
+      "publish": "Objavi",
+      "publishing": "Objavljivanje..."
+    },
     "deleteConfirm": "Da li ste sigurni da želite da obrišete ovu objavu?",
     "editPost": "Uredi objavu",
     "postedAs": "Objavljeno kao",
@@ -814,6 +830,7 @@
     "editProfile": "Uredi profil",
     "settings": "Podešavanja",
     "createJob": "Objavi posao",
+    "createPost": "Nova objava",
     "follow": "Zaprati",
     "following": "Pratite",
     "followersCount": "{{count}} pratilaca",
@@ -895,7 +912,6 @@
       "members": "Članovi",
       "management": "Upravljanje"
     },
-    "save": "Sačuvaj izmene",
     "readOnly": "Vaša uloga ne dozvoljava izmene ovih podataka.",
     "profile": {
       "title": "Javni profil",
@@ -1008,11 +1024,6 @@
     "confirm": {
       "question": "Da li ste sigurni?",
       "typeSlug": "Unesite „{{slug}}“ da potvrdite"
-    },
-    "unsaved": {
-      "title": "Imate nesačuvane izmene.",
-      "body": "Ako odbacite izmene, one se ne mogu vratiti.",
-      "discard": "Odbaci izmene"
     },
     "roles": {
       "OWNER": "Vlasnik",

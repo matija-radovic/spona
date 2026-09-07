@@ -122,7 +122,7 @@ const UserProfileSection = () => {
 
         <SaveBar error={error}>
           <Button type="submit" variant={ButtonVariant.PRIMARY} disabled={!isDirty || isSubmitting}>
-            {isSubmitting ? t('common.saving') : t('settings.save')}
+            {isSubmitting ? t('common.saving') : t('common.saveChanges')}
           </Button>
         </SaveBar>
       </form>
