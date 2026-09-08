@@ -7,7 +7,7 @@ import { ActionMenu, contentMenuItems, MenuAlign } from '@shared/components/over
 import { ActorByline } from '@shared/components/actor/ActorByline'
 import { ActorAvatarSize } from '@shared/components/actor/ActorAvatar'
 import { ConfirmDialog } from '@shared/components/overlay/ConfirmDialog'
-import { ContentEditor, ContentEditorMode } from '@shared/components/content/ContentEditor'
+import { ContentEditor } from '@shared/components/content/ContentEditor'
 import { ReactionPicker } from '@shared/components/content/ReactionPicker'
 import { ReactionSummary } from '@shared/components/content/ReactionSummary'
 import { COMMENT_MAX } from '@utils/constants/validation'
@@ -109,7 +109,6 @@ const PostCard = ({
         </div>
       ) : (
         <ContentEditor
-          mode={ContentEditorMode.EDIT}
           value={draft}
           onChange={setDraft}
           onSubmit={save}

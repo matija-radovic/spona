@@ -4,7 +4,6 @@ import {
   ActorAvatar,
   ActorAvatarSize,
   ContentEditor,
-  ContentEditorMode,
   PostAsSelect,
   PostAsSurface,
 } from '@shared/components'
@@ -67,7 +66,6 @@ const CommentComposer = ({ postId, parentId, onCreated, onCancel, autoFocus }: C
   return (
     <div className="comment-composer">
       <ContentEditor
-        mode={ContentEditorMode.CREATE}
         value={draft}
         onChange={setDraft}
         onSubmit={submit}

@@ -1,7 +1,6 @@
 import './ContentEditor.scss'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { Button, ButtonSize, ButtonVariant } from '@shared/components/form/Button'
-import { ContentEditorMode } from './contentEditorMode'
 
 const COUNTER_THRESHOLD = 0.9
 
@@ -22,7 +21,6 @@ interface ContentEditorProps {
   onCancel: () => void
   submitLabel: string
   cancelLabel: string
-  mode?: ContentEditorMode
   placeholder?: string
   busy?: boolean
   error?: string | null
@@ -47,7 +45,6 @@ const ContentEditor = ({
   onCancel,
   submitLabel,
   cancelLabel,
-  mode = ContentEditorMode.CREATE,
   placeholder,
   busy = false,
   error,
@@ -93,7 +90,6 @@ const ContentEditor = ({
   }, [])
 
   const empty = value.trim().length === 0
-  const canCancel = mode === ContentEditorMode.EDIT || !empty
   const overCounterThreshold = maxLength !== undefined && value.length >= maxLength * COUNTER_THRESHOLD
 
   return (
@@ -124,7 +120,7 @@ const ContentEditor = ({
               variant={ButtonVariant.GHOST}
               size={ButtonSize.SMALL}
               onClick={onCancel}
-              disabled={busy || !canCancel}
+              disabled={busy}
             >
               {cancelLabel}
             </Button>

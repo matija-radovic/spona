@@ -7,7 +7,6 @@ import {
   ActorByline,
   ConfirmDialog,
   ContentEditor,
-  ContentEditorMode,
   contentMenuItems,
   MenuAlign,
   ReactionPicker,
@@ -104,7 +103,6 @@ const ThreadComment = ({
         <div className="thread-comment-content">{comment.content}</div>
       ) : (
         <ContentEditor
-          mode={ContentEditorMode.EDIT}
           value={draft}
           onChange={setDraft}
           onSubmit={save}

@@ -6,7 +6,6 @@ import {
   ActorByline,
   ConfirmDialog,
   ContentEditor,
-  ContentEditorMode,
   contentMenuItems,
   CopyLinkButton,
   MenuAlign,
@@ -70,7 +69,6 @@ const PostView = ({ post, onReact, onUpdated, onDelete }: PostViewProps) => {
         <div className="post-detail-content">{post.content}</div>
       ) : (
         <ContentEditor
-          mode={ContentEditorMode.EDIT}
           value={draft}
           onChange={setDraft}
           onSubmit={save}

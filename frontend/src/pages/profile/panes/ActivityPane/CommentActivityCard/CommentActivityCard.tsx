@@ -9,7 +9,6 @@ import {
   ActorByline,
   ConfirmDialog,
   ContentEditor,
-  ContentEditorMode,
   contentMenuItems,
   MenuAlign,
   ReactionPicker,
@@ -120,7 +119,6 @@ const CommentActivityCard = ({ comment, onReact, onUpdated, onDeleted }: Comment
           </div>
         ) : (
           <ContentEditor
-            mode={ContentEditorMode.EDIT}
             value={draft}
             onChange={setDraft}
             onSubmit={save}

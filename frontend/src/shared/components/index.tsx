@@ -46,7 +46,7 @@ export { FollowButton } from './actor/FollowButton'
 export { PostAsSelect, PostAsSurface, type PostAsValue } from './actor/PostAsSelect'
 
 export { PostCard, PostCardVariant } from './content/PostCard'
-export { ContentEditor, ContentEditorMode } from './content/ContentEditor'
+export { ContentEditor } from './content/ContentEditor'
 export { ReactionPicker } from './content/ReactionPicker'
 export { ReactionSummary } from './content/ReactionSummary'
 export { CopyLinkButton } from './content/CopyLinkButton'
