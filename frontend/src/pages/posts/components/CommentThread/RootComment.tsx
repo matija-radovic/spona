@@ -11,7 +11,6 @@ const RESPONSE_PAGE_SIZE = 5
 
 interface RootCommentProps {
   comment: ThreadCommentDto
-  canCompose: boolean
   /** This root owns the one reply composer the thread allows to be open. */
   replying: boolean
   onToggleReply: () => void
@@ -28,7 +27,6 @@ interface RootCommentProps {
 /** A root comment plus the replies hanging off it. */
 const RootComment = ({
   comment,
-  canCompose,
   replying,
   onToggleReply,
   onCloseReply,
@@ -101,7 +99,7 @@ const RootComment = ({
       onReact={onReact}
       onUpdated={onUpdated}
       onDeleted={onDeleted}
-      onReply={canCompose ? onToggleReply : undefined}
+      onReply={onToggleReply}
       anchorRef={anchorRef}
       flashing={flashing}
     >

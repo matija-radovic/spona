@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useReducedMotion } from 'motion/react'
 import { Button, ButtonVariant } from '@shared/components'
 import useOnScreen from '@shared/hooks/useOnScreen'
 import { useUser } from '@shared/contexts'
+import { rememberAfterAuth } from '@utils/afterAuth'
 import { fetchComments, type CommentContextDto, type CommentSort, type ThreadCommentDto } from '@utils/api/posts'
 import { FilterCapsules, type CapsuleOption } from '@pages/profile/components/FilterCapsules'
 import {
@@ -22,6 +24,9 @@ import RootComment from './RootComment'
 const FLASH_DELAY_MS = 400
 const FLASH_MS = 1500
 
+/** On a comment permalink: open that comment's reply box on arrival. */
+const REPLY_PARAM = 'reply'
+
 type ListState = 'loading' | 'error' | 'ready'
 
 interface CommentThreadProps {
@@ -37,6 +42,8 @@ interface CommentThreadProps {
 const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: CommentThreadProps) => {
   const { t } = useTranslation()
   const { isAuthenticated } = useUser()
+  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
   const reduced = useReducedMotion()
 
   const [sort, setSort] = useState<CommentSort>(DEFAULT_COMMENT_SORT)
@@ -48,7 +55,11 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
   const [loadingMore, setLoadingMore] = useState(false)
   const [loadMoreError, setLoadMoreError] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  // `?reply=1` on a comment permalink opens that comment's box on arrival: the
+  // anchor is fetched before this mounts, so it is here rather than in an effect.
+  const [replyingTo, setReplyingTo] = useState<string | null>(
+    () => (params.get(REPLY_PARAM) === '1' ? anchor?.comment.id ?? null : null),
+  )
   const [anchorNode, setAnchorNode] = useState<HTMLElement | null>(null)
   const [flashing, setFlashing] = useState(false)
 
@@ -181,6 +192,29 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
     setReloadKey((key) => key + 1)
   }
 
+  const clearReplyParam = () => {
+    if (!params.has(REPLY_PARAM)) return
+    const next = new URLSearchParams(params)
+    next.delete(REPLY_PARAM)
+    setParams(next, { replace: true })
+  }
+
+  /** A guest gets sent to sign in and comes back to this comment with its box open. */
+  const toggleReply = (id: string) => {
+    if (!isAuthenticated) {
+      rememberAfterAuth(`/posts/${postId}/comments/${id}?${REPLY_PARAM}=1`)
+      navigate('/login')
+      return
+    }
+    clearReplyParam()
+    setReplyingTo((current) => (current === id ? null : id))
+  }
+
+  const closeReply = () => {
+    clearReplyParam()
+    setReplyingTo(null)
+  }
+
   const capsules: CapsuleOption[] = [
     { key: 'top', label: t('comments.sort.top') },
     { key: 'new', label: t('comments.sort.new') },
@@ -218,12 +252,9 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
         {anchor && (
           <AnchoredComment
             context={anchor}
-            canCompose={isAuthenticated}
             replying={isAuthenticated && replyingTo === anchor.comment.id}
-            onToggleReply={() =>
-              setReplyingTo((current) => (current === anchor.comment.id ? null : anchor.comment.id))
-            }
-            onCloseReply={() => setReplyingTo(null)}
+            onToggleReply={() => toggleReply(anchor.comment.id)}
+            onCloseReply={closeReply}
             onResponsesChanged={onCommentCountChange}
             onDeleted={(deletedCount) => onCommentCountChange(-deletedCount)}
             anchorRef={setAnchorNode}
@@ -252,12 +283,9 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
               <RootComment
                 key={comment.id}
                 comment={comment}
-                canCompose={isAuthenticated}
                 replying={isAuthenticated && replyingTo === comment.id}
-                onToggleReply={() =>
-                  setReplyingTo((current) => (current === comment.id ? null : comment.id))
-                }
-                onCloseReply={() => setReplyingTo(null)}
+                onToggleReply={() => toggleReply(comment.id)}
+                onCloseReply={closeReply}
                 onReact={(emoji, next) =>
                   reactToComment(comment, emoji, next, (reactions) =>
                     patch(comment.id, (row) => ({ ...row, reactions })),

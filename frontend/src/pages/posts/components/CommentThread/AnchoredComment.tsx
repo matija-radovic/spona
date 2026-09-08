@@ -23,7 +23,6 @@ const nextWindow = (siblingIndex: number, siblingTotal: number) => {
 
 interface AnchoredCommentProps {
   context: CommentContextDto
-  canCompose: boolean
   replying: boolean
   onToggleReply: () => void
   onCloseReply: () => void
@@ -36,7 +35,6 @@ interface AnchoredCommentProps {
 /** The comment deep link block */
 const AnchoredComment = ({
   context,
-  canCompose,
   replying,
   onToggleReply,
   onCloseReply,
@@ -114,7 +112,6 @@ const AnchoredComment = ({
       <div className="comment-thread-anchor">
         <RootComment
           comment={comment}
-          canCompose={canCompose}
           replying={replying}
           onToggleReply={onToggleReply}
           onCloseReply={onCloseReply}
@@ -141,7 +138,7 @@ const AnchoredComment = ({
         }
         onUpdated={(content) => setParent((current) => (current ? { ...current, content } : current))}
         onDeleted={removeAnchor}
-        onReply={canCompose ? onToggleReply : undefined}
+        onReply={onToggleReply}
       >
         <>
           {prev.count > 0 && !previousLoaded && (
