@@ -1,0 +1,85 @@
+@use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
+@use '@css/mixins' as m;
+
+.feed {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: m.$read-gap;
+  padding: 1rem var(--container-spacing) 3rem;
+
+  .feed-column {
+    display: flex;
+    flex-direction: column;
+    width: min(m.$read-column, 100%);
+    min-width: 0;
+  }
+
+  .feed-rail {
+    flex: 0 0 m.$read-rail;
+    width: m.$read-rail;
+  }
+
+  .feed-composer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.25rem 1rem;
+    border-bottom: 1px solid c.$border-line;
+  }
+
+  .feed-composer-link {
+    @include m.field-skin;
+    @include m.control-field;
+
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: c.$text-primary;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background-color: c.$surface-3;
+      border-color: c.$accent;
+    }
+
+    &:focus-visible {
+      @include m.field-focus-ring;
+
+      outline: none;
+    }
+  }
+
+  .feed-list > * + * {
+    border-top: 1px solid c.$border-line;
+  }
+
+  .feed-sentinel {
+    height: 1px;
+  }
+
+  .feed-state {
+    @include m.state-block;
+  }
+
+  .feed-state-title {
+    font-size: 1rem;
+    color: c.$text-primary;
+  }
+
+  .feed-more {
+    @include m.load-more-row;
+  }
+
+  .feed-more-error {
+    color: c.$danger-text;
+  }
+
+  @media #{mq.$tablet} {
+    padding-top: 0.5rem;
+  }
+}

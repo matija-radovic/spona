@@ -1,5 +1,5 @@
 import './PostCard.scss'
-import { useState, type KeyboardEvent } from 'react'
+import { memo, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconMessageCircle } from '@tabler/icons-react'
@@ -12,19 +12,26 @@ import { ReactionPicker } from '@shared/components/content/ReactionPicker'
 import { ReactionSummary } from '@shared/components/content/ReactionSummary'
 import { COMMENT_MAX } from '@utils/constants/validation'
 import { parseProblem } from '@utils/api/types'
-import { deletePost, updatePost } from '@utils/api/posts'
-import type { ActivityPostDto } from '@utils/api/activity'
+import { deletePost, updatePost, type PostDto } from '@utils/api/posts'
+import { PostCardVariant } from './postCardVariant'
 
 interface PostCardProps {
-  post: ActivityPostDto
+  post: PostDto
   /** Toggle a reaction on this post: `next` true to add, false to remove. */
-  onReact: (emoji: string, next: boolean) => void
+  onReact: (postId: string, emoji: string, next: boolean) => void
   /** The edited content came back from the server; patch the list. */
-  onUpdated?: (content: string) => void
-  onDeleted?: () => void
+  onUpdated?: (postId: string, content: string) => void
+  onDeleted?: (postId: string) => void
+  variant?: PostCardVariant
 }
 
-const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
+const PostCard = ({
+  post,
+  onReact,
+  onUpdated,
+  onDeleted,
+  variant = PostCardVariant.BOXED,
+}: PostCardProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { author, reactions } = post
@@ -48,7 +55,7 @@ const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
     setError(null)
     try {
       const updated = await updatePost(post.id, draft)
-      onUpdated?.(updated.content)
+      onUpdated?.(post.id, updated.content)
       setDraft(null)
     } catch (err) {
       setError(parseProblem(err).detail || t('errors.serverError'))
@@ -62,7 +69,7 @@ const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
     try {
       await deletePost(post.id)
       setConfirming(false)
-      onDeleted?.()
+      onDeleted?.(post.id)
     } catch {
       setConfirming(false)
     } finally {
@@ -71,7 +78,7 @@ const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
   }
 
   return (
-    <article className="post-card">
+    <article className={`post-card post-card-${variant}`}>
       <div className="post-card-author-row">
         <ActorByline actor={author} createdAt={post.createdAt} size={ActorAvatarSize.SM} />
         <ActionMenu
@@ -122,7 +129,10 @@ const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
 
       <div className="post-card-actions">
         <div className="post-card-actions-left">
-          <ReactionPicker viewerReactions={reactions.viewerReactions ?? []} onToggle={onReact} />
+          <ReactionPicker
+            viewerReactions={reactions.viewerReactions ?? []}
+            onToggle={(emoji, next) => onReact(post.id, emoji, next)}
+          />
 
           <button
             type="button"
@@ -152,4 +162,4 @@ const PostCard = ({ post, onReact, onUpdated, onDeleted }: PostCardProps) => {
   )
 }
 
-export default PostCard
+export default memo(PostCard)

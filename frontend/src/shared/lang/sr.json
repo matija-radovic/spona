@@ -172,12 +172,26 @@
     "confirmPassword": "Potvrdi novu lozinku"
   },
   "feed": {
-    "newPost": "Nova objava",
+    "composerLabels": [
+      "Šta vam je na umu?",
+      "Podelite nešto sa mrežom",
+      "Imate novost za podelu?",
+      "O čemu razmišljate?",
+      "Napišite objavu"
+    ],
+    "composerAria": "Napišite novu objavu",
     "placeholder": "Napišite nešto...",
-    "noPosts": "Nema objava.",
     "replyPlaceholder": "Napišite odgovor...",
-    "reply": "Odgovori",
-    "reactions": "Reakcije"
+    "empty": {
+      "title": "Ovde još nema ničega.",
+      "body": "Pratite ljude i organizacije da biste videli njihove objave.",
+      "action": "Pronađite ljude"
+    },
+    "end": "Stigli ste do kraja.",
+    "rail": {
+      "jobsTitle": "Nove prilike",
+      "allJobs": "Svi oglasi"
+    }
   },
   "post": {
     "create": {

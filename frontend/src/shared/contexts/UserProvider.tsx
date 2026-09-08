@@ -3,6 +3,8 @@ import { fetchMe, logoutRequest } from '@utils/api/auth'
 import { clearToken, getToken, setToken } from '@utils/authToken'
 import { invalidateMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { clearStoredPostAs } from '@utils/postAs'
+import { clearPostCache } from '@utils/postCache'
+import { clearFeedCache } from '@pages/feed/lib/feedCache'
 import { UserContext, type User, type UserContextValue } from './userContext'
 
 interface UserProviderProps {
@@ -46,13 +48,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const updateUser = useCallback((next: User) => setUser(next), [])
 
-  // Everything keyed to the departing identity goes with the token: the cached
-  // membership list and the remembered publishing identity are both "who you
-  // are", and a shared browser must not hand the next person either.
   const logout = useCallback(() => {
     logoutRequest().catch(() => {})
     clearToken()
     invalidateMyOrganizations()
+    clearPostCache()
+    clearFeedCache()
     if (user) clearStoredPostAs(user.id)
     setUser(null)
   }, [user])

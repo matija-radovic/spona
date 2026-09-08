@@ -1,9 +1,7 @@
 import './PostRail.scss'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { ActorAvatar, ActorAvatarSize, FollowButton } from '@shared/components'
-import { FOOTER_LINKS } from '@shared/components/chrome/Footer/footerLinks'
+import { ActorAvatar, ActorAvatarSize, FollowButton, RailLegal } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { actorPath } from '@utils/actorPath'
 import { truncateText } from '@utils/truncateText'
@@ -17,12 +15,10 @@ interface PostRailProps {
 }
 
 const PostRail = ({ post }: PostRailProps) => {
-  const { t } = useTranslation()
   const { user } = useUser()
   const { author } = post
   const [following, setFollowing] = useState(post.authorFollowedByViewer ?? false)
 
-  const year = new Date().getFullYear()
   const bio = post.authorBio ? truncateText(post.authorBio, BIO_MAX_CHARS).text : null
   const isOwnAuthor = author.actorType === 'user' && author.id === user?.id
 
@@ -53,18 +49,7 @@ const PostRail = ({ post }: PostRailProps) => {
           )}
         </section>
 
-        <section className="post-rail-legal">
-          <ul className="post-rail-links">
-            {FOOTER_LINKS.map(({ labelKey, href }) => (
-              <li key={labelKey}>
-                <a href={href} className="post-rail-link">
-                  {t(labelKey)}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className="post-rail-copy">{t('footer.copyright', { year })}</p>
-        </section>
+        <RailLegal />
       </div>
     </aside>
   )

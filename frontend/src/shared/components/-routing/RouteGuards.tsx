@@ -13,7 +13,7 @@ export const IndexGate = () => {
   const { isAuthenticated } = useUser()
 
   if (isAuthenticated) {
-    return <Navigate to="/jobs" replace />
+    return <Navigate to="/feed" replace />
   }
 
   if (isInitialLanding()) {
@@ -48,5 +48,5 @@ export const GuestRoute = () => {
 
   if (!isAuthenticated) return <Outlet />
 
-  return <Navigate to={target ?? '/jobs'} replace />
+  return <Navigate to={target ?? '/feed'} replace />
 }

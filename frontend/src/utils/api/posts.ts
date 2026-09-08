@@ -450,6 +450,12 @@ export const deletePost = async (postId: string): Promise<void> => {
   threads.delete(postId)
 }
 
+/** MOCK ONLY - hands another mock a row from this file's store, so the feed
+ *  serves exactly what `fetchPost` will serve for the same id. Two fixture
+ *  sets over one entity is how a list and a page start disagreeing about a
+ *  post. The real API has one table and needs no such seam. */
+export const mockPostRow = (postId: string): PostDto => projectPost(seedPost(postId))
+
 // ── Comments ─────────────────────────────────────────────────────────────────
 
 /**

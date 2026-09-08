@@ -1,0 +1,79 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+// Title line plus muted meta line, at the gap below.
+$rail-job-row: 2.6rem;
+$rail-job-gap: 0.55rem;
+
+.feed-rail {
+  .feed-rail-sticky {
+    position: sticky;
+    top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .feed-rail-card {
+    @include m.surface-panel;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.1rem 1.2rem;
+  }
+
+  .feed-rail-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: c.$text-strong;
+  }
+
+  .feed-rail-jobs {
+    display: flex;
+    flex-direction: column;
+    gap: $rail-job-gap;
+    list-style: none;
+
+    // Three rows held open, so the legal block below does not jump when the
+    // request lands.
+    min-height: calc(3 * #{$rail-job-row} + 2 * #{$rail-job-gap});
+  }
+
+  .feed-rail-job {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover .feed-rail-job-title {
+      color: c.$accent;
+    }
+  }
+
+  .feed-rail-job-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: var(--control-line-height);
+    color: c.$text-strong;
+    transition: color 0.16s ease;
+  }
+
+  .feed-rail-job-meta {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: c.$text-muted;
+  }
+
+  .feed-rail-all {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: c.$accent;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

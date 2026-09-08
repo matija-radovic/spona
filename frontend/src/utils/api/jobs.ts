@@ -522,6 +522,19 @@ const hrefFor = (params: JobQuery, page: number, size: number): string => {
   return `/api/jobs?${sp.toString()}`
 }
 
+/** The public list with nothing selected: `GET /jobs` with no parameters. */
+export const NO_JOB_FILTERS: JobQuery = {
+  q: '',
+  role: null,
+  posted: null,
+  sort: null,
+  workplace: [],
+  employment: [],
+  hours: [],
+  experience: [],
+  salary: false,
+}
+
 /**
  * MOCK - would be:
  *   const { data } = await api.get('/jobs', { params: { page, size, ...toParams(params) } })
@@ -529,7 +542,7 @@ const hrefFor = (params: JobQuery, page: number, size: number): string => {
  * are capped at MAX_MOCK_PAGES so infinite scroll terminates.
  */
 export const fetchJobs = async (
-  params: JobQuery,
+  params: JobQuery = NO_JOB_FILTERS,
   page = 1,
   size = 20,
 ): Promise<PagedResponse<JobListItemDto>> => {

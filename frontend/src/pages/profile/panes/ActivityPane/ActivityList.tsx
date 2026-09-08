@@ -109,41 +109,55 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     if (sentinelVisible && canLoadMore && !loadingRef.current) loadMore()
   }, [sentinelVisible, canLoadMore, loadMore])
 
-  const writeItems = (next: ActivityItemDto[]) => {
-    itemsRef.current = next
-    setItems(next)
-    setActivityCache(cacheKey, {
-      items: next,
-      page: pageRef.current,
-      last: lastRef.current,
-      totalElements: totalRef.current,
-    })
-  }
+  const writeItems = useCallback(
+    (next: ActivityItemDto[]) => {
+      itemsRef.current = next
+      setItems(next)
+      setActivityCache(cacheKey, {
+        items: next,
+        page: pageRef.current,
+        last: lastRef.current,
+        totalElements: totalRef.current,
+      })
+    },
+    [cacheKey],
+  )
 
-  const onReact = (item: ActivityItemDto, emoji: string, next: boolean) => {
-    const targetType = item.kind === 'post' ? 'post' : 'comment'
-    const updated = applyReactionDelta(item.reactions, emoji, next)
-    writeItems(
-      itemsRef.current.map((it) => (it.id === item.id ? ({ ...it, reactions: updated } as ActivityItemDto) : it)),
-    )
-    setReaction(targetType, item.id, emoji, next).catch(() => {
+  const onReact = useCallback(
+    (id: string, emoji: string, next: boolean) => {
+      const item = itemsRef.current.find((it) => it.id === id)
+      if (!item) return
+      const targetType = item.kind === 'post' ? 'post' : 'comment'
+      const updated = applyReactionDelta(item.reactions, emoji, next)
       writeItems(
-        itemsRef.current.map((it) =>
-          it.id === item.id ? ({ ...it, reactions: item.reactions } as ActivityItemDto) : it,
-        ),
+        itemsRef.current.map((it) => (it.id === id ? ({ ...it, reactions: updated } as ActivityItemDto) : it)),
       )
-    })
-  }
+      setReaction(targetType, id, emoji, next).catch(() => {
+        writeItems(
+          itemsRef.current.map((it) =>
+            it.id === id ? ({ ...it, reactions: item.reactions } as ActivityItemDto) : it,
+          ),
+        )
+      })
+    },
+    [writeItems],
+  )
 
-  const patchItem = (id: string, content: string) => {
-    writeItems(itemsRef.current.map((it) => (it.id === id ? ({ ...it, content } as ActivityItemDto) : it)))
-  }
+  const patchItem = useCallback(
+    (id: string, content: string) => {
+      writeItems(itemsRef.current.map((it) => (it.id === id ? ({ ...it, content } as ActivityItemDto) : it)))
+    },
+    [writeItems],
+  )
 
-  const dropItem = (id: string) => {
-    const next = itemsRef.current.filter((it) => it.id !== id)
-    totalRef.current = Math.max(0, totalRef.current - 1)
-    writeItems(next)
-  }
+  const dropItem = useCallback(
+    (id: string) => {
+      const next = itemsRef.current.filter((it) => it.id !== id)
+      totalRef.current = Math.max(0, totalRef.current - 1)
+      writeItems(next)
+    },
+    [writeItems],
+  )
 
   const retry = () => {
     setListState('loading')
@@ -177,15 +191,15 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
           <PostCard
             key={item.id}
             post={item}
-            onReact={(emoji, next) => onReact(item, emoji, next)}
-            onUpdated={(content) => patchItem(item.id, content)}
-            onDeleted={() => dropItem(item.id)}
+            onReact={onReact}
+            onUpdated={patchItem}
+            onDeleted={dropItem}
           />
         ) : (
           <CommentActivityCard
             key={item.id}
             comment={item}
-            onReact={(emoji, next) => onReact(item, emoji, next)}
+            onReact={(emoji, next) => onReact(item.id, emoji, next)}
             onUpdated={(content) => patchItem(item.id, content)}
             onDeleted={() => dropItem(item.id)}
           />

@@ -9,6 +9,7 @@ import useMediaQuery from '@shared/hooks/useMediaQuery'
 import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { actorPath } from '@utils/actorPath'
 import { applyReactionDelta } from '@utils/applyReactionDelta'
+import { cachePost, forgetPost, getCachedPost } from '@utils/postCache'
 import { setReaction } from '@utils/api/reactions'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
 import {
@@ -41,11 +42,25 @@ const PostBody = ({ initialPost, anchor, hasRail }: PostBodyProps) => {
   const [post, setPost] = useState(initialPost)
   const [deleted, setDeleted] = useState(false)
 
+  // The revalidated row replaces the cached one, adjusted during render rather
+  // than in an effect: this eslint config errors on `setState` in an effect body.
+  const [synced, setSynced] = useState(initialPost)
+  if (synced !== initialPost) {
+    setSynced(initialPost)
+    setPost(initialPost)
+  }
+
+  /** Every write goes through here, so the cache and the screen never disagree. */
+  const writePost = (next: PostDto) => {
+    cachePost(next)
+    setPost(next)
+  }
+
   const onReact = (emoji: string, next: boolean) => {
     const before = post.reactions
-    setPost((current) => ({ ...current, reactions: applyReactionDelta(before, emoji, next) }))
+    writePost({ ...post, reactions: applyReactionDelta(before, emoji, next) })
     setReaction('post', post.id, emoji, next).catch(() => {
-      setPost((current) => ({ ...current, reactions: before }))
+      writePost({ ...post, reactions: before })
     })
   }
 
@@ -55,6 +70,7 @@ const PostBody = ({ initialPost, anchor, hasRail }: PostBodyProps) => {
     } catch {
       return
     }
+    forgetPost(post.id)
     setDeleted(true)
     if (window.history.length > 1) navigate(-1)
     else navigate(actorPath(post.author), { replace: true })
@@ -70,7 +86,7 @@ const PostBody = ({ initialPost, anchor, hasRail }: PostBodyProps) => {
         <PostView
           post={post}
           onReact={onReact}
-          onUpdated={(content) => setPost((current) => ({ ...current, content }))}
+          onUpdated={(content) => writePost({ ...post, content })}
           onDelete={onDelete}
         />
 
@@ -78,10 +94,7 @@ const PostBody = ({ initialPost, anchor, hasRail }: PostBodyProps) => {
           postId={post.id}
           commentCount={post.commentCount}
           onCommentCountChange={(delta) =>
-            setPost((current) => ({
-              ...current,
-              commentCount: Math.max(0, current.commentCount + delta),
-            }))
+            writePost({ ...post, commentCount: Math.max(0, post.commentCount + delta) })
           }
           anchor={anchor}
         />
@@ -114,6 +127,13 @@ const Post = () => {
     if (!postId) return
     let alive = true
 
+    // `.dl-main` is the only scroller and nothing else resets it on navigation,
+    // so a scrolled list would otherwise open a post already scrolled down. A
+    // deep link's own `scrollIntoView` owns the position and must not be fought.
+    if (!commentId) {
+      document.querySelector<HTMLElement>('.scroll-container')?.scrollTo({ top: 0 })
+    }
+
     Promise.allSettled([
       fetchPost(postId),
       commentId ? fetchCommentContext(commentId) : Promise.resolve(null),
@@ -133,6 +153,7 @@ const Post = () => {
       // Invalid anchor, normal page
       setAnchor(anchorRes.status === 'fulfilled' ? anchorRes.value : null)
       setPost(postRes.value)
+      cachePost(postRes.value)
       setProblem(null)
 
       if (commentsRes.status === 'fulfilled') {
@@ -151,17 +172,26 @@ const Post = () => {
     }
   }, [postId, commentId, key, user, reloadKey])
 
-  const loading = loadedKey !== key
+  // A comment permalink is an entry from outside the app, so there is nothing
+  // warm behind it. Deriving from `loadedKey` rather than setting state during
+  // render is what keeps a stale post or a stale problem from a previous postId
+  // from showing under the new one.
+  const cached = !commentId && postId ? getCachedPost(postId) : undefined
+
+  const fresh = loadedKey === key ? post : null
+  const shown = fresh ?? cached ?? null
+  const failed = loadedKey === key ? problem : null
+  const loading = !shown && loadedKey !== key
 
   if (loading) {
     return <p className="post-page-status">{t('common.loading')}</p>
   }
 
-  if (problem || !post) {
-    const isNotFound = problem?.status === 404
+  if (failed || !shown) {
+    const isNotFound = failed?.status === 404
     return (
       <div className="post-page-status">
-        <p>{isNotFound ? t('post.notFound') : problem?.detail || t('errors.serverError')}</p>
+        <p>{isNotFound ? t('post.notFound') : failed?.detail || t('errors.serverError')}</p>
         {!isNotFound && (
           <Button
             variant={ButtonVariant.TERTIARY}
@@ -177,7 +207,7 @@ const Post = () => {
     )
   }
 
-  return <PostBody key={postId} initialPost={post} anchor={anchor} hasRail={hasRail} />
+  return <PostBody key={postId} initialPost={shown} anchor={anchor} hasRail={hasRail} />
 }
 
 export default Post

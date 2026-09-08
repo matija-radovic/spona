@@ -1,5 +1,5 @@
 import './Modal.scss'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
@@ -40,6 +40,11 @@ const Modal = ({
 }: ModalProps) => {
   const { t } = useTranslation()
   const layerRef = useModalLayer(onClose)
+
+  // portal never mounts unless modal is opened
+  const [mounted, setMounted] = useState(isOpen)
+  if (isOpen && !mounted) setMounted(true)
+  if (!mounted) return null
 
   return createPortal(
     <AnimatePresence>

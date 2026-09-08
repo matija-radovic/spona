@@ -57,36 +57,4 @@
     align-self: stretch;
     justify-content: center;
   }
-
-  .post-rail-legal {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 0.35rem 0.2rem;
-  }
-
-  .post-rail-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem 0.8rem;
-    list-style: none;
-  }
-
-  .post-rail-link {
-    font-size: 0.72rem;
-    color: c.$text-faint;
-    text-decoration: none;
-    transition: color 0.16s ease;
-
-    &:hover {
-      color: c.$text-muted;
-      text-decoration: underline;
-    }
-  }
-
-  .post-rail-copy {
-    font-size: 0.7rem;
-    line-height: 1.5;
-    color: c.$text-faint;
-  }
 }

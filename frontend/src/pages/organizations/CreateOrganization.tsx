@@ -138,7 +138,7 @@ const CreateOrganization = () => {
             <Button
               type="button"
               variant={ButtonVariant.GHOST}
-              onClick={() => navigate('/jobs')}
+              onClick={() => navigate('/feed')}
               disabled={isSubmitting}
             >
               {t('common.cancel')}
