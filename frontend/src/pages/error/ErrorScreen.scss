@@ -1,0 +1,39 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.error-screen {
+  @include m.state-block(1.1rem, 2.5rem 1rem);
+
+  justify-content: center;
+  min-height: 100%;
+
+  .error-screen-cat {
+    height: 100px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+
+  .error-screen-code {
+    margin: 0;
+    font-size: clamp(4rem, 18vw, 7rem);
+    line-height: 1;
+    color: c.$text-strong;
+  }
+
+  .error-screen-back {
+    margin: 0;
+    font-size: 1rem;
+
+    a {
+      font-size: inherit;
+      font-weight: 600;
+      color: c.$accent;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

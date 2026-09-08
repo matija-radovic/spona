@@ -4,6 +4,7 @@ import { useUser } from '@shared/contexts'
 import { getLastSection, isInitialLanding } from '@shared/hooks/useLastSection'
 import Main from '@pages/main'
 import { afterAuthPath, forgetAfterAuth, rememberAfterAuth } from '@utils/afterAuth'
+import AuthRecoveryBoundary from './AuthRecoveryBoundary'
 
 /**
  * The remembered-tab redirect only fires on the initial page load; once in a
@@ -26,12 +27,22 @@ export const IndexGate = () => {
   return <Main />
 }
 
-/** Routes that require an authenticated user. */
+/**
+ * Routes that require an authenticated user. A visitor without one is refused
+ * here and remembered; a page below that finds no user despite this guard has
+ * broken an invariant, and the boundary answers that instead.
+ */
 export const ProtectedRoute = () => {
   const { isAuthenticated } = useUser()
   const location = useLocation()
 
-  if (isAuthenticated) return <Outlet />
+  if (isAuthenticated) {
+    return (
+      <AuthRecoveryBoundary>
+        <Outlet />
+      </AuthRecoveryBoundary>
+    )
+  }
 
   rememberAfterAuth(`${location.pathname}${location.search}`)
   return <Navigate to="/login" replace />

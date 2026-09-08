@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useUser } from '@shared/contexts'
+import { useAuthenticatedUser } from '@shared/contexts'
 import { getStoredPostAs, setStoredPostAs } from '@utils/postAs'
 import type { MyOrganizationDto } from '@utils/api/memberships'
 import type { PostAsValue } from '@shared/components/actor/PostAsSelect/postAsValue'
@@ -17,22 +17,20 @@ interface PostAs {
  * form every render, and hands the composer the actor id to send.
  */
 const usePostAs = (publishable: readonly MyOrganizationDto[], requested?: PostAsValue): PostAs => {
-  const { user } = useUser()
-  const [stored, setStored] = useState<PostAsValue>(
-    () => requested ?? (user ? getStoredPostAs(user.id) : null),
-  )
+  const user = useAuthenticatedUser('usePostAs')
+  const [stored, setStored] = useState<PostAsValue>(() => requested ?? getStoredPostAs(user.id))
 
   const value = publishable.some((row) => row.organization.id === stored) ? stored : null
 
   const setValue = useCallback(
     (next: PostAsValue) => {
-      if (user) setStoredPostAs(user.id, next)
+      setStoredPostAs(user.id, next)
       setStored(next)
     },
-    [user],
+    [user.id],
   )
 
-  return { value, setValue, createdForId: value ?? user?.id ?? '' }
+  return { value, setValue, createdForId: value ?? user.id }
 }
 
 export default usePostAs

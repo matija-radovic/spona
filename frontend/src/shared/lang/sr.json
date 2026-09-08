@@ -1108,6 +1108,9 @@
     "notFound": "Stranica nije pronađena.",
     "unauthorized": "Nemate pristup ovom sadržaju.",
     "fileTooLarge": "Fajl je prevelik.",
-    "invalidFileType": "Nije podržan ovaj tip fajla."
+    "invalidFileType": "Nije podržan ovaj tip fajla.",
+    "page": {
+      "back": "Nazad na <home>početnu</home>?"
+    }
   }
 }

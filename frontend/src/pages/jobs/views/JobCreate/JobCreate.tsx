@@ -13,7 +13,7 @@ import {
   UnsavedChangesModal,
 } from '@shared/components'
 import type { ContactEntry } from '@shared/components'
-import { useUser } from '@shared/contexts'
+import { useAuthenticatedUser } from '@shared/contexts'
 import useMyOrganizations from '@shared/hooks/useMyOrganizations'
 import usePostAs from '@shared/hooks/usePostAs'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
@@ -35,7 +35,7 @@ const JobCreate = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { user } = useUser()
+  const user = useAuthenticatedUser('JobCreate')
 
   const { organizations, loading, refresh } = useMyOrganizations()
   const publishable = useMemo(
@@ -72,7 +72,6 @@ const JobCreate = () => {
   } = useForm<JobFormData>({ resolver, mode: 'onChange', defaultValues: JOB_DEFAULTS })
 
   useEffect(() => {
-    if (!user) return
     let alive = true
     const pending = actingOrgSlug ? fetchOrgSettings(actingOrgSlug) : fetchUserSettings(user.username)
     pending
@@ -85,7 +84,7 @@ const JobCreate = () => {
     return () => {
       alive = false
     }
-  }, [user, actingOrgSlug])
+  }, [user.username, actingOrgSlug])
 
   const persist = async (values: JobFormData): Promise<boolean> => {
     setError(null)

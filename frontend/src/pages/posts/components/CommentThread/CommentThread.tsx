@@ -219,7 +219,7 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
           <AnchoredComment
             context={anchor}
             canCompose={isAuthenticated}
-            replying={replyingTo === anchor.comment.id}
+            replying={isAuthenticated && replyingTo === anchor.comment.id}
             onToggleReply={() =>
               setReplyingTo((current) => (current === anchor.comment.id ? null : anchor.comment.id))
             }
@@ -253,7 +253,7 @@ const CommentThread = ({ postId, commentCount, onCommentCountChange, anchor }: C
                 key={comment.id}
                 comment={comment}
                 canCompose={isAuthenticated}
-                replying={replyingTo === comment.id}
+                replying={isAuthenticated && replyingTo === comment.id}
                 onToggleReply={() =>
                   setReplyingTo((current) => (current === comment.id ? null : comment.id))
                 }

@@ -1,9 +1,8 @@
 import { Navigate } from 'react-router-dom'
-import { useUser } from '@shared/contexts'
+import { useAuthenticatedUser } from '@shared/contexts'
 
 const Invitations = () => {
-  const { user } = useUser()
-  if (!user) return null
+  const user = useAuthenticatedUser('Invitations')
 
   return <Navigate to={`/users/${user.username}/settings/organizations`} replace />
 }

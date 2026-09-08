@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { fetchMe, logoutRequest } from '@utils/api/auth'
 import { clearToken, getToken, setToken } from '@utils/authToken'
-import { invalidateMyOrganizations } from '@shared/hooks/useMyOrganizations'
-import { clearStoredPostAs } from '@utils/postAs'
-import { clearPostCache } from '@utils/postCache'
-import { clearFeedCache } from '@pages/feed/lib/feedCache'
+import { clearSessionData } from '@utils/session'
 import { UserContext, type User, type UserContextValue } from './userContext'
 
 interface UserProviderProps {
@@ -50,11 +47,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const logout = useCallback(() => {
     logoutRequest().catch(() => {})
-    clearToken()
-    invalidateMyOrganizations()
-    clearPostCache()
-    clearFeedCache()
-    if (user) clearStoredPostAs(user.id)
+    clearSessionData(user?.id ?? null)
     setUser(null)
   }, [user])
 

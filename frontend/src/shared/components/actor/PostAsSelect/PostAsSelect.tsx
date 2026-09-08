@@ -2,7 +2,7 @@ import './PostAsSelect.scss'
 import { useTranslation } from 'react-i18next'
 import { ActorAvatar, ActorAvatarSize } from '@shared/components/actor/ActorAvatar'
 import { Dropdown, type DropdownOption } from '@shared/components/form/Dropdown'
-import { useUser } from '@shared/contexts'
+import { useAuthenticatedUser } from '@shared/contexts'
 import { MQ } from '@shared/css/mediaqueries'
 import useMediaQuery from '@shared/hooks/useMediaQuery'
 import type { MyOrganizationDto } from '@utils/api/memberships'
@@ -25,10 +25,8 @@ interface PostAsSelectProps {
 
 const PostAsSelect = ({ organizations, value, onChange, disabled, className }: PostAsSelectProps) => {
   const { t } = useTranslation()
-  const { user } = useUser()
+  const user = useAuthenticatedUser('PostAsSelect')
   const isPhone = useMediaQuery(MQ.phone)
-
-  if (!user) return null
 
   const options: DropdownOption[] = [
     {

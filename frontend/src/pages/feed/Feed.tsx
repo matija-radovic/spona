@@ -2,7 +2,7 @@ import './Feed.scss'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, ButtonVariant, PostCard, PostCardVariant } from '@shared/components'
-import { useUser } from '@shared/contexts'
+import { useAuthenticatedUser } from '@shared/contexts'
 import { MQ } from '@shared/css/mediaqueries'
 import useMediaQuery from '@shared/hooks/useMediaQuery'
 import useOnScreen from '@shared/hooks/useOnScreen'
@@ -14,7 +14,6 @@ import { cachePost, forgetPost, getCachedPost, isPostGone } from '@utils/postCac
 import { getFeedCache, saveFeedScroll, setFeedCache } from '@pages/feed/lib/feedCache'
 import { FeedComposer } from '@pages/feed/components/FeedComposer'
 import { FeedRail } from '@pages/feed/components/FeedRail'
-import { assertExists } from '@utils/assertExists'
 
 type ListState = 'loading' | 'error' | 'ready'
 
@@ -38,8 +37,7 @@ const findPost = (blocks: FeedBlockDto[], postId: string): PostDto | undefined =
 
 const Feed = () => {
   const { t } = useTranslation()
-  const { user } = useUser()
-  assertExists(user, 'Feed rendered without an authenticated user');
+  const user = useAuthenticatedUser('Feed')
 
   const viewerId = user.id
 

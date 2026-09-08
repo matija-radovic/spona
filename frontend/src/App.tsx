@@ -30,6 +30,7 @@ import {
   PrivacySection,
 } from '@pages/settings'
 import Invitations from '@pages/invitations'
+import { PageNotFound, ServerError } from '@pages/error'
 import Login from '@pages/login'
 import Register from '@pages/register'
 import VerifyEmail from '@pages/verify'
@@ -42,7 +43,7 @@ const TestRoute = import.meta.env.DEV
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <>
+    <Route errorElement={<AuthLayout><ServerError /></AuthLayout>}>
       <Route element={<AuthBoundary />}>
         <Route path='/' element={<DefaultLayout />}>
           <Route index element={<IndexGate />} />
@@ -115,8 +116,9 @@ const router = createBrowserRouter(
         <Route path='verify/:token' element={<VerifyEmail />} />
         <Route path='reset' element={<RequestPasswordReset />} />
         <Route path='reset/:token' element={<ConfirmPasswordReset />} />
+        <Route path='*' element={<PageNotFound />} />
       </Route>
-    </>
+    </Route>
   )
 )
 
