@@ -5,6 +5,11 @@
 // separate from the DB model (new_docx/types.ts): each item ships a stripped,
 // discriminated `author` (== the profile owner here, generic for feed reuse).
 //
+// Reaction summaries come from `reactions.ts` through `summaryFor`, off the one
+// seeded roster per target that the breakdown also reads. Comment ids follow the
+// thread mock's scheme, so a comment row here and the same comment on the post
+// page resolve to the same roster.
+//
 // Magic inputs:
 //   - fetchActorActivity : actorId === "user-marko"  -> empty page (no activity)
 //   - fetchActorActivity : the viewer, or an org they own/administer -> viewerCan*
@@ -15,7 +20,7 @@
 
 import type { PagedResponse } from './types'
 import type { ActorRefDto } from './profiles'
-import type { ReactionSummaryDto } from './reactions'
+import { summaryFor, type ReactionSummaryDto } from './reactions'
 import type { PostDto } from './posts'
 import { userIdFor, viewerOwnsContentOf } from './mockActors'
 
@@ -56,7 +61,6 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const MAGIC_EMPTY_ACTOR = userIdFor('marko')
 const MAX_MOCK_PAGES = 3
-const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮'] as const
 
 const iso = (hoursAgo: number): string =>
   new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString()
@@ -77,37 +81,24 @@ const COMMENT_BODIES = [
   'Zanimljiv ugao, nisam tako gledao na to.',
 ]
 
-/** Builds a believable reaction summary for a given seed: 0 / 1-3 / >3 emojis. */
-const mockReactions = (seed: number): ReactionSummaryDto => {
-  const distinct = seed % 5 // 0..4 distinct emojis
-  if (distinct === 0) return { top: [], othersCount: 0, total: 0 }
-
-  const top = Array.from({ length: Math.min(distinct, 3) }, (_, i) => ({
-    emoji: PALETTE[(seed + i) % PALETTE.length],
-    count: Math.max(1, ((seed + i * 3) % 12) + (3 - i)),
-  }))
-  const others = distinct > 3 ? Array.from({ length: distinct - 3 }, (_, i) => ((seed + i) % 4) + 1) : []
-  const othersCount = others.reduce((a, b) => a + b, 0)
-  const total = top.reduce((a, e) => a + e.count, 0) + othersCount
-  const viewerReactions = seed % 3 === 0 ? [top[0].emoji] : undefined
-  return { top, othersCount, total, viewerReactions }
-}
-
 const makeId = (): string =>
   crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`
 
 /** `viewerOwns` grants both authority flags; false leaves them off entirely,
  *  which is the wire shape a guest or a non-author gets. */
-const buildPost = (author: ActorRefDto, index: number, viewerOwns: boolean): ActivityPostDto => ({
-  kind: 'post',
-  id: makeId(),
-  author,
-  content: POST_BODIES[index % POST_BODIES.length],
-  createdAt: iso(index * 7 + 2),
-  commentCount: index % 3 === 0 ? 0 : (index * 2) % 9,
-  reactions: mockReactions(index + 1),
-  ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
-})
+const buildPost = (author: ActorRefDto, index: number, viewerOwns: boolean): ActivityPostDto => {
+  const id = makeId()
+  return {
+    kind: 'post',
+    id,
+    author,
+    content: POST_BODIES[index % POST_BODIES.length],
+    createdAt: iso(index * 7 + 2),
+    commentCount: index % 3 === 0 ? 0 : (index * 2) % 9,
+    reactions: summaryFor('post', id),
+    ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+  }
+}
 
 /** Comment ids follow the thread mock's `{postId}-c{n}` / `{postId}-c0-r{n}`
  *  scheme, so the jump button's deep link resolves to a real comment on the post
@@ -119,15 +110,16 @@ const buildComment = (
 ): ActivityCommentDto => {
   const postId = `post-${(index % 4) + 1}`
   const isReply = index % 2 === 1
+  const id = isReply ? `${postId}-c0-r${index % 23}` : `${postId}-c${index % 26}`
   return {
     kind: 'comment',
-    id: isReply ? `${postId}-c0-r${index % 23}` : `${postId}-c${index % 26}`,
+    id,
     postId,
     isReply,
     author,
     content: COMMENT_BODIES[index % COMMENT_BODIES.length],
     createdAt: iso(index * 9 + 5),
-    reactions: mockReactions(index),
+    reactions: summaryFor('comment', id),
     responseCount: isReply ? 0 : index % 3 === 0 ? 0 : (index % 4) + 1,
     ...(viewerOwns ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }

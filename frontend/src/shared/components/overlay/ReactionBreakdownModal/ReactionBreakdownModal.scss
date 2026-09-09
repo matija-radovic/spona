@@ -1,0 +1,129 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+$body-height: min(60vh, 24rem);
+
+.reaction-breakdown {
+  .modal-panel {
+    max-width: 34rem;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .modal-head {
+    align-items: center;
+    padding: 0.85rem 1rem 0.6rem;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .modal-body {
+    flex: 1;
+    min-height: 0;
+    gap: 0;
+  }
+
+  .reaction-breakdown-state {
+    @include m.state-block;
+
+    justify-content: center;
+    min-height: $body-height;
+    border-top: 1px solid c.$border-line;
+  }
+
+  .reaction-breakdown-body {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    height: $body-height;
+    border-top: 1px solid c.$border-line;
+  }
+
+  .reaction-breakdown-lane,
+  .reaction-breakdown-people {
+    scrollbar-gutter: auto;
+  }
+
+  .reaction-breakdown-lane {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    min-width: 5.5rem;
+    max-width: 10rem;
+    padding: 0.4rem 0;
+    border-right: 1px solid c.$border-line;
+  }
+
+  .reaction-breakdown-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0.5rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+
+    &:hover {
+      color: c.$text-primary;
+      background-color: c.$overlay-hover;
+    }
+
+    &.is-active {
+      color: c.$accent;
+      background-color: c.$accent-wash;
+    }
+  }
+
+  .reaction-breakdown-emoji {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .reaction-breakdown-count {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .reaction-breakdown-people {
+    display: flex;
+    flex-direction: column;
+    padding: 0.4rem 0;
+  }
+
+  .reaction-breakdown-person {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.9rem;
+    line-height: var(--control-line-height);
+    color: c.$text-primary;
+    text-decoration: none;
+    transition: background-color 0.16s ease;
+
+    &:hover {
+      background-color: c.$overlay-hover;
+    }
+  }
+
+  .reaction-breakdown-name {
+    color: c.$text-strong;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

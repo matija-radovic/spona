@@ -144,7 +144,7 @@ const PostCard = ({
           </button>
         </div>
 
-        <ReactionSummary summary={reactions} onMore={openPost} />
+        <ReactionSummary summary={reactions} targetType="post" targetId={post.id} />
       </div>
 
       <ConfirmDialog

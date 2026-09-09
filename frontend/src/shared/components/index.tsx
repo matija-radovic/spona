@@ -36,6 +36,7 @@ export {
 
 export { Modal } from './overlay/Modal'
 export { ConfirmDialog } from './overlay/ConfirmDialog'
+export { ReactionBreakdownModal } from './overlay/ReactionBreakdownModal'
 export { UnsavedChangesModal } from './overlay/UnsavedChangesModal'
 export { Tooltip, TooltipAlign } from './overlay/Tooltip'
 export { ActionMenu, MenuAlign, contentMenuItems, type ActionMenuItem } from './overlay/ActionMenu'

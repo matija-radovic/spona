@@ -152,7 +152,7 @@ const CommentActivityCard = ({ comment, onReact, onUpdated, onDeleted }: Comment
             )}
           </div>
 
-          <ReactionSummary summary={reactions} onMore={openComment} />
+          <ReactionSummary summary={reactions} targetType="comment" targetId={comment.id} />
         </div>
       </div>
 

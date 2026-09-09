@@ -211,6 +211,12 @@
     "react": "Reaguj",
     "comments": "{{count}} komentara",
     "allReactions": "Prikaži sve reakcije ({{count}})",
+    "reactions": {
+      "title": "Reakcije",
+      "tab": "{{count}} reakcija sa {{emoji}}",
+      "empty": "Niko još nije reagovao.",
+      "loading": "Učitavanje..."
+    },
     "openPost": "Otvori objavu",
     "edit": "Uredi objavu",
     "delete": "Obriši objavu",

@@ -10,7 +10,13 @@
 // memberships.ts discipline.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`.
+// Reaction fixtures are NOT built here. `reactions.ts` owns one seeded roster
+// per target and this file derives every summary from it with `summaryFor`, so
+// the summary on a card and the breakdown behind its "+N" cannot disagree.
+//
 // Magic inputs:
+//   - fetchPost      : postId === "post-reactions" -> twenty distinct emojis and
+//                                                 roughly six hundred reactors
 //   - fetchPost      : postId === "post-404"   -> 404 Not Found
 //   - fetchPost      : postId === "post-mine"  -> authored by user-my-account,
 //                                                 both viewerCan* flags set
@@ -32,7 +38,7 @@
 
 import type { PagedResponse, ProblemDetail } from './types'
 import type { ActorRefDto } from './profiles'
-import type { ReactionSummaryDto } from './reactions'
+import { seedEmptyRoster, summaryFor, type ReactionSummaryDto } from './reactions'
 import { ORGANIZATIONS, PEOPLE, orgRef, personRef, viewerOwnsContentOf } from './mockActors'
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
@@ -140,7 +146,6 @@ const REPLIES_ON_FIRST_ROOT = 23
 const MAX_MOCK_PAGES = 3
 /** Below this many reactions a comment ranks as 0 under `sort=top` (D43). */
 const TOP_CLAMP = 3
-const PALETTE = ['👍', '❤️', '😂', '🎉', '🔥', '🙏', '👏', '😮'] as const
 
 const iso = (minutesAgo: number): string =>
   new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
@@ -202,22 +207,6 @@ const hashString = (value: string): number => {
   return hash
 }
 
-/** Builds a believable reaction summary for a given seed: 0 / 1-3 / >3 emojis. */
-const mockReactions = (seed: number): ReactionSummaryDto => {
-  const distinct = seed % 5 // 0..4 distinct emojis
-  if (distinct === 0) return { top: [], othersCount: 0, total: 0 }
-
-  const top = Array.from({ length: Math.min(distinct, 3) }, (_, i) => ({
-    emoji: PALETTE[(seed + i) % PALETTE.length],
-    count: Math.max(1, ((seed + i * 3) % 12) + (3 - i)),
-  }))
-  const others = distinct > 3 ? Array.from({ length: distinct - 3 }, (_, i) => ((seed + i) % 4) + 1) : []
-  const othersCount = others.reduce((a, b) => a + b, 0)
-  const total = top.reduce((a, e) => a + e.count, 0) + othersCount
-  const viewerReactions = seed % 3 === 0 ? [top[0].emoji] : undefined
-  return { top, othersCount, total, viewerReactions }
-}
-
 const makeId = (): string =>
   crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`
 
@@ -237,7 +226,7 @@ const buildPost = (postId: string): PostDto => {
     content: POST_BODIES[seed % POST_BODIES.length],
     createdAt: iso(60 * 8 + (seed % 400)),
     commentCount: 0, // stamped from the thread on every read
-    reactions: mockReactions(seed + 1),
+    reactions: summaryFor('post', postId), // re-stamped from the roster on every read
     authorBio: AUTHOR_BIOS[author.id] ?? null,
     authorFollowedByViewer: seed % 3 === 0,
     ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
@@ -264,7 +253,7 @@ const buildComment = (
     author,
     content: bodies[index % bodies.length],
     createdAt: iso(minutesAgo),
-    reactions: mockReactions(index + (parentId ? 2 : 0)),
+    reactions: summaryFor('comment', id), // re-stamped from the roster on every read
     responseCount: 0, // stamped from the thread on every read
     ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
@@ -319,14 +308,17 @@ const repliesOf = (postId: string, parentId: string): ThreadCommentDto[] =>
 /** roots + replies (D42). */
 const commentCountOf = (postId: string): number => seedThread(postId).length
 
-/** A copy with `responseCount` stamped from the live thread. */
+/** A copy with `responseCount` stamped from the live thread and `reactions` from
+ *  the live roster: both move under a stored row, so both are read-time. */
 const project = (row: ThreadCommentDto): ThreadCommentDto => ({
   ...row,
+  reactions: summaryFor('comment', row.id),
   responseCount: row.parentId === null ? repliesOf(row.postId, row.id).length : 0,
 })
 
 const projectPost = (post: PostDto): PostDto => ({
   ...post,
+  reactions: summaryFor('post', post.id),
   commentCount: commentCountOf(post.id),
 })
 
@@ -407,13 +399,15 @@ export const createPost = async (payload: CreatePostPayload): Promise<PostDto> =
   }
 
   const author = authorFor(payload.createdForId)
+  const id = makeId()
+  seedEmptyRoster('post', id)
   const created: PostDto = {
-    id: makeId(),
+    id,
     author,
     content: payload.content,
     createdAt: new Date().toISOString(),
     commentCount: 0,
-    reactions: { top: [], othersCount: 0, total: 0 },
+    reactions: summaryFor('post', id),
     authorBio: AUTHOR_BIOS[author.id] ?? null,
     viewerCanEdit: true,
     viewerCanDelete: true,
@@ -586,14 +580,16 @@ export const createComment = async (
   }
 
   const rows = seedThread(postId)
+  const id = makeId()
+  seedEmptyRoster('comment', id)
   const created: ThreadCommentDto = {
-    id: makeId(),
+    id,
     postId,
     parentId: payload.parentId ?? null,
     author: authorFor(payload.createdForId),
     content: payload.content,
     createdAt: new Date().toISOString(),
-    reactions: { top: [], othersCount: 0, total: 0 },
+    reactions: summaryFor('comment', id),
     responseCount: 0,
     viewerCanEdit: true,
     viewerCanDelete: true,

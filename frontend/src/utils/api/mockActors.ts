@@ -16,6 +16,12 @@
 // `bez-oglasa`, whose id carries the `-empty` suffix `jobs.ts` reads to serve an
 // actor with no postings, and it is declared here rather than at a call site.
 //
+// `REACTOR_POOL` is filler and is deliberately NOT part of `PEOPLE`. `PEOPLE` is
+// read by organization rosters, job applicants and profile lookups, so the
+// hundred and fifty names one reaction list needs would change what six other
+// screens show. It obeys the same id rule and nothing but `reactions.ts` reads
+// it.
+//
 // The real backend supplies UUIDs and computes every viewer flag off the JWT.
 // -----------------------------------------------------------------------------
 
@@ -89,6 +95,45 @@ export const personRef = (username: string): ActorRefDto => {
     avatarUrl: null,
   }
 }
+
+// ── The reactor pool ──────────────────────────────────────────────────────────
+//
+// Its one reader is the reaction breakdown, where a single target can carry six
+// hundred names. Two arrays crossed by index, so the order is the same on every
+// reload, and a cross product of distinct names cannot collide - the reactor row
+// renders a name and an avatar and nothing else, so two identical rows would
+// read as a duplicate rather than as two people.
+
+const POOL_GIVEN_NAMES = [
+  'Aleksandar', 'Miloš', 'Jovana', 'Nevena', 'Đorđe',
+  'Katarina', 'Vladimir', 'Sofija', 'Bojan', 'Teodora',
+  'Željko', 'Anđela', 'Nemanja', 'Kristina', 'Filip',
+] as const
+
+const POOL_SURNAMES = [
+  'Jovanović', 'Popović', 'Nikolić', 'Đurić', 'Stanković',
+  'Milošević', 'Vasić', 'Radovanović', 'Todorović', 'Živković',
+] as const
+
+/** The five Serbian Latin diacritics, folded so a handle stays ASCII. */
+const DIACRITIC_FOLD: Readonly<Record<string, string>> = {
+  'č': 'c', 'ć': 'c', 'š': 's', 'ž': 'z', 'đ': 'dj',
+}
+
+const asciiHandle = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, (char) => DIACRITIC_FOLD[char] ?? '-')
+
+/** Filler identities for lists that need more actors than there are fixtures. */
+export const REACTOR_POOL: readonly ActorRefDto[] = Array.from(
+  { length: POOL_GIVEN_NAMES.length * POOL_SURNAMES.length },
+  (_, index): ActorRefDto => {
+    const name = `${POOL_GIVEN_NAMES[index % POOL_GIVEN_NAMES.length]} ${
+      POOL_SURNAMES[Math.floor(index / POOL_GIVEN_NAMES.length)]
+    }`
+    const handle = asciiHandle(name)
+    return { actorType: 'user', id: `user-${handle}`, name, handle, avatarUrl: null }
+  },
+)
 
 // ── Organizations, and the viewer's role in each ──────────────────────────────
 

@@ -92,12 +92,7 @@ const PostView = ({ post, onReact, onUpdated, onDelete }: PostViewProps) => {
           <CopyLinkButton url={`${window.location.origin}/posts/${post.id}`} />
         </div>
 
-        <ReactionSummary
-          summary={post.reactions}
-          onMore={() => {
-            // TODO: onMore reaction handler
-          }}
-        />
+        <ReactionSummary summary={post.reactions} targetType="post" targetId={post.id} />
       </div>
 
       <ConfirmDialog

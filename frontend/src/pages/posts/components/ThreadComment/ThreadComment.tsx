@@ -132,12 +132,7 @@ const ThreadComment = ({
           )}
         </div>
 
-        <ReactionSummary
-          summary={comment.reactions}
-          onMore={() => {
-            // TODO: onMore reaction handler
-          }}
-        />
+        <ReactionSummary summary={comment.reactions} targetType="comment" targetId={comment.id} />
       </div>
 
       {children && (
