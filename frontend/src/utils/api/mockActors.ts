@@ -72,6 +72,13 @@ export const VIEWER = PEOPLE[0]
 export const findPerson = (username: string): MockPerson | undefined =>
   PEOPLE.find((row) => row.username === username)
 
+/** The id-keyed lookup, beside `findOrgById`. It exists because the
+ *  `<actorType>-<handle>` rule cannot be inverted for `bez-oglasa`, whose id
+ *  carries the `-empty` suffix, so a resolver going from an id back to a handle
+ *  has to consult the fixtures before it falls back to the rule. */
+export const findPersonById = (id: string): MockPerson | undefined =>
+  PEOPLE.find((row) => row.id === id)
+
 export const personRef = (username: string): ActorRefDto => {
   const row = findPerson(username)
   return {

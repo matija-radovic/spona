@@ -9,10 +9,12 @@
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
 // uniformly. Magic inputs make the failure/empty paths reachable:
-//   - fetchProfile : handle === "nepostojeci" -> 404 Not Found
-//   - fetchProfile : handle === "bez-oglasa"  -> own profile, no job postings
-//   - searchActors : q === "prazno"           -> empty page (0 results)
-//   - setFollow    : empty actorId            -> 400 Bad Request
+//   - fetchProfile    : handle === "nepostojeci" -> 404 Not Found
+//   - fetchProfile    : handle === "bez-oglasa"  -> own profile, no job postings
+//   - searchActors    : q === "prazno"           -> empty page (0 results)
+//   - fetchFollowList : q === "prazno"           -> empty page (0 results)
+//   - fetchFollowList : q === "greska"           -> 500 Internal Server Error
+//   - setFollow       : empty actorId            -> 400 Bad Request
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -21,10 +23,15 @@ import type { ContactEntry } from '@shared/components'
 import type { PagedResponse, ProblemDetail } from './types'
 import {
   ORGANIZATIONS,
+  PEOPLE,
+  findOrgById,
   findPerson,
+  findPersonById,
   orgIdFor,
+  orgRef,
   orgViewerCanEdit,
   orgViewerCanManagePostings,
+  personRef,
   userIdFor,
   viewerRoleIn,
 } from './mockActors'
@@ -115,6 +122,19 @@ export type ActorSearchItemDto =
       isFollowedByViewer?: boolean
     }
 
+/** One row of a follower or following list: the identity, plus the CALLER's own
+ *  edge to it, which is what the row's FollowButton renders and writes. Never
+ *  the profile owner's edge (backend-contract.md §8 rule 21). It extends
+ *  `ActorRefDto` rather than declaring a fresh shape, because a row draws an
+ *  avatar, a name, a handle and a profile link and that is exactly what
+ *  `ActorRefDto` carries; a second identity type is how two of them start
+ *  disagreeing about whether `avatarUrl` may be absent. */
+export interface FollowActorDto extends ActorRefDto {
+  isFollowedByViewer?: boolean
+}
+
+export type FollowDirection = 'followers' | 'following'
+
 // ── Mock plumbing ────────────────────────────────────────────────────────────
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -132,6 +152,9 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 
 const MAGIC_NOT_FOUND_HANDLE = 'nepostojeci'
 const MAGIC_EMPTY_QUERY = 'prazno'
+/** `searchActors` has no error magic, so a list's error state and its load-more
+ *  retry are otherwise unreachable by hand. */
+const MAGIC_ERROR_QUERY = 'greska'
 const MAX_MOCK_PAGES = 3
 
 /** Cheap stable hash so a given handle always renders the same profile shape. */
@@ -443,6 +466,189 @@ export const searchActors = async (
       self: { href: hrefFor(q, type, page, size) },
       ...(page > 1 ? { prev: { href: hrefFor(q, type, page - 1, size) } } : {}),
       ...(last ? {} : { next: { href: hrefFor(q, type, page + 1, size) } }),
+    },
+    content,
+    page,
+    size,
+    totalElements,
+    totalPages,
+    last,
+  }
+}
+
+// ── Follower / following lists ────────────────────────────────────────────────
+
+/** Exported the way `feed.ts` exports `FEED_PAGE_SIZE`, so the mock's page cap
+ *  and the caller's request cannot disagree. */
+export const FOLLOW_PAGE_SIZE = 20
+
+/** The profile an actor id addresses. The id rule is `<actorType>-<handle>`
+ *  (mockActors.ts), so the handle is recoverable, but the fixtures are consulted
+ *  first because `bez-oglasa` carries a suffixed id that the rule cannot invert. */
+const profileForActorId = (actorId: string): ProfileDto | null => {
+  const org = findOrgById(actorId)
+  if (org) return resolveProfile('org', org.slug)
+
+  const person = findPersonById(actorId)
+  if (person) return resolveProfile('user', person.username)
+
+  const parsed = /^(user|org)-(.+)$/.exec(actorId)
+  if (!parsed) return null
+  return resolveProfile(parsed[1] === 'org' ? 'org' : 'user', parsed[2])
+}
+
+/**
+ * The fixture pool a list draws from before it starts minting rows, so the top
+ * of every list is the same people and organizations the rest of the mocks know
+ * and every profile link lands on a named page.
+ *
+ * `id !== actorId` is `CHECK followerId <> followeeId`: nobody follows
+ * themselves. That is also the whole rule behind the viewer's appearances -
+ * VIEWER is the first entry in PEOPLE and therefore the first row of everybody
+ * else's follower list, and is absent from their own.
+ */
+const followFixtures = (actorId: string, direction: FollowDirection): ActorRefDto[] => {
+  const people = PEOPLE.filter((row) => row.id !== actorId).map((row) => personRef(row.username))
+  // Only a user follows (types.ts, Follows), so an organization can never be a
+  // follower. A following list interleaves them, which is the branch ActorRow
+  // needs in order to draw an organization avatar and an organization path.
+  if (direction === 'followers') return people
+
+  const orgs = ORGANIZATIONS.filter((row) => row.id !== actorId).map((row) => orgRef(row.slug))
+  const mixed: ActorRefDto[] = []
+  let person = 0
+  let org = 0
+  while (person < people.length || org < orgs.length) {
+    if ((mixed.length % 3 === 2 || person >= people.length) && org < orgs.length) {
+      mixed.push(orgs[org])
+      org += 1
+    } else {
+      mixed.push(people[person])
+      person += 1
+    }
+  }
+  return mixed
+}
+
+/** Past the fixture pool, a row is minted from the same name pools the search
+ *  results use. The ordinal is offset by the pool length so a generated name
+ *  always carries an index suffix and can never collide with a fixture handle. */
+const mintedFollowRef = (actorType: 'user' | 'org', ordinal: number): ActorRefDto => {
+  const pool = actorType === 'org' ? ORG_NAMES : USER_NAMES
+  const index = ordinal + pool.length
+  const base = pool[index % pool.length]
+  const name = `${base} ${Math.floor(index / pool.length)}`
+  const handle = actorType === 'org' ? slugify(name) : `${slugify(base)}${index}`
+  return {
+    actorType,
+    id: actorType === 'org' ? orgIdFor(handle) : userIdFor(handle),
+    name,
+    handle,
+    avatarUrl: null,
+  }
+}
+
+/** The caller's edge, projected from the very profile the row links to, so the
+ *  row and the page behind it cannot disagree about it. Deterministic and mixed
+ *  rather than all one answer: the named fixtures carry both, and the fallback
+ *  hashes the handle, so both button states are on screen on the first page. */
+const followRow = (ref: ActorRefDto): FollowActorDto => ({
+  ...ref,
+  isFollowedByViewer: resolveProfile(ref.actorType, ref.handle).isFollowedByViewer,
+})
+
+const followCandidates = (
+  actorId: string,
+  direction: FollowDirection,
+  total: number,
+): FollowActorDto[] => {
+  const fixtures = followFixtures(actorId, direction)
+  return Array.from({ length: total }, (_, i) => {
+    if (i < fixtures.length) return followRow(fixtures[i])
+    // Minted rows keep the fixtures' every-third-row interleave.
+    const actorType = direction === 'following' && i % 3 === 2 ? 'org' : 'user'
+    return followRow(mintedFollowRef(actorType, i - fixtures.length))
+  })
+}
+
+/** Case-folded over name and handle, the same two fields `GET /actors?q=`
+ *  matches, so an actor found in search is found here. */
+const matchesFollowQuery = (row: FollowActorDto, q: string): boolean =>
+  !q || row.name.toLowerCase().includes(q) || row.handle.toLowerCase().includes(q)
+
+const followHrefFor = (
+  actorId: string,
+  direction: FollowDirection,
+  q: string,
+  page: number,
+  size: number,
+): string => {
+  const sp = new URLSearchParams()
+  sp.set('page', String(page))
+  sp.set('size', String(size))
+  if (q) sp.set('q', q)
+  return `/api/actors/${actorId}/${direction}?${sp.toString()}`
+}
+
+/**
+ * MOCK - would be: const { data } = await api.get(
+ *   `/actors/${actorId}/${direction}`, { params: { q, page, size } })
+ *
+ * ONE function with a direction parameter rather than two functions: the routes
+ * differ by their last path segment and agree about everything else - the same
+ * envelope, the same row, the same `q`, the same page semantics. Two mocks would
+ * be two places for the row builder to drift.
+ *
+ * `following` answers 404 for an organization id, because only a user follows:
+ * the list is structurally empty, and an empty 200 would invite a client to draw
+ * a tab that should not be there (backend-contract.md §7d).
+ *
+ * `totalElements` for an empty `q` is the profile's own follower / following
+ * count, so the number on the tab and the number the list reports come from one
+ * place. The MAX_MOCK_PAGES clamp on top of it is the mock's depth and not a
+ * contract: the real backend serves both from one COUNT(*).
+ */
+export const fetchFollowList = async (
+  actorId: string,
+  direction: FollowDirection,
+  q: string,
+  page = 1,
+  size = FOLLOW_PAGE_SIZE,
+): Promise<PagedResponse<FollowActorDto>> => {
+  await delay(400)
+
+  const query = q.trim().toLowerCase()
+  if (query === MAGIC_ERROR_QUERY) {
+    return rejectProblem(500, 'Greška servera. Pokušajte ponovo.', 'Internal Server Error')
+  }
+
+  const profile = profileForActorId(actorId)
+  if (!profile) return rejectProblem(404, 'Traženi nalog ne postoji.', 'Not Found')
+
+  let stated: number
+  if (direction === 'following') {
+    if (profile.actorType === 'org') {
+      return rejectProblem(404, 'Organizacija ne prati naloge.', 'Not Found')
+    }
+    stated = profile.following
+  } else {
+    stated = profile.followers
+  }
+
+  const candidates = followCandidates(actorId, direction, Math.min(stated, MAX_MOCK_PAGES * size))
+  const matched =
+    query === MAGIC_EMPTY_QUERY ? [] : candidates.filter((row) => matchesFollowQuery(row, query))
+
+  const totalElements = matched.length
+  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size)
+  const last = page >= totalPages
+  const content = matched.slice((page - 1) * size, page * size)
+
+  return {
+    _links: {
+      self: { href: followHrefFor(actorId, direction, q, page, size) },
+      ...(page > 1 ? { prev: { href: followHrefFor(actorId, direction, q, page - 1, size) } } : {}),
+      ...(last ? {} : { next: { href: followHrefFor(actorId, direction, q, page + 1, size) } }),
     },
     content,
     page,

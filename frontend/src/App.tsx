@@ -5,6 +5,7 @@ import { DefaultLayout, AuthLayout } from '@shared/components'
 import { UserProvider } from '@shared/contexts'
 import { IndexGate, GuestRoute, ProtectedRoute } from '@shared/components/-routing/RouteGuards'
 import AuthBoundary from '@shared/components/-routing/AuthBoundary'
+import { unknownRouteLoader } from '@shared/components/-routing/unknownRoute'
 import {
   JobsLayout,
   JobsHint,
@@ -55,7 +56,10 @@ const router = createBrowserRouter(
 
           <Route path='users'>
             <Route index element={<ActorSearch type='user' />} />
-            <Route path=':username' element={<Profile actorType='user' />} />
+            <Route path=':username' element={<Profile actorType='user' />}>
+              <Route path='followers' element={null} />
+              <Route path='following' element={null} />
+            </Route>
             <Route element={<ProtectedRoute />}>
               <Route path=':username/settings' element={<UserSettings />}>
                 <Route index element={<Navigate to='profile' replace />} />
@@ -69,7 +73,9 @@ const router = createBrowserRouter(
 
           <Route path='companies'>
             <Route index element={<ActorSearch type='org' />} />
-            <Route path=':slug' element={<Profile actorType='org' />} />
+            <Route path=':slug' element={<Profile actorType='org' />}>
+              <Route path='followers' element={null} />
+            </Route>
             <Route element={<ProtectedRoute />}>
               <Route path='new' element={<CreateOrganization />} />
               <Route path=':slug/settings' element={<OrgSettings />}>
@@ -116,7 +122,7 @@ const router = createBrowserRouter(
         <Route path='verify/:token' element={<VerifyEmail />} />
         <Route path='reset' element={<RequestPasswordReset />} />
         <Route path='reset/:token' element={<ConfirmPasswordReset />} />
-        <Route path='*' element={<PageNotFound />} />
+        <Route path='*' loader={unknownRouteLoader} element={<PageNotFound />} />
       </Route>
     </Route>
   )

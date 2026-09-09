@@ -1,0 +1,96 @@
+@use '@css/colors' as c;
+@use '@css/mixins' as m;
+
+.follow-list-modal {
+  .modal-panel {
+    height: min(34rem, 100%);
+    max-width: 26rem;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .modal-head {
+    align-items: center;
+    padding: 0.85rem 1rem 0.6rem;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .modal-body {
+    flex: 1;
+    min-height: 0;
+    gap: 0;
+  }
+
+  .follow-list-tabs {
+    display: flex;
+    border-bottom: 1px solid c.$border-line;
+  }
+
+  .follow-tab {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    margin-bottom: -1px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: var(--control-line-height);
+    color: c.$text-muted;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease;
+
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+
+    &:hover {
+      color: c.$text-primary;
+    }
+
+    &.is-active {
+      color: c.$accent;
+      border-bottom-color: c.$accent;
+    }
+  }
+
+  .follow-list-search {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid c.$border-line;
+  }
+
+  .follow-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .follow-list-rows > * + * {
+    border-top: 1px solid c.$border-line;
+  }
+
+  .follow-list-sentinel {
+    height: 1px;
+  }
+
+  .follow-list-state {
+    @include m.state-block;
+  }
+
+  .follow-list-more {
+    @include m.load-more-row;
+  }
+
+  .follow-list-more-error {
+    color: c.$danger-text;
+  }
+}

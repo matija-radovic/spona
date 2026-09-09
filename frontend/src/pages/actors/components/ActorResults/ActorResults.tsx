@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useOnScreen from '@shared/hooks/useOnScreen'
+import { ActorRow } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { searchActors, type ActorSearchItemDto } from '@utils/api/profiles'
-import { ActorSearchRow } from '../ActorSearchRow'
 
 const PAGE_SIZE = 20
 
@@ -106,7 +106,12 @@ const ActorResults = ({ query, type }: ActorResultsProps) => {
     <>
       <div className="actor-search-results">
         {items.map((item) => (
-          <ActorSearchRow key={`${item.actorType}-${item.handle}`} item={item} />
+          <ActorRow
+            key={item.id}
+            actor={item}
+            followedByViewer={item.isFollowedByViewer}
+            description={item.actorType === 'org' ? item.description : null}
+          />
         ))}
       </div>
 

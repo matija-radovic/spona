@@ -1,5 +1,5 @@
 import './ProfileHeader.scss'
-import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IconSettings, IconPlus, IconExternalLink, IconLink, IconCheck } from '@tabler/icons-react'
 import {
@@ -20,19 +20,21 @@ import type { ProfileDto } from '@utils/api/profiles'
 
 interface ProfileHeaderProps {
   profile: ProfileDto
+  followers: number
+  following: number | undefined
+  isFollowing: boolean
+  onFollowChange: (next: boolean) => void
 }
 
-const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
+const ProfileHeader = ({
+  profile,
+  followers,
+  following,
+  isFollowing,
+  onFollowChange,
+}: ProfileHeaderProps) => {
   const { t } = useTranslation()
   const { organizations } = useMyOrganizations()
-
-  const [following, setFollowing] = useState(profile.isFollowedByViewer ?? false)
-  const [followers, setFollowers] = useState(profile.followers)
-
-  const onFollowChange = (next: boolean) => {
-    setFollowing(next)
-    setFollowers((count) => count + (next ? 1 : -1))
-  }
 
   const isUser = profile.actorType === 'user'
   const handle = isUser ? profile.username : profile.slug
@@ -40,7 +42,8 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   const bio = isUser ? profile.bio : profile.description
   const website = isUser ? null : safeHref(profile.website, { protocols: WEB_PROTOCOLS })
   const settingsPath = isUser ? `/users/${handle}/settings` : `/companies/${handle}/settings`
-  const profileUrl = `${window.location.origin}${actorPath({ actorType: profile.actorType, handle })}`
+  const path = actorPath({ actorType: profile.actorType, handle })
+  const profileUrl = `${window.location.origin}${path}`
 
   const subText = [isUser ? `@${handle}` : null, profile.location].filter(Boolean).join(' • ')
 
@@ -95,11 +98,15 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
         )}
 
         <div className="profile-head-follows">
-          <span>{t('profile.followersCount', { count: followers })}</span>
-          {isUser && (
+          <Link className="profile-head-follow-link" to={`${path}/followers`}>
+            {t('profile.followersCount', { count: followers })}
+          </Link>
+          {isUser && following !== undefined && (
             <>
               <span className="profile-head-dot" aria-hidden>•</span>
-              <span>{t('profile.followingCount', { count: profile.following })}</span>
+              <Link className="profile-head-follow-link" to={`${path}/following`}>
+                {t('profile.followingCount', { count: following })}
+              </Link>
             </>
           )}
         </div>
@@ -107,10 +114,6 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
         {bio && <p className="profile-head-bio">{bio}</p>}
       </div>
 
-      {/* Two groups of same-sized buttons: what you can do *with* this profile
-          (settings on your own, follow on someone else's, plus the copy link),
-          then the creation actions, gated one per surface. The split is spacing,
-          not a rule (see the SCSS); visitors get a single group. */}
       <div className="profile-head-actions">
         <div className="profile-head-action-group">
           {profile.viewerCanEdit ? (
@@ -119,7 +122,11 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
               {t('profile.settings')}
             </Button>
           ) : (
-            <FollowButton actorId={profile.id} following={following} onChange={onFollowChange} />
+            <FollowButton
+              actorId={profile.id}
+              following={isFollowing}
+              onChange={onFollowChange}
+            />
           )}
 
           <Button

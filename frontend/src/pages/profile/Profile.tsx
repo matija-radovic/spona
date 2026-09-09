@@ -1,13 +1,20 @@
 import './Profile.scss'
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useMatch, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUser } from '@shared/contexts'
 import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
-import { fetchProfile, type ActorRefDto, type ProfileDto } from '@utils/api/profiles'
+import {
+  fetchProfile,
+  type ActorRefDto,
+  type FollowDirection,
+  type ProfileDto,
+} from '@utils/api/profiles'
+import { actorPath } from '@utils/actorPath'
 import { actorDisplayName } from '@utils/actorDisplayName'
 import { fetchActorJobPostings, type SavedJobItemDto } from '@utils/api/jobs'
+import { FollowListModal } from './components/FollowListModal'
 import { ProfileHeader } from './components/ProfileHeader'
 import { ProfileTabs, ProfileTab, type ProfileTabItem } from './components/ProfileTabs'
 import { ActivityPane } from './panes/ActivityPane'
@@ -24,6 +31,31 @@ interface ProfileBodyProps {
 const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
   const { t } = useTranslation()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user } = useUser()
+
+  const base = profile.actorType === 'user' ? '/users/:username' : '/companies/:slug'
+  const followersMatch = useMatch(`${base}/followers`)
+  const followingMatch = useMatch(`${base}/following`)
+  const direction: FollowDirection | null = followersMatch
+    ? 'followers'
+    : followingMatch
+      ? 'following'
+      : null
+
+  const [followers, setFollowers] = useState(profile.followers)
+  const [following, setFollowing] = useState(
+    profile.actorType === 'user' ? profile.following : undefined,
+  )
+  const [isFollowing, setIsFollowing] = useState(profile.isFollowedByViewer ?? false)
+
+  const onFollowChange = (next: boolean) => {
+    setIsFollowing(next)
+    setFollowers((count) => count + (next ? 1 : -1))
+  }
+
+  const onViewerFollowChange = (delta: number) =>
+    setFollowing((count) => (count === undefined ? count : count + delta))
 
   const hasPostings = !!postings && postings.content.length > 0
   const requested = (location.state as { tab?: ProfileTab } | null)?.tab
@@ -53,9 +85,26 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
     tabs.push({ key: ProfileTab.SAVED_JOBS, label: t('profile.tabs.savedJobs') })
   }
 
+  const closeFollowList = () => navigate(actorPath(owner), { replace: true })
+
   return (
     <div className="profile container">
-      <ProfileHeader profile={profile} />
+      <ProfileHeader
+        profile={profile}
+        followers={followers}
+        following={following}
+        isFollowing={isFollowing}
+        onFollowChange={onFollowChange}
+      />
+
+      <FollowListModal
+        direction={direction}
+        actor={owner}
+        followers={followers}
+        following={following}
+        onClose={closeFollowList}
+        onViewerFollowChange={profile.id === user?.id ? onViewerFollowChange : undefined}
+      />
 
       {/* TODO(org-members): specialized member action row goes here.*/}
 

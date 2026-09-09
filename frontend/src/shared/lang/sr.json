@@ -850,6 +850,12 @@
     "following": "Pratite",
     "followersCount": "{{count}} pratilaca",
     "followingCount": "{{count}} prati",
+    "follows": {
+      "followersTab": "Pratioci ({{count}})",
+      "followingTab": "Praćenja ({{count}})",
+      "emptyFollowers": "Još nema pratilaca.",
+      "emptyFollowing": "Ne prati još nikoga."
+    },
     "tabs": {
       "activity": "Aktivnost",
       "contacts": "Kontakt",

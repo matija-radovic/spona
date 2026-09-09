@@ -42,6 +42,7 @@ export { ActionMenu, MenuAlign, contentMenuItems, type ActionMenuItem } from './
 
 export { ActorAvatar, ActorAvatarSize } from './actor/ActorAvatar'
 export { ActorByline } from './actor/ActorByline'
+export { ActorRow, ActorRowVariant } from './actor/ActorRow'
 export { FollowButton } from './actor/FollowButton'
 export { PostAsSelect, PostAsSurface, type PostAsValue } from './actor/PostAsSelect'
 
