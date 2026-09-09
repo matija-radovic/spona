@@ -1,9 +1,3 @@
-// Module-level cache for the Saved-jobs pane. There is only ever one saved set
-// (the viewer's own), so a single entry suffices. It records which id set it was
-// built from and which statuses have been hydrated, so tab switches never
-// refetch - but the pane invalidates it on mount when the saved set changed
-// (§10.3). Lives outside React so it survives the pane unmounting.
-
 import type { SavedJobItemDto } from '@utils/api/jobs'
 
 export interface SavedJobsCacheEntry {

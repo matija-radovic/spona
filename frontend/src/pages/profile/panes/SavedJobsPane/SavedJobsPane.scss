@@ -1,3 +1,4 @@
+@use '@css/colors' as c;
 @use '@css/mixins' as m;
 
 .saved-jobs-pane {
@@ -12,6 +13,32 @@
     margin: 0;
     padding: 0;
     list-style: none;
+
+    li {
+      position: relative;
+
+      .saved-jobs-pane-fav {
+        @include m.quiet-control;
+
+        position: absolute;
+        right: 2.5rem;
+        top: .9rem;
+        translate: 50% 0;
+
+        padding: .35rem;
+        font-size: 1.1rem;
+        border-radius: 50%;
+
+        &:hover {
+          color: c.$accent;
+          background-color: c.$accent-wash;
+        }
+
+        &.is-active {
+          color: c.$accent;
+        }
+      }
+    }
   }
 }
 
