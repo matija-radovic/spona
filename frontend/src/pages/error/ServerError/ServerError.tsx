@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useRouteError } from 'react-router-dom'
-import ErrorScreen from './ErrorScreen'
+import { ErrorScreen } from '../ErrorScreen'
 
 const ServerError = () => {
   const error = useRouteError()
