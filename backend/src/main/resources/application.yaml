@@ -1,0 +1,154 @@
+spring:
+  application:
+    name: spona
+
+  config:
+    import: "optional:file:./.env[.properties]"
+
+  profiles:
+    default: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 5MB    # the CV cap
+      max-request-size: 6MB
+
+  thymeleaf:
+    check-template-location: false
+
+mail:
+    host: ${SPONA_MAIL_HOST:localhost}
+    port: ${SPONA_MAIL_PORT:1025}
+    username: ${SPONA_MAIL_USERNAME:}
+    password: ${SPONA_MAIL_PASSWORD:}
+
+server:
+  port: ${SPONA_PORT:8080}
+  servlet:
+    context-path: /api      # every route is served under /api
+
+app:
+  url: ${SPONA_FRONTEND_URL:http://localhost:5173}
+  cors:
+    allowed-origins: ${SPONA_FRONTEND_URL:http://localhost:5173}
+  jwt:
+    secret: ${SPONA_JWT_SECRET:dev-only-secret-change-me-at-least-32-bytes}
+    ttl: ${SPONA_JWT_TTL:7d}
+  storage:
+    access-key: ${SPONA_S3_ACCESS_KEY:spona}
+    secret-key: ${SPONA_S3_SECRET_KEY:spona-secret}
+    region: ${SPONA_S3_REGION:us-east-1}
+    path-style: ${SPONA_S3_PATH_STYLE:true}
+    avatar-bucket: ${SPONA_S3_AVATAR_BUCKET:spona-avatars}
+    cv-bucket: ${SPONA_S3_CV_BUCKET:spona-cvs}
+  mail:
+    from: ${SPONA_MAIL_FROM:no-reply@spona.local}
+
+logging:
+  level:
+    "[io.github.matijaradovic.spona]": ${SPONA_LOG_LEVEL:DEBUG}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # No datasource block, spring-boot-docker-compose reads the running postgres
+  # container and fills in url, username and password.
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+
+app:
+  storage:
+    endpoint: ${SPONA_S3_ENDPOINT:http://localhost:9000}                # what the backend calls
+    public-endpoint: ${SPONA_S3_PUBLIC_ENDPOINT:http://localhost:9000}  # what a browser is given
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: ${SPONA_DB_URL:jdbc:postgresql://postgres:5432/spona}
+    username: ${SPONA_DB_USER:spona}
+    password: ${SPONA_DB_PASSWORD:spona}
+
+  docker:
+    compose:
+      enabled: false      # it is already inside the stack it would start
+
+app:
+  storage:
+    endpoint: ${SPONA_S3_ENDPOINT:http://minio:9000}                    # container-to-container
+    public-endpoint: ${SPONA_S3_PUBLIC_ENDPOINT:http://localhost:9000}  # the browser is outside the network
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # No defaults anywhere in this document, on purpose: an unset variable must
+  # fail the boot rather than silently start on a development value.
+  datasource:
+    url: ${SPONA_DB_URL}
+    username: ${SPONA_DB_USER}
+    password: ${SPONA_DB_PASSWORD}
+
+  jpa:
+    show-sql: false
+
+  docker:
+    compose:
+      enabled: false
+
+app:
+  storage:
+    endpoint: ${SPONA_S3_ENDPOINT}
+    public-endpoint: ${SPONA_S3_PUBLIC_ENDPOINT}
+
+logging:
+  level:
+    "[io.github.matijaradovic.spona]": INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: smtp-tls
+
+  # STARTTLS for a real mail provider. Credentials come from the shared block.
+  mail:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        transport:
+          protocol: smtp
