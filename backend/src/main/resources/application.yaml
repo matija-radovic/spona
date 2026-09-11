@@ -29,11 +29,15 @@ spring:
   thymeleaf:
     check-template-location: false
 
-mail:
+  mail:
     host: ${SPONA_MAIL_HOST:localhost}
     port: ${SPONA_MAIL_PORT:1025}
     username: ${SPONA_MAIL_USERNAME:}
     password: ${SPONA_MAIL_PASSWORD:}
+
+  task:
+    execution:
+      thread-name-prefix: spona-async-
 
 server:
   port: ${SPONA_PORT:8080}

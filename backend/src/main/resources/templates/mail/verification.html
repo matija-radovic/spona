@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm your Spona address</title>
+</head>
+<body style="font-family:Arial,Helvetica,sans-serif;">
+    <h2>Confirm your address</h2>
+    <p>Hi <span th:text="${displayName}">there</span>, welcome to Spona. Confirm this address to finish setting up your account.</p>
+
+    <div style="text-align:center;margin:2rem">
+        <a th:href="${link}" href="#" style="border-radius:.5rem;background:violet;color:#ffffff;border:none;padding:12px 20px;text-decoration:none;">
+            Confirm my address
+        </a>
+    </div>
+
+    <p style="margin:0;font-size: small;color:grey">If the button does not work, paste this into your browser:</p>
+    <p style="margin: .25rem 0 1rem 0;word-break:break-all;font-size: small;"><a th:href="${link}" th:text="${link}" href="#">https://example.invalid</a></p>
+
+    <p style="font-size: small;color:grey">If you did not create a Spona account, ignore this message.</p>
+</body>
+</html>
