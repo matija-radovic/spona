@@ -14,12 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.jayway.jsonpath.JsonPath;
 
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationTokenRepository;
@@ -32,7 +35,6 @@ import io.github.matijaradovic.spona.user.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/** Register, verify and resend over the real chain; no request here carries a token. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ContainersConfig.class)
@@ -253,6 +255,141 @@ class AuthFlowIntegrationTest {
         mvc.perform(get("/users").param("username", "admin")).andExpect(content().string("false"));
     }
 
+    /** The whole point of B11: a person who registered can get back in and stay in across a refresh. */
+    @Test
+    void registerThenVerifyThenLogInAndTheTokenOpensAuthMe() throws Exception {
+        mvc.perform(register("prijava", "prijava@example.com", "Lozinka123"))
+                .andExpect(status().isCreated());
+
+        User user = users.findByUsername("prijava").orElseThrow();
+        rewriteLiveLink(user, "link-token");
+
+        mvc.perform(verify("link-token")).andExpect(status().isNoContent());
+        clearContext();
+
+        String token = tokenFrom(mvc.perform(login("prijava", "Lozinka123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("prijava"))
+                .andReturn());
+
+        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.username").value("prijava"));
+    }
+
+    @Test
+    void loginTakesTheAddressInPlaceOfTheUsername() throws Exception {
+        verified("adresa", "Lozinka123");
+
+        mvc.perform(login("ADRESA@example.com", "Lozinka123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("adresa"));
+    }
+
+    @Test
+    void loginRefusesAWrongPasswordWith401() throws Exception {
+        verified("pogresna", "Lozinka123");
+
+        mvc.perform(login("pogresna", "Nije123456"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.type").doesNotExist());
+    }
+
+    @Test
+    void loginRefusesAnUnverifiedAccountWithTheTypeTheFormBranchesOn() throws Exception {
+        User user = TestFixtures.user("cekanje");
+        user.setPasswordDigest(passwords.encode("Lozinka123"));
+        users.saveAndFlush(user);
+        clearContext();
+
+        mvc.perform(login("cekanje", "Lozinka123"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/email-not-verified"));
+    }
+
+    /** Answering the unknown arm differently would turn login into an account-existence oracle. */
+    @Test
+    void anUnknownIdentifierAnswersExactlyAsAWrongPasswordDoes() throws Exception {
+        verified("postoji", "Lozinka123");
+
+        MvcResult known = mvc.perform(login("postoji", "Nije123456")).andReturn();
+        MvcResult stranger = mvc.perform(login("nepostoji", "Nije123456")).andReturn();
+
+        assertThat(known.getResponse().getStatus())
+                .isEqualTo(stranger.getResponse().getStatus())
+                .isEqualTo(401);
+        assertThat(known.getResponse().getContentAsString())
+                .isEqualTo(stranger.getResponse().getContentAsString());
+    }
+
+    @Test
+    void authMeAndLogoutBothRefuseAGuest() throws Exception {
+        mvc.perform(get("/auth/me")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/auth/logout")).andExpect(status().isUnauthorized());
+    }
+
+    /** Contract §1: there is nothing to revoke, so the same token has to keep working after it. */
+    @Test
+    void logoutAnswers204AndLeavesTheTokenUsable() throws Exception {
+        verified("odjava", "Lozinka123");
+        String token = tokenFrom(mvc.perform(login("odjava", "Lozinka123")).andReturn());
+
+        mvc.perform(post("/auth/logout").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void authMeServesTheFieldListTheClientReads() throws Exception {
+        User user = verified("profil", "Lozinka123");
+        user.setFullName("Marko Markovic");
+        user.setBio("Student");
+        user.setLocation("Novi Sad");
+        user.setOtherContactInfo(TestFixtures.contacts());
+        users.saveAndFlush(user);
+        String token = tokenFrom(mvc.perform(login("profil", "Lozinka123")).andReturn());
+        clearContext();
+
+        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.actorType").value("user"))
+                .andExpect(jsonPath("$.createdAt").isString())
+                .andExpect(jsonPath("$.fullName").value("Marko Markovic"))
+                .andExpect(jsonPath("$.email").value("profil@example.com"))
+                .andExpect(jsonPath("$.bio").value("Student"))
+                .andExpect(jsonPath("$.location").value("Novi Sad"))
+                .andExpect(jsonPath("$.otherContactInfo[0].type").value("email"))
+                .andExpect(jsonPath("$.passwordDigest").doesNotExist());
+    }
+
+    private User verified(String username, String password) {
+        User user = TestFixtures.user(username);
+        user.setPasswordDigest(passwords.encode(password));
+        user.setEmailVerifiedAt(Instant.now());
+        users.saveAndFlush(user);
+        clearContext();
+        return user;
+    }
+
+    /** Only the digest is stored, so the link the test wants to follow has to be written in. */
+    private void rewriteLiveLink(User user, String plaintext) {
+        entities.createNativeQuery("""
+                UPDATE email_verification_tokens SET token_hash = :hash
+                 WHERE user_id = :id AND consumed_at IS NULL""")
+                .setParameter("hash", SecureTokens.hash(plaintext))
+                .setParameter("id", user.getId())
+                .executeUpdate();
+        clearContext();
+    }
+
+    private static String tokenFrom(MvcResult result) throws Exception {
+        return JsonPath.read(result.getResponse().getContentAsString(), "$.token");
+    }
+
     private String liveHash(User user) {
         clearContext();
         return tokens.findByUserAndPurposeAndConsumedAtIsNull(user, EmailVerificationPurpose.SIGNUP)
@@ -280,6 +417,13 @@ class AuthFlowIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"token": "%s"}""".formatted(token));
+    }
+
+    private static RequestBuilder login(String identifier, String password) {
+        return post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"identifier": "%s", "password": "%s"}""".formatted(identifier, password));
     }
 
     private static RequestBuilder resend(String email) {

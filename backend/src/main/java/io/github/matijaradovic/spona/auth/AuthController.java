@@ -1,16 +1,22 @@
 package io.github.matijaradovic.spona.auth;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.matijaradovic.spona.auth.dto.AuthResponse;
+import io.github.matijaradovic.spona.auth.dto.LoginRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
 import io.github.matijaradovic.spona.auth.dto.ResendRequest;
 import io.github.matijaradovic.spona.auth.dto.VerifyRequest;
+import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
+import io.github.matijaradovic.spona.user.User;
+import io.github.matijaradovic.spona.user.dto.UserDto;
 
 import jakarta.validation.Valid;
 
@@ -41,5 +47,22 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void resend(@Valid @RequestBody ResendRequest request) {
         auth.resendVerification(request.email());
+    }
+
+    @PostMapping("/login")
+    AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return auth.login(request);
+    }
+
+    /** The filter loaded and checked already, so the principal is never null here. */
+    @GetMapping("/me")
+    UserDto me(@CurrentUser User user) {
+        return UserDto.from(user);
+    }
+
+    /** Since we use JWT, this only records the intent */
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void logout() {
     }
 }

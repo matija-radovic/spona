@@ -1,23 +1,43 @@
 package io.github.matijaradovic.spona.auth;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import io.github.matijaradovic.spona.auth.dto.AuthResponse;
+import io.github.matijaradovic.spona.auth.dto.LoginRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
+import io.github.matijaradovic.spona.common.error.ForbiddenException;
+import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
+import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.support.TestFixtures;
+import io.github.matijaradovic.spona.user.User;
+import io.github.matijaradovic.spona.user.dto.UserDto;
 
 class AuthControllerTest {
 
@@ -33,12 +53,20 @@ class AuthControllerTest {
               "otherContactInfo": %s
             }""";
 
+    private static final UUID PRINCIPAL_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
+
     private final AuthService auth = mock(AuthService.class);
 
     private final MockMvc mvc = MockMvcBuilders
             .standaloneSetup(new AuthController(auth))
             .setControllerAdvice(new GlobalExceptionHandler())
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
+
+    @AfterEach
+    void clearPrincipal() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void registersAndAnswers201WithTheAddressToCheck() throws Exception {
@@ -150,6 +178,116 @@ class AuthControllerTest {
         mvc.perform(resend("not-an-address"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.errors.email").isString());
+    }
+
+    @Test
+    void loginAnswers200WithTheTokenAndTheUserTogether() throws Exception {
+        when(auth.login(any(LoginRequest.class)))
+                .thenReturn(new AuthResponse("signed.jwt.value", UserDto.from(principal())));
+
+        mvc.perform(login("marko", "Lozinka123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("signed.jwt.value"))
+                .andExpect(jsonPath("$.user.username").value("marko"))
+                .andExpect(jsonPath("$.user.actorType").value("user"));
+    }
+
+    @Test
+    void loginRefusesABlankIdentifier() throws Exception {
+        mvc.perform(login("   ", "Lozinka123"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.identifier").isString());
+    }
+
+    @Test
+    void loginRefusesABlankPassword() throws Exception {
+        mvc.perform(login("marko", ""))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.password").isString());
+    }
+
+    @Test
+    void loginAnswers401WithNoProblemTypeOnBadCredentials() throws Exception {
+        when(auth.login(any(LoginRequest.class)))
+                .thenThrow(new UnauthorizedException("Wrong username or password."));
+
+        mvc.perform(login("marko", "Pogresna123"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.title").value("Unauthorized"))
+                .andExpect(jsonPath("$.instance").value("/auth/login"))
+                .andExpect(jsonPath("$.type").doesNotExist());
+    }
+
+    @Test
+    void loginAnswers403WithTheTypeTheFormBranchesOn() throws Exception {
+        when(auth.login(any(LoginRequest.class)))
+                .thenThrow(new ForbiddenException("Verify your email address to continue.",
+                        ProblemTypes.EMAIL_NOT_VERIFIED));
+
+        mvc.perform(login("marko", "Lozinka123"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/email-not-verified"));
+    }
+
+    @Test
+    void meServesEveryFieldTheClientReadsOffTheSignedInRow() throws Exception {
+        signedInAs(principal());
+
+        mvc.perform(get("/auth/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(PRINCIPAL_ID.toString()))
+                .andExpect(jsonPath("$.actorType").value("user"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.username").value("marko"))
+                .andExpect(jsonPath("$.fullName").value("Marko Markovic"))
+                .andExpect(jsonPath("$.email").value("marko@example.com"))
+                .andExpect(jsonPath("$.bio").value("Student"))
+                .andExpect(jsonPath("$.avatarUrl").value(nullValue()))
+                .andExpect(jsonPath("$.location").value("Novi Sad"))
+                .andExpect(jsonPath("$.otherContactInfo[0].value").value("office@example.com"));
+    }
+
+    /** The digest is on the row the handler maps from, so the wire has to be checked for it. */
+    @Test
+    void meNeverSerialisesThePasswordDigest() throws Exception {
+        signedInAs(principal());
+
+        mvc.perform(get("/auth/me"))
+                .andExpect(jsonPath("$.passwordDigest").doesNotExist())
+                .andExpect(jsonPath("$.emailVerifiedAt").doesNotExist());
+    }
+
+    @Test
+    void logoutAnswers204AndTouchesNothing() throws Exception {
+        signedInAs(principal());
+
+        mvc.perform(post("/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        verifyNoInteractions(auth);
+    }
+
+    private static void signedInAs(User user) {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, List.of()));
+    }
+
+    private static User principal() {
+        User user = TestFixtures.userWithId("marko", PRINCIPAL_ID);
+        user.setFullName("Marko Markovic");
+        user.setBio("Student");
+        user.setLocation("Novi Sad");
+        user.setOtherContactInfo(TestFixtures.contacts());
+        ReflectionTestUtils.setField(user, "createdAt", Instant.parse("2026-01-01T00:00:00Z"));
+        return user;
+    }
+
+    private static RequestBuilder login(String identifier, String password) {
+        return post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"identifier": "%s", "password": "%s"}""".formatted(identifier, password));
     }
 
     private static RequestBuilder register(String body) {

@@ -58,7 +58,8 @@ class SecurityRouteSplitTest {
 
     @Test
     void aPublicAuthPostIsReachableWithoutAToken() throws Exception {
-        mvc.perform(post("/auth/login")).andExpect(status().isNotFound());
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnprocessableContent());
         mvc.perform(post("/auth/password-reset/confirm")).andExpect(status().isNotFound());
     }
 

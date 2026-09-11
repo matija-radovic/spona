@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
+import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -70,6 +71,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail onNotFound(NotFoundException ex, HttpServletRequest request) {
         return problem(HttpStatus.NOT_FOUND, ex.getMessage(), null, request);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    ProblemDetail onUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
+        return problem(HttpStatus.UNAUTHORIZED, ex.getMessage(), null, request);
     }
 
     @ExceptionHandler(ForbiddenException.class)
