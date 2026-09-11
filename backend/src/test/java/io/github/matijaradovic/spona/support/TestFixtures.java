@@ -1,11 +1,15 @@
 package io.github.matijaradovic.spona.support;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
+import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
+import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.user.User;
 
@@ -25,6 +29,13 @@ public final class TestFixtures {
         User user = user(username);
         ReflectionTestUtils.setField(user, "id", id);
         return user;
+    }
+
+    /** A live token whose plaintext stays with the caller, because the row holds only the digest. */
+    public static EmailVerificationToken token(User user, EmailVerificationPurpose purpose,
+            String email, String plaintext) {
+        return new EmailVerificationToken(user, purpose, email, SecureTokens.hash(plaintext),
+                Instant.now().plus(purpose.lifetime()));
     }
 
     public static Organization organization(String slug) {

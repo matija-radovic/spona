@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Spona address was changed</title>
+</head>
+<body style="font-family:Arial,Helvetica,sans-serif;">
+    <h2>Your address was changed</h2>
+    <p>Hi <span th:text="${displayName}">there</span>, the address on your Spona account is now:</p>
+    <p style="margin:1.5rem 0;font-weight:bold;word-break:break-all;"><span th:text="${newEmail}">new@example.invalid</span></p>
+
+    <p style="font-size: small;color:grey">This message went to the address you were using before the change. If it was not you who asked for it, someone else can reach your account: change your password immediately.</p>
+</body>
+</html>
