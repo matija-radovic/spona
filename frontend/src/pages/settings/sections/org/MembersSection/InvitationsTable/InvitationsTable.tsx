@@ -9,8 +9,6 @@ import { RoleChip } from '../../../../components/RoleChip'
 
 interface InvitationsTableProps {
   invitations: readonly InvitationDto[]
-  /** OWNER/ADMIN only: cancel a WAITING row, dismiss a DECLINED one. */
-  canManage: boolean
   busyId: string | null
   onCancel: (invitation: InvitationDto) => void
   onDismiss: (invitation: InvitationDto) => void
@@ -18,7 +16,6 @@ interface InvitationsTableProps {
 
 const InvitationsTable = ({
   invitations,
-  canManage,
   busyId,
   onCancel,
   onDismiss,
@@ -93,19 +90,17 @@ const InvitationsTable = ({
               </td>
 
               <td className="members-action">
-                {canManage && (
-                  <button
-                    type="button"
-                    className="settings-icon-button"
-                    disabled={busyId === invitation.id}
-                    onClick={() => (declined ? onDismiss(invitation) : onCancel(invitation))}
-                    aria-label={
-                      declined ? t('settings.invitations.dismiss') : t('settings.invitations.cancel')
-                    }
-                  >
-                    <IconX aria-hidden />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="settings-icon-button"
+                  disabled={busyId === invitation.id}
+                  onClick={() => (declined ? onDismiss(invitation) : onCancel(invitation))}
+                  aria-label={
+                    declined ? t('settings.invitations.dismiss') : t('settings.invitations.cancel')
+                  }
+                >
+                  <IconX aria-hidden />
+                </button>
               </td>
             </tr>
           )

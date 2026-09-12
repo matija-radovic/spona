@@ -231,14 +231,12 @@ const OrganizationsSection = () => {
                       <RoleChip role={membership.role} />
 
                       <div className="organizations-card-actions">
-                        {membership.canManage && (
-                          <Button
-                            variant={ButtonVariant.TERTIARY}
-                            to={`/companies/${membership.organization.handle}/settings`}
-                          >
-                            {t('settings.organizations.manage')}
-                          </Button>
-                        )}
+                        <Button
+                          variant={ButtonVariant.TERTIARY}
+                          to={`/companies/${membership.organization.handle}/settings`}
+                        >
+                          {t('settings.organizations.manage')}
+                        </Button>
 
                         {membership.role === 'OWNER' ? (
                           <Tooltip label={t('settings.organizations.ownerCannotLeave')}>

@@ -21,14 +21,14 @@
 //   - fetchPost      : postId === "post-mine"  -> authored by user-my-account,
 //                                                 both viewerCan* flags set
 //   - fetchPost      : any post the rotation gives the viewer or an organization
-//                      they own/administer also carries both flags, so an
+//                      whose content they manage also carries both flags, so an
 //                      org-authored editable post is reachable too
 //   - fetchComments  : postId === "post-empty" -> zero comments, empty thread
 //   - every post     : root comment #1 has 23 replies, to exercise the
 //                      load-more arithmetic and the sibling windows
 //   - every post     : every 4th comment is authored by user-my-account, and the
-//                      rotation also lands on organizations the viewer
-//                      administers; both carry the viewerCan* flags
+//                      rotation also lands on organizations whose content the
+//                      viewer manages; both carry the viewerCan* flags
 //   - createComment  : content containing "403" -> 403, which is how the
 //                      acting-identity cache invalidation path is reachable
 //   - createPost     : content containing "403" -> 403, same path from /posts/new
@@ -39,7 +39,7 @@
 import type { PagedResponse, ProblemDetail } from './types'
 import type { ActorRefDto } from './profiles'
 import { seedEmptyRoster, summaryFor, type ReactionSummaryDto } from './reactions'
-import { ORGANIZATIONS, PEOPLE, orgRef, personRef, viewerOwnsContentOf } from './mockActors'
+import { ORGANIZATIONS, PEOPLE, orgRef, personRef, viewerManagesContentOf } from './mockActors'
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -229,7 +229,7 @@ const buildPost = (postId: string): PostDto => {
     reactions: summaryFor('post', postId), // re-stamped from the roster on every read
     authorBio: AUTHOR_BIOS[author.id] ?? null,
     authorFollowedByViewer: seed % 3 === 0,
-    ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+    ...(own || viewerManagesContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }
 
@@ -242,7 +242,7 @@ const buildComment = (
 ): ThreadCommentDto => {
   const bodies = parentId ? REPLY_BODIES : COMMENT_BODIES
   // Every 4th comment is the viewer's own, and the rotation additionally lands on
-  // organizations they administer, so the edit/delete affordances are reachable
+  // organizations whose content they manage, so the edit/delete affordances are reachable
   // on both kinds of authorship. The real API reads both flags off the JWT.
   const own = index % 4 === 3
   const author = own ? AUTHORS[0] : AUTHORS[(index + 1) % AUTHORS.length]
@@ -255,7 +255,7 @@ const buildComment = (
     createdAt: iso(minutesAgo),
     reactions: summaryFor('comment', id), // re-stamped from the roster on every read
     responseCount: 0, // stamped from the thread on every read
-    ...(own || viewerOwnsContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
+    ...(own || viewerManagesContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
   }
 }
 

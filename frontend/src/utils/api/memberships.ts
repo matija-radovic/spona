@@ -33,8 +33,6 @@ export interface MyOrganizationDto {
   /** Who invited me - null for a founder. */
   invitedBy: ActorRefDto | null
   memberCount: number
-  /** OWNER/ADMIN - show a link into the org's settings. */
-  canManage: boolean
 }
 
 /** An invitation addressed to me and still waiting. */
@@ -92,7 +90,6 @@ const seedOrganizations = (): MyOrganizationDto[] => {
         roleUpdatedAt: iso(320 - index * 90),
         invitedBy: INVITERS[index % INVITERS.length],
         memberCount: 10,
-        canManage: role === 'OWNER' || role === 'ADMIN',
       }
     })
   }
@@ -120,7 +117,6 @@ const membershipFrom = (invitation: MyInvitationDto): MyOrganizationDto => ({
   roleUpdatedAt: new Date().toISOString(),
   invitedBy: invitation.invitedBy,
   memberCount: 11,
-  canManage: invitation.role === 'OWNER' || invitation.role === 'ADMIN',
 })
 
 // ── Calls ─────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import type { PostAsSurface, PostAsValue } from '@shared/components/actor/PostAs
 const PUBLISH_AS: Readonly<Record<OrganizationRole, Readonly<Record<PostAsSurface, boolean>>>> = {
   OWNER: { content: true, job: true },
   ADMIN: { content: true, job: true },
+  PUBLISHER: { content: true, job: true },
   EDITOR: { content: true, job: false },
   RECRUITER: { content: false, job: true },
 }

@@ -1,9 +1,10 @@
 // -----------------------------------------------------------------------------
-// MOCK "an organization I administer" service (backend spec §3.1/§3.2); the real
+// MOCK "an organization I belong to" service (backend spec §3.1/§3.2); the real
 // axios call is left commented above each mock body. Rejections are
 // `ProblemDetail` shapes, and these magic inputs reach every persona and failure:
 //   - fetchOrgSettings   : "moja-kompanija" -> OWNER · "vega-it" -> ADMIN
 //                          "nordeus" -> EDITOR · "htec-group" -> RECRUITER
+//                          "quantox" -> PUBLISHER
 //                          any other slug -> 403 (not a member; the guard bounces)
 //                          "nepostojeci" -> 404
 //   - changeOrgSlug      : nextSlug === "zauzeto"       -> 409 Conflict
@@ -11,6 +12,7 @@
 //   - deleteOrg          : confirmSlug !== slug         -> 422 Unprocessable
 //   - setMemberRole      : userId === MAGIC_FAILING_MEMBER_ID -> 500 (revert test)
 //   - removeMember       : the same id                  -> 500
+//   - fetchInvitations   : any seat below ADMIN         -> 403 (OWNER and ADMIN only)
 //   - createInvitation   : identifier === "nepostojeci" -> 422 "Korisnik ne postoji."
 //                          identifier === "marko"       -> 409 already a member
 //                          identifier containing "@"    -> 201, unresolved row
@@ -35,7 +37,7 @@ import { PEOPLE, VIEWER, findOrg, orgIdFor, userIdFor, viewerRoleIn } from './mo
 
 // ── Local enum mirror (the project mirrors backend enums as local unions) ──────
 
-export type OrganizationRole = 'OWNER' | 'ADMIN' | 'EDITOR' | 'RECRUITER'
+export type OrganizationRole = 'OWNER' | 'ADMIN' | 'PUBLISHER' | 'EDITOR' | 'RECRUITER'
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
 
@@ -168,7 +170,7 @@ const ROSTER: readonly { username: string; role: OrganizationRole }[] = [
   { username: 'stefan', role: 'EDITOR' },
   { username: 'ivana', role: 'RECRUITER' },
   { username: 'luka', role: 'RECRUITER' },
-  { username: 'dusan', role: 'EDITOR' },
+  { username: 'dusan', role: 'PUBLISHER' },
   { username: 'tijana', role: 'RECRUITER' },
 ]
 
@@ -457,10 +459,15 @@ export const removeMember = async (slug: string, userId: string): Promise<void> 
 
 /**
  * MOCK - would be: const { data } = await api.get(`/organizations/${slug}/invitations`)
- * WAITING rows plus DECLINED rows the org has not dismissed, newest first.
+ * WAITING rows plus DECLINED rows the org has not dismissed, newest first. OWNER and
+ * ADMIN only: the rows name people outside the organization.
  */
 export const fetchInvitations = async (slug: string): Promise<InvitationDto[]> => {
   await delay(400)
+  const viewerRole = liveRoleOf(slug)
+  if (viewerRole !== 'OWNER' && viewerRole !== 'ADMIN') {
+    return rejectProblem(403, 'Pozivnice vide samo vlasnik i administratori.', 'Forbidden')
+  }
   return seedInvitations(slug)
     .map((row) => ({ ...row }))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

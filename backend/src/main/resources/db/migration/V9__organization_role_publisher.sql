@@ -1,0 +1,1 @@
+ALTER TYPE organization_role ADD VALUE 'PUBLISHER' AFTER 'ADMIN';

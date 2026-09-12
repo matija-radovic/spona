@@ -12,6 +12,9 @@ import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.organization.Organization;
+import io.github.matijaradovic.spona.organization.member.OrganizationMember;
+import io.github.matijaradovic.spona.organization.member.OrganizationRole;
+import io.github.matijaradovic.spona.organization.member.RoleAssignment;
 import io.github.matijaradovic.spona.user.User;
 
 /** Rows that satisfy every CHECK, so a test can say what it is testing. */
@@ -47,6 +50,17 @@ public final class TestFixtures {
 
     public static Organization organization(String slug) {
         return new Organization(slug, "Display " + slug, "Legal " + slug + " d.o.o.");
+    }
+
+    /** The row the role rows hang off, which `role_assignment`'s foreign key requires first. */
+    public static OrganizationMember membership(User user, Organization organization) {
+        return new OrganizationMember(user, organization);
+    }
+
+    /** A live grant, assigned by the member themselves so no third row is needed. */
+    public static RoleAssignment roleAssignment(User user, Organization organization,
+            OrganizationRole role) {
+        return new RoleAssignment(user, organization, role, user);
     }
 
     /** Two entries, one of them carrying the empty description the bound allows. */

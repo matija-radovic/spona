@@ -12,8 +12,8 @@
 //
 // Magic inputs:
 //   - fetchActorActivity : actorId === "user-marko"  -> empty page (no activity)
-//   - fetchActorActivity : the viewer, or an org they own/administer -> viewerCan*
-//                      true on every item (`viewerOwnsContentOf`)
+//   - fetchActorActivity : the viewer, or an org whose content they manage -> viewerCan*
+//                      true on every item (`viewerManagesContentOf`)
 // -----------------------------------------------------------------------------
 
 // import api from '@utils/api'
@@ -22,7 +22,7 @@ import type { PagedResponse } from './types'
 import type { ActorRefDto } from './profiles'
 import { summaryFor, type ReactionSummaryDto } from './reactions'
 import type { PostDto } from './posts'
-import { userIdFor, viewerOwnsContentOf } from './mockActors'
+import { userIdFor, viewerManagesContentOf } from './mockActors'
 
 // ── DTOs ────────────────────────────────────────────────────────────────────
 
@@ -168,7 +168,7 @@ export const fetchActorActivity = async (
   const last = page >= totalPages
   const count = totalElements === 0 || page > totalPages ? 0 : last ? totalElements - (page - 1) * size : size
 
-  const content = buildPage(owner, kind, page, size, viewerOwnsContentOf(actorId)).slice(0, count)
+  const content = buildPage(owner, kind, page, size, viewerManagesContentOf(actorId)).slice(0, count)
 
   return {
     _links: {

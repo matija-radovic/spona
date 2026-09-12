@@ -47,11 +47,11 @@ const ProfileHeader = ({
 
   const subText = [isUser ? `@${handle}` : null, profile.location].filter(Boolean).join(' • ')
 
-  // On a user profile "may I publish as this actor" is "is this me"; on an organization
-  // it is the viewer's role, run through the matrix the destination's picker also runs.
   const role = isUser
     ? undefined
     : organizations.find((row) => row.organization.id === profile.id)?.role
+  const canOpenSettings = !!profile.viewerCanEdit || !!role
+  const isOwnProfile = isUser && !!profile.viewerCanEdit
   const canPostContent = isUser
     ? !!profile.viewerCanEdit
     : !!role && canPublishAs(role, PostAsSurface.CONTENT)
@@ -116,12 +116,7 @@ const ProfileHeader = ({
 
       <div className="profile-head-actions">
         <div className="profile-head-action-group">
-          {profile.viewerCanEdit ? (
-            <Button variant={ButtonVariant.TERTIARY} to={settingsPath}>
-              <IconSettings aria-hidden />
-              {t('profile.settings')}
-            </Button>
-          ) : (
+          {!isOwnProfile && (
             <FollowButton
               actorId={profile.id}
               following={isFollowing}
@@ -137,6 +132,13 @@ const ProfileHeader = ({
             {copied ? <IconCheck aria-hidden /> : <IconLink aria-hidden />}
             {copied ? t('common.linkCopied') : t('common.copyLink')}
           </Button>
+
+          {canOpenSettings && (
+            <Button variant={ButtonVariant.TERTIARY} to={settingsPath}>
+              <IconSettings aria-hidden />
+              {t('profile.settings')}
+            </Button>
+          )}
         </div>
 
         {(canPostContent || canPostJob) && (

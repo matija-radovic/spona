@@ -9,15 +9,13 @@
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
 // uniformly. Magic inputs make the failure/empty paths reachable:
-//   - fetchProfile    : handle === "nepostojeci" -> 404 Not Found
-//   - fetchProfile    : handle === "bez-oglasa"  -> own profile, no job postings
 //   - searchActors    : q === "prazno"           -> empty page (0 results)
 //   - fetchFollowList : q === "prazno"           -> empty page (0 results)
 //   - fetchFollowList : q === "greska"           -> 500 Internal Server Error
 //   - setFollow       : empty actorId            -> 400 Bad Request
 // -----------------------------------------------------------------------------
 
-// import api from '@utils/api'
+import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
 import type { PagedResponse, ProblemDetail } from './types'
@@ -55,43 +53,42 @@ export interface ActorRefDto {
  *  a display email only ever appears as an otherContactInfo entry. */
 export type ProfileDto =
   | {
-      actorType: 'user'
-      id: string
-      username: string
-      fullName: string
-      bio: string | null
-      avatarUrl: string | null
-      location: string | null
-      otherContactInfo: ContactEntry[]
-      followers: number
-      following: number
-      createdAt: string
-      /** Present ONLY for authenticated viewers. */
-      isFollowedByViewer?: boolean
-      /** True when this is the viewer's own profile (or an org they can edit). */
-      viewerCanEdit?: boolean
-      /** Server-computed from the role matrix, absent meaning false. Separate
-       *  from `viewerCanEdit` because the two diverge in opposite directions: a
-       *  RECRUITER manages an organization's postings and not its profile, an
-       *  EDITOR the reverse. */
-      viewerCanManageJobPostings?: boolean
-    }
+    actorType: 'user'
+    id: string
+    username: string
+    fullName: string
+    bio: string | null
+    avatarUrl: string | null
+    location: string | null
+    otherContactInfo: ContactEntry[]
+    followers: number
+    following: number
+    createdAt: string
+    /** Present ONLY for authenticated viewers. */
+    isFollowedByViewer?: boolean
+    /** True when this is the viewer's own profile (or an org they can edit). */
+    viewerCanEdit?: boolean
+    /** Server-computed from the role matrix, absent meaning false. Separate
+     *  from `viewerCanEdit` because a RECRUITER manages an organization's
+     *  postings and not its profile, and an EDITOR manages neither. */
+    viewerCanManageJobPostings?: boolean
+  }
   | {
-      actorType: 'org'
-      id: string
-      slug: string
-      displayName: string
-      description: string | null
-      website: string | null
-      avatarUrl: string | null
-      location: string | null
-      otherContactInfo: ContactEntry[]
-      followers: number
-      createdAt: string
-      isFollowedByViewer?: boolean
-      viewerCanEdit?: boolean
-      viewerCanManageJobPostings?: boolean
-    }
+    actorType: 'org'
+    id: string
+    slug: string
+    displayName: string
+    description: string | null
+    website: string | null
+    avatarUrl: string | null
+    location: string | null
+    otherContactInfo: ContactEntry[]
+    followers: number
+    createdAt: string
+    isFollowedByViewer?: boolean
+    viewerCanEdit?: boolean
+    viewerCanManageJobPostings?: boolean
+  }
 
 /** Actor search-result summary. Stripped down from `ProfileDto` to the fields
  *  a search row can plausibly need (no location/contact/createdAt/
@@ -101,26 +98,26 @@ export type ProfileDto =
  *  unique only within a subtype. */
 export type ActorSearchItemDto =
   | {
-      actorType: 'user'
-      id: string
-      name: string
-      handle: string
-      avatarUrl: string | null
-      bio: string | null
-      followers: number
-      following: number
-      isFollowedByViewer?: boolean
-    }
+    actorType: 'user'
+    id: string
+    name: string
+    handle: string
+    avatarUrl: string | null
+    bio: string | null
+    followers: number
+    following: number
+    isFollowedByViewer?: boolean
+  }
   | {
-      actorType: 'org'
-      id: string
-      name: string
-      handle: string
-      avatarUrl: string | null
-      description: string | null
-      followers: number
-      isFollowedByViewer?: boolean
-    }
+    actorType: 'org'
+    id: string
+    name: string
+    handle: string
+    avatarUrl: string | null
+    description: string | null
+    followers: number
+    isFollowedByViewer?: boolean
+  }
 
 /** One row of a follower or following list: the identity, plus the CALLER's own
  *  edge to it, which is what the row's FollowButton renders and writes. Never
@@ -150,7 +147,6 @@ const makeProblem = (status: number, detail: string, title = ''): ProblemDetail 
 const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
   Promise.reject(makeProblem(status, detail, title))
 
-const MAGIC_NOT_FOUND_HANDLE = 'nepostojeci'
 const MAGIC_EMPTY_QUERY = 'prazno'
 /** `searchActors` has no error magic, so a list's error state and its load-more
  *  retry are otherwise unreachable by hand. */
@@ -349,22 +345,14 @@ const resolveProfile = (actorType: 'user' | 'org', handle: string): ProfileDto =
   (actorType === 'org' ? orgProfile(handle) : USER_PROFILES[handle]) ??
   fallbackProfile(actorType, handle)
 
-/**
- * MOCK - would be: const { data } = await api.get(
- *   actorType === 'org' ? `/organizations/${handle}` : `/users/${handle}`)
- * The two collections are spelled out because the handle routes are TYPED:
- * `/users/{username}` and `/organizations/{slug}`, never `/orgs` or `/companies`.
- * Single-entry: resolves the bare DTO (no wrapper). Unknown magic handle -> 404.
- */
 export const fetchProfile = async (
   actorType: 'user' | 'org',
   handle: string,
 ): Promise<ProfileDto> => {
-  await delay(420)
-  if (handle === MAGIC_NOT_FOUND_HANDLE) {
-    return rejectProblem(404, 'Traženi profil ne postoji.', 'Not Found')
-  }
-  return resolveProfile(actorType, handle)
+  const { data } = await api.get<ProfileDto>(
+    actorType === 'org' ? `/organizations/${handle}` : `/users/${handle}`,
+  )
+  return data
 }
 
 /** MOCK. Follows the actor (or unfollows when `next` is false):

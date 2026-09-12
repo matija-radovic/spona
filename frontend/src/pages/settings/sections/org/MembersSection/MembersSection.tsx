@@ -70,8 +70,10 @@ const MembersSection = () => {
 
   const loadAll = useCallback(
     (): Promise<void> =>
-      Promise.all([loadMembers(), loadInvitations()]).then(() => setLoaded(true)),
-    [loadMembers, loadInvitations],
+      Promise.all([loadMembers(), canManage ? loadInvitations() : undefined]).then(() =>
+        setLoaded(true),
+      ),
+    [loadMembers, loadInvitations, canManage],
   )
 
   useEffect(() => {
@@ -176,6 +178,8 @@ const MembersSection = () => {
 
       {loaded && (
         <>
+          {!canManage && <p className="settings-note">{t('settings.readOnly')}</p>}
+
           <div className="settings-block members-block">
             <div className="settings-block-head">
               <h5 className="settings-block-title">
@@ -197,29 +201,29 @@ const MembersSection = () => {
             />
           </div>
 
-          <div className="settings-block">
-            <div className="settings-block-head">
-              <h5 className="settings-block-title">{t('settings.invitations.title')}</h5>
-              {refreshButton}
+          {canManage && (
+            <div className="settings-block">
+              <div className="settings-block-head">
+                <h5 className="settings-block-title">{t('settings.invitations.title')}</h5>
+                {refreshButton}
+              </div>
+
+              <InviteForm viewerRole={settings.viewerRole} onInvite={onInvite} />
+
+              {invitationsError && <p className="settings-inline-error">{invitationsError}</p>}
+
+              {invitations.length === 0 ? (
+                <p className="settings-empty">{t('settings.invitations.empty')}</p>
+              ) : (
+                <InvitationsTable
+                  invitations={invitations}
+                  busyId={busyInvitationId}
+                  onCancel={onCancel}
+                  onDismiss={onDismiss}
+                />
+              )}
             </div>
-
-            {/* EDITOR/RECRUITER read both tables in full and get no form. */}
-            {canManage && <InviteForm viewerRole={settings.viewerRole} onInvite={onInvite} />}
-
-            {invitationsError && <p className="settings-inline-error">{invitationsError}</p>}
-
-            {invitations.length === 0 ? (
-              <p className="settings-empty">{t('settings.invitations.empty')}</p>
-            ) : (
-              <InvitationsTable
-                invitations={invitations}
-                canManage={canManage}
-                busyId={busyInvitationId}
-                onCancel={onCancel}
-                onDismiss={onDismiss}
-              />
-            )}
-          </div>
+          )}
         </>
       )}
     </SectionPanel>

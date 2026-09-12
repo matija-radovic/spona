@@ -214,6 +214,15 @@ export const ORGANIZATIONS: readonly MockOrg[] = [
     'RECRUITER',
   ),
   organization(
+    'quantox',
+    'Quantox',
+    'Quantox Technology d.o.o.',
+    'Softverska kompanija sa razvojnim centrima širom Srbije.',
+    'https://quantox.com',
+    'Čačak',
+    'PUBLISHER',
+  ),
+  organization(
     'levi9',
     'Levi9',
     'Levi9 Global Sourcing d.o.o.',
@@ -281,24 +290,26 @@ export const viewerMemberships = (): readonly MockOrg[] =>
 // server rejects, which is exactly why it travels on the DTO rather than being
 // worked out in the browser (design-choices.md, §Acting Identity).
 
-/** Editing an organization's profile is OWNER/ADMIN, matching the settings gate. */
+/** Editing an organization's profile and settings is OWNER/ADMIN; every member may read them. */
 export const orgViewerCanEdit = (role: OrganizationRole | null): boolean =>
   role === 'OWNER' || role === 'ADMIN'
 
+/** Managing an organization's posts and comments is everyone but a RECRUITER. */
+const orgViewerCanManageContent = (role: OrganizationRole | null): boolean =>
+  role !== null && role !== 'RECRUITER'
+
 /**
- * Whose posts and comments the viewer may edit and delete: their own, and
- * anything published in the name of an organization they own or administer.
- * That is the authority `backend-contract.md` §8 rule 7 has the server compute
- * from the JWT, and it is one function here because a post mock and an activity
- * mock that answer it differently disagree about the same row.
+ * Whose posts and comments the viewer may edit and delete: their own, and every
+ * one published as an organization whose content their role manages, whoever
+ * wrote it. One function, because a post mock and an activity mock that answer it
+ * differently disagree about the same row.
  */
-export const viewerOwnsContentOf = (actorId: string): boolean => {
+export const viewerManagesContentOf = (actorId: string): boolean => {
   if (actorId === VIEWER.id) return true
   const org = findOrgById(actorId)
-  return !!org && orgViewerCanEdit(viewerRoleIn(org.slug))
+  return !!org && orgViewerCanManageContent(viewerRoleIn(org.slug))
 }
 
-/** Managing its postings is everyone but EDITOR: a RECRUITER manages postings and
- *  not the profile, an EDITOR is the reverse. */
+/** Managing an organization's postings and their applications is everyone but an EDITOR. */
 export const orgViewerCanManagePostings = (role: OrganizationRole | null): boolean =>
   role !== null && role !== 'EDITOR'

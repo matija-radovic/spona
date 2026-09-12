@@ -9,7 +9,7 @@
 // uniformly. Magic inputs make the failure/empty paths reachable:
 //   - fetchJobs   : q === "prazno"            -> empty page (0 results)
 //   - fetchJobBySlug : slug === "nepostojeci" -> 404 Not Found
-//   - fetchJobBySlug : slug hashing onto VIEWER_ORG_HANDLE -> viewerCan* true
+//   - fetchJobBySlug : a posting for an org whose postings the viewer manages -> viewerCan* true
 //   - fetchJobBySlug : slug containing "zatvoren" -> CLOSED, "nacrt" -> DRAFT
 //                      (a DRAFT also forces viewerCan* true - see below)
 //   - fetchJobBySlug : slug containing "prijave" -> a CV_DROP posting the viewer
@@ -331,10 +331,6 @@ const SLUG_MARKERS: readonly string[] = [
   MAGIC_CLOSED_SLUG,
   MAGIC_DRAFT_SLUG,
 ]
-/** The org the viewer owns. A job posted for it is the one case the mock can
- *  call the viewer's own, which is what makes the authority flags reachable; the
- *  real API reads them off the JWT and never off the poster's handle. */
-const VIEWER_ORG_HANDLE = 'moja-kompanija'
 /** Twelve statuses, so an owner's pane pages at all, and all three kinds so the
  *  capsule renders. */
 const OWNER_STATUSES: readonly JobStatus[] = [
@@ -349,10 +345,16 @@ const OWNER_STATUSES: readonly JobStatus[] = [
  *  session state; the real API decides it off the caller's token. */
 const VIEWER_OWN_STATUSES: readonly JobStatus[] = ['DRAFT', 'OPEN', 'OPEN']
 
+/** Whether the viewer's live role in an organization manages its postings; the real API
+ *  reads it off the JWT and never off the poster's handle. */
+const viewerManagesPostingsOf = (actorId: string): boolean => {
+  const org = findOrgById(actorId)
+  return !!org && orgViewerCanManagePostings(viewerRoleIn(org.slug))
+}
+
 const ownedStatusesFor = (actorId: string): readonly JobStatus[] | undefined => {
   if (actorId === VIEWER.id) return VIEWER_OWN_STATUSES
-  const org = findOrgById(actorId)
-  return org && orgViewerCanManagePostings(viewerRoleIn(org.slug)) ? OWNER_STATUSES : undefined
+  return viewerManagesPostingsOf(actorId) ? OWNER_STATUSES : undefined
 }
 const MAX_MOCK_PAGES = 3
 
@@ -596,7 +598,7 @@ const deriveJob = (slug: string): JobDetailDto => {
       ? 'DRAFT'
       : 'OPEN'
   const viewerOwns =
-    isInbox || status === 'DRAFT' || (isOrg && createdFor.handle === VIEWER_ORG_HANDLE)
+    isInbox || status === 'DRAFT' || (isOrg && viewerManagesPostingsOf(createdFor.id))
 
   return {
     id,
@@ -668,8 +670,9 @@ const withoutClosedApplyPath = (job: JobDetailDto): JobDetailDto =>
 /**
  * MOCK - would be: const { data } = await api.get(`/jobs/${slug}`)
  * Single-entry: resolves the bare DTO (no wrapper). Unknown slug -> 404.
- * A posting whose slug hashes onto VIEWER_ORG_HANDLE comes back with both
- * authority flags set - the real API reads them off the JWT.
+ * A posting for an organization whose postings the viewer manages (every role but
+ * EDITOR) comes back with both authority flags set - the real API reads them
+ * off the JWT.
  *
  * A DRAFT always comes back with them too, and that is not a shortcut: the real
  * route answers 404 for a draft to any caller who cannot edit it, so "a draft

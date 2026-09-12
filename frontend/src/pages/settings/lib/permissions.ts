@@ -1,8 +1,9 @@
 import type { OrganizationRole, OrgMemberDto } from '@utils/api/organizations'
 
 const ASSIGNABLE: Readonly<Record<OrganizationRole, readonly OrganizationRole[]>> = {
-  OWNER: ['ADMIN', 'EDITOR', 'RECRUITER'],
-  ADMIN: ['EDITOR', 'RECRUITER'],
+  OWNER: ['ADMIN', 'PUBLISHER', 'EDITOR', 'RECRUITER'],
+  ADMIN: ['PUBLISHER', 'EDITOR', 'RECRUITER'],
+  PUBLISHER: [],
   EDITOR: [],
   RECRUITER: [],
 }
@@ -26,6 +27,6 @@ export const canManageMember = (
   if (member.username === viewerUsername) return false
   if (member.role === 'OWNER') return false
   if (viewerRole === 'OWNER') return true
-  if (viewerRole === 'ADMIN') return member.role === 'EDITOR' || member.role === 'RECRUITER'
+  if (viewerRole === 'ADMIN') return ASSIGNABLE.ADMIN.includes(member.role)
   return false
 }

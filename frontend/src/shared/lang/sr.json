@@ -929,6 +929,7 @@
     "roles": {
       "owner": "Vlasnik",
       "admin": "Administrator",
+      "publisher": "Urednik i regruter",
       "editor": "Urednik",
       "recruiter": "Regruter"
     }
@@ -1058,6 +1059,7 @@
     "roles": {
       "OWNER": "Vlasnik",
       "ADMIN": "Administrator",
+      "PUBLISHER": "Urednik i regruter",
       "EDITOR": "Urednik",
       "RECRUITER": "Regruter"
     }
