@@ -25,7 +25,10 @@ const RequestPasswordReset = () => {
       await requestPasswordReset(email)
       setSent(true)
     } catch (caught) {
-      setError('email', { message: parseProblem(caught).detail || t('errors.serverError') })
+      const { status } = parseProblem(caught)
+      setError('email', {
+        message: status === 422 ? t('errors.invalidEmail') : t('errors.serverError'),
+      })
     }
   })
 
