@@ -65,6 +65,11 @@ public class User extends Actor {
         return ActorType.USER;
     }
 
+    @Override
+    public String resolveDisplayName() {
+        return fullName == null || fullName.isBlank() ? username : fullName;
+    }
+
     public String getUsername() {
         return username;
     }

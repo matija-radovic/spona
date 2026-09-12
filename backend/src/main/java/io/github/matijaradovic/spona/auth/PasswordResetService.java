@@ -67,7 +67,7 @@ public class PasswordResetService {
                 Instant.now().plus(PasswordResetToken.LIFETIME)));
 
         String address = user.getEmail();
-        String recipient = displayName(user);
+        String recipient = user.resolveDisplayName();
         String url = link(plaintext);
         afterCommit(() -> mail.send(address, SUBJECT, TEMPLATE,
                 Map.of("displayName", recipient, "link", url)));
@@ -93,10 +93,5 @@ public class PasswordResetService {
 
     private static String normalize(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
-    }
-
-    private static String displayName(User user) {
-        String fullName = user.getFullName();
-        return fullName == null || fullName.isBlank() ? user.getUsername() : fullName;
     }
 }

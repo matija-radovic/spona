@@ -55,7 +55,7 @@ public class VerificationService {
         tokens.save(new EmailVerificationToken(user, purpose, email, SecureTokens.hash(plaintext),
                 Instant.now().plus(purpose.lifetime())));
 
-        String recipient = displayName(user);
+        String recipient = user.resolveDisplayName();
         String url = link(plaintext);
         afterCommit(() -> mail.sendVerification(email, recipient, url));
     }
@@ -87,7 +87,7 @@ public class VerificationService {
         }
 
         user.setEmail(requested);
-        String recipient = displayName(user);
+        String recipient = user.resolveDisplayName();
         afterCommit(() -> mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
                 Map.of("displayName", recipient, "newEmail", requested)));
     }
@@ -109,11 +109,5 @@ public class VerificationService {
     private String link(String plaintext) {
         String base = app.url();
         return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/verify/" + plaintext;
-    }
-
-    // gets name, if none uses username as fallback
-    private static String displayName(User user) {
-        String fullName = user.getFullName();
-        return fullName == null || fullName.isBlank() ? user.getUsername() : fullName;
     }
 }

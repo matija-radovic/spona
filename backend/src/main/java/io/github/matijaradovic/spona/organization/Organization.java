@@ -60,6 +60,11 @@ public class Organization extends Actor {
         return ActorType.ORG;
     }
 
+    @Override
+    public String resolveDisplayName() {
+        return displayName;
+    }
+
     public String getSlug() {
         return slug;
     }

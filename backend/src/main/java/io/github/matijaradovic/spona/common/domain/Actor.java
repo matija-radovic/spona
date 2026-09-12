@@ -37,6 +37,8 @@ public abstract class Actor {
     /** discriminant */
     public abstract ActorType getActorType();
 
+    public abstract String resolveDisplayName();
+
     public UUID getId() {
         return id;
     }
