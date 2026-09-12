@@ -62,10 +62,49 @@
       color: c.$text-primary;
     }
 
-    .login-notice-sent {
+    .login-notice-resend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: c.$text-muted;
+    }
+
+    .login-notice-btn {
+      padding: 0;
+      font: inherit;
+      color: c.$accent;
+      font-weight: 600;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        text-decoration: underline;
+      }
+
+      &:disabled {
+        color: c.$text-muted;
+        cursor: default;
+      }
+    }
+
+    .login-notice-status {
       margin: 0;
       font-size: 0.8rem;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    .login-notice-sent {
       color: c.$success;
+    }
+
+    .login-notice-failed {
+      color: c.$danger-text;
     }
   }
 

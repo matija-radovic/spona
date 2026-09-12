@@ -133,9 +133,13 @@
       "createLater": "Napravi kasnije"
     },
     "notVerified": {
-      "body": "Vaš nalog još nije verifikovan. Otvorite link koji smo poslali na vašu email adresu.",
+      "body": "Vaš nalog još nije verifikovan. Poslat Vam je novi link za verifikovanje email adrese vašeg naloga. Otvorite ga kako bi ste se verifikovali.",
+      "noEmail": "Nije stigao email?",
+      "resend": "Pošaljite verifikacioni email ponovo",
+      "resendIn": "Pošaljite ponovo ({{seconds}}s)",
       "sending": "Slanje...",
-      "sent": "Link je poslat. Proverite email."
+      "sent": "Link je poslat. Proverite email.",
+      "failed": "Slanje nije uspelo. Pokušajte ponovo."
     },
     "registerDone": {
       "title": "Proverite email",
