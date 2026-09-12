@@ -73,8 +73,6 @@ public class AuthService {
         return RegisterResponse.checkYourInbox(email);
     }
 
-    /** Credentials first and verification status second */
-    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         String identifier = request.identifier().trim();
         User user = users.findByUsername(identifier)
@@ -88,6 +86,7 @@ public class AuthService {
             throw new UnauthorizedException(BAD_CREDENTIALS);
         }
         if (user.getEmailVerifiedAt() == null) {
+            verification.issue(user, EmailVerificationPurpose.SIGNUP, user.getEmail());
             throw new ForbiddenException(UNVERIFIED, ProblemTypes.EMAIL_NOT_VERIFIED);
         }
 

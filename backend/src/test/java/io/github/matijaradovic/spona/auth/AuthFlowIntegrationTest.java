@@ -306,6 +306,23 @@ class AuthFlowIntegrationTest {
         mvc.perform(login("cekanje", "Lozinka123"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.type").value("/problems/email-not-verified"));
+
+        assertThat(tokens.findByUserAndPurposeAndConsumedAtIsNull(user, EmailVerificationPurpose.SIGNUP))
+                .as("the 403 arm mails a fresh link, so the client never has to ask for one")
+                .isPresent();
+    }
+
+    @Test
+    void aWrongPasswordOnAnUnverifiedAccountWritesNoToken() throws Exception {
+        User user = TestFixtures.user("tisina");
+        user.setPasswordDigest(passwords.encode("Lozinka123"));
+        users.saveAndFlush(user);
+        clearContext();
+
+        mvc.perform(login("tisina", "Pogresna123")).andExpect(status().isUnauthorized());
+
+        assertThat(tokens.findByUserAndPurposeAndConsumedAtIsNull(user, EmailVerificationPurpose.SIGNUP))
+                .isEmpty();
     }
 
     /** Answering the unknown arm differently would turn login into an account-existence oracle. */

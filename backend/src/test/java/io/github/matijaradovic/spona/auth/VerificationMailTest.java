@@ -1,6 +1,7 @@
 package io.github.matijaradovic.spona.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
@@ -31,17 +33,17 @@ import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 
 import jakarta.mail.internet.MimeMessage;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
+/** Not `@Transactional`: the mail waits for a commit, so a rolled-back test would send nothing. */
 @SpringBootTest
 @Import(ContainersConfig.class)
-@Transactional
 class VerificationMailTest {
 
     private static final int SMTP_PORT = freePort();
 
     private static final Pattern LINKED_TOKEN = Pattern.compile("/verify/([A-Za-z0-9_-]{43})");
+
+    private static final List<String> WRITTEN = List.of("posta", "krug", "pad");
 
     @RegisterExtension
     static final GreenMailExtension smtp = new GreenMailExtension(ServerSetup.SMTP.port(SMTP_PORT));
@@ -61,13 +63,19 @@ class VerificationMailTest {
     @Autowired
     private AppProperties app;
 
-    @PersistenceContext
-    private EntityManager entities;
+    @Autowired
+    private TransactionTemplate transactions;
 
     @DynamicPropertySource
     static void pointMailAtGreenMail(DynamicPropertyRegistry registry) {
         registry.add("spring.mail.host", () -> "127.0.0.1");
         registry.add("spring.mail.port", () -> SMTP_PORT);
+    }
+
+    /** These rows really commit, so the class removes them rather than rolling them back. */
+    @AfterEach
+    void removeTheCommittedAccounts() {
+        WRITTEN.forEach(username -> users.findByUsername(username).ifPresent(users::delete));
     }
 
     @Test
@@ -96,10 +104,20 @@ class VerificationMailTest {
                 .isNotEqualTo(plaintext);
 
         verification.confirm(plaintext);
-        entities.flush();
-        entities.clear();
 
         assertThat(users.findById(user.getId()).orElseThrow().getEmailVerifiedAt()).isNotNull();
+    }
+
+    /** The whole point of waiting for the commit: no inbox holds a link to a row that never landed. */
+    @Test
+    void aRegistrationThatRollsBackMailsNothing() {
+        assertThatThrownBy(() -> transactions.executeWithoutResult(status -> {
+            auth.register(request("pad", "pad@example.com"));
+            throw new IllegalStateException("rolled back on purpose");
+        })).isInstanceOf(IllegalStateException.class);
+
+        assertThat(smtp.waitForIncomingEmail(1_000, 1)).isFalse();
+        assertThat(users.findByUsername("pad")).isEmpty();
     }
 
     private static RegisterRequest request(String username, String email) {

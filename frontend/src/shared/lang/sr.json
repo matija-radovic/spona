@@ -134,7 +134,6 @@
     },
     "notVerified": {
       "body": "Vaš nalog još nije verifikovan. Otvorite link koji smo poslali na vašu email adresu.",
-      "resend": "Pošalji link ponovo",
       "sending": "Slanje...",
       "sent": "Link je poslat. Proverite email."
     },

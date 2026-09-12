@@ -9,7 +9,7 @@ import { motion } from 'motion/react'
 import { FieldShell, Input } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { useUser } from '@shared/contexts'
-import { loginRequest, resendVerification } from '@utils/api/auth'
+import { loginRequest } from '@utils/api/auth'
 import { parseProblem } from '@utils/api/types'
 
 const buildSchema = (t: (key: string) => string) =>
@@ -20,27 +20,22 @@ const buildSchema = (t: (key: string) => string) =>
 
 type LoginData = z.infer<ReturnType<typeof buildSchema>>
 
-type ResendState = 'idle' | 'sending' | 'sent'
-
 const Login = () => {
   const { t } = useTranslation()
   const { login } = useUser()
   const [serverError, setServerError] = useState<string | null>(null)
   const [notVerified, setNotVerified] = useState(false)
-  const [resend, setResend] = useState<ResendState>('idle')
 
   const schema = useMemo(() => buildSchema(t), [t])
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors, dirtyFields, isSubmitting },
   } = useForm<LoginData>({ resolver: zodResolver(schema), mode: 'onChange' })
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null)
     setNotVerified(false)
-    setResend('idle')
     try {
       const { token, user } = await loginRequest(values)
       login(
@@ -61,15 +56,6 @@ const Login = () => {
       }
     }
   })
-
-  const onResend = async () => {
-    setResend('sending')
-    try {
-      await resendVerification(getValues('identifier'))
-    } finally {
-      setResend('sent')
-    }
-  }
 
   return (
     <div className="login">
@@ -114,15 +100,6 @@ const Login = () => {
         {notVerified ? (
           <div className="login-notice">
             <p className="login-notice-text">{t('auth.notVerified.body')}</p>
-            <Button
-              type="button"
-              variant={ButtonVariant.SECONDARY}
-              onClick={onResend}
-              disabled={resend === 'sending'}
-            >
-              {resend === 'sending' ? t('auth.notVerified.sending') : t('auth.notVerified.resend')}
-            </Button>
-            {resend === 'sent' && <p className="login-notice-sent">{t('auth.notVerified.sent')}</p>}
           </div>
         ) : (
           serverError && <p className="login-error">{serverError}</p>

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import io.github.matijaradovic.spona.auth.dto.AuthResponse;
 import io.github.matijaradovic.spona.auth.dto.LoginRequest;
 import io.github.matijaradovic.spona.auth.jwt.JwtService;
+import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
@@ -97,8 +99,7 @@ class AuthServiceLoginTest {
 
     @Test
     void refusesAnUnverifiedAccountWithTheTypeTheFormBranchesOn() {
-        User user = TestFixtures.userWithId("nepotvrdjen", UUID.randomUUID());
-        user.setPasswordDigest(passwords.encode(PASSWORD));
+        User user = unverified("nepotvrdjen");
         when(users.findByUsername("nepotvrdjen")).thenReturn(Optional.of(user));
 
         assertThatThrownBy(() -> auth.login(new LoginRequest("nepotvrdjen", PASSWORD)))
@@ -107,14 +108,49 @@ class AuthServiceLoginTest {
                         .isEqualTo(ProblemTypes.EMAIL_NOT_VERIFIED));
     }
 
+    /** The address is on the row, so the `403` arm mails a link without the client naming one. */
+    @Test
+    void theUnverifiedArmIssuesAFreshLinkToTheAddressOnTheRow() {
+        User user = unverified("nepotvrdjen");
+        when(users.findByUsername("nepotvrdjen")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> auth.login(new LoginRequest("nepotvrdjen", PASSWORD)))
+                .isInstanceOf(ForbiddenException.class);
+
+        verify(verification).issue(user, EmailVerificationPurpose.SIGNUP, "nepotvrdjen@example.com");
+    }
+
     @Test
     void theUnverifiedArmIsOnlyReachedAfterThePasswordIsProven() {
-        User user = TestFixtures.userWithId("nepotvrdjen", UUID.randomUUID());
-        user.setPasswordDigest(passwords.encode(PASSWORD));
+        User user = unverified("nepotvrdjen");
         when(users.findByUsername("nepotvrdjen")).thenReturn(Optional.of(user));
 
         assertThatThrownBy(() -> auth.login(new LoginRequest("nepotvrdjen", "Pogresna123")))
                 .isInstanceOf(UnauthorizedException.class);
+    }
+
+    /** A rejected credential must mail nothing, or login becomes a way to flood someone's inbox. */
+    @Test
+    void nothingIsMailedUnlessThePasswordWasProvenAndTheAccountIsUnverified() {
+        User user = unverified("nepotvrdjen");
+        when(users.findByUsername("nepotvrdjen")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> auth.login(new LoginRequest("nepotvrdjen", "Pogresna123")))
+                .isInstanceOf(UnauthorizedException.class);
+        assertThatThrownBy(() -> auth.login(new LoginRequest("niko", PASSWORD)))
+                .isInstanceOf(UnauthorizedException.class);
+
+        verifyNoInteractions(verification);
+    }
+
+    @Test
+    void aVerifiedLoginMailsNothing() {
+        User user = verified("marko");
+        when(users.findByUsername("marko")).thenReturn(Optional.of(user));
+
+        auth.login(new LoginRequest("marko", PASSWORD));
+
+        verifyNoInteractions(verification);
     }
 
     @Test
@@ -129,9 +165,14 @@ class AuthServiceLoginTest {
     }
 
     private User verified(String username) {
+        User user = unverified(username);
+        user.setEmailVerifiedAt(Instant.now());
+        return user;
+    }
+
+    private User unverified(String username) {
         User user = TestFixtures.userWithId(username, UUID.randomUUID());
         user.setPasswordDigest(passwords.encode(PASSWORD));
-        user.setEmailVerifiedAt(Instant.now());
         return user;
     }
 }

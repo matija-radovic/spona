@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
@@ -53,7 +55,9 @@ public class VerificationService {
         tokens.save(new EmailVerificationToken(user, purpose, email, SecureTokens.hash(plaintext),
                 Instant.now().plus(purpose.lifetime())));
 
-        mail.sendVerification(email, displayName(user), link(plaintext));
+        String recipient = displayName(user);
+        String url = link(plaintext);
+        afterCommit(() -> mail.sendVerification(email, recipient, url));
     }
 
     /** Spends a token and applies what its purpose means */
@@ -83,8 +87,23 @@ public class VerificationService {
         }
 
         user.setEmail(requested);
-        mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
-                Map.of("displayName", displayName(user), "newEmail", requested));
+        String recipient = displayName(user);
+        afterCommit(() -> mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
+                Map.of("displayName", recipient, "newEmail", requested)));
+    }
+
+    private static void afterCommit(Runnable send) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            send.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+
+            @Override
+            public void afterCommit() {
+                send.run();
+            }
+        });
     }
 
     private String link(String plaintext) {
