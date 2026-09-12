@@ -26,6 +26,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationTokenRepository;
+import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.support.ContainersConfig;
 import io.github.matijaradovic.spona.support.TestFixtures;
@@ -49,6 +50,9 @@ class AuthFlowIntegrationTest {
 
     @Autowired
     private EmailVerificationTokenRepository tokens;
+
+    @Autowired
+    private PasswordResetTokenRepository resets;
 
     @Autowired
     private PasswordEncoder passwords;
@@ -361,6 +365,116 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
+    void passwordResetAnswersAKnownAndAnUnknownAddressIdentically() throws Exception {
+        User known = verified("zaboravio", "Lozinka123");
+
+        MvcResult registered = mvc.perform(passwordReset("zaboravio@example.com")).andReturn();
+        MvcResult stranger = mvc.perform(passwordReset("niko@example.com")).andReturn();
+
+        assertThat(registered.getResponse().getStatus())
+                .isEqualTo(stranger.getResponse().getStatus())
+                .isEqualTo(204);
+        assertThat(registered.getResponse().getContentAsString())
+                .isEqualTo(stranger.getResponse().getContentAsString())
+                .isEmpty();
+
+        clearContext();
+        assertThat(resets.findByUserAndConsumedAtIsNull(known)).hasSize(1);
+    }
+
+    @Test
+    void passwordResetWritesALiveRowForAnUnverifiedAccountToo() throws Exception {
+        User user = users.saveAndFlush(TestFixtures.user("nepotvrdjen"));
+        clearContext();
+
+        mvc.perform(passwordReset("nepotvrdjen@example.com")).andExpect(status().isNoContent());
+
+        clearContext();
+        assertThat(resets.findByUserAndConsumedAtIsNull(user)).hasSize(1);
+    }
+
+    @Test
+    void aSecondRequestLeavesTheFirstLinkAliveBesideIt() throws Exception {
+        User user = verified("dvaput", "Lozinka123");
+
+        mvc.perform(passwordReset("dvaput@example.com")).andExpect(status().isNoContent());
+        mvc.perform(passwordReset("DVAPUT@Example.com")).andExpect(status().isNoContent());
+
+        clearContext();
+        assertThat(resets.findByUserAndConsumedAtIsNull(user)).hasSize(2);
+    }
+
+    @Test
+    void resetMakesTheNewPasswordWorkAndTheOldOneStop() throws Exception {
+        User user = verified("nova", "StaraLozinka1");
+
+        mvc.perform(passwordReset("nova@example.com")).andExpect(status().isNoContent());
+        rewriteLiveReset(user, "reset-token");
+
+        mvc.perform(confirmReset("reset-token", "NovaLozinka1")).andExpect(status().isNoContent());
+        clearContext();
+
+        mvc.perform(login("nova", "NovaLozinka1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("nova"));
+        mvc.perform(login("nova", "StaraLozinka1")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void aResetSpendsEveryLiveLinkOfThatUser() throws Exception {
+        User user = verified("sve", "Lozinka123");
+        resets.saveAndFlush(TestFixtures.resetToken(user, "prvi"));
+        resets.saveAndFlush(TestFixtures.resetToken(user, "drugi"));
+        resets.saveAndFlush(TestFixtures.resetToken(user, "treci"));
+        clearContext();
+
+        mvc.perform(confirmReset("drugi", "NovaLozinka1")).andExpect(status().isNoContent());
+        clearContext();
+
+        assertThat(resets.findByUserAndConsumedAtIsNull(user)).isEmpty();
+        assertThat(resets.findByTokenHash(SecureTokens.hash("prvi")).orElseThrow().getConsumedAt())
+                .isNotNull();
+        mvc.perform(confirmReset("prvi", "JosJedna1")).andExpect(status().isUnprocessableContent());
+    }
+
+    @Test
+    void aResetLeavesATokenMintedBeforeItUsable() throws Exception {
+        User user = verified("sesija", "StaraLozinka1");
+        String minted = tokenFrom(mvc.perform(login("sesija", "StaraLozinka1")).andReturn());
+        resets.saveAndFlush(TestFixtures.resetToken(user, "sesija-token"));
+        clearContext();
+
+        mvc.perform(confirmReset("sesija-token", "NovaLozinka1")).andExpect(status().isNoContent());
+        clearContext();
+
+        mvc.perform(get("/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + minted))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("sesija"));
+    }
+
+    @Test
+    void aResetDoesNotVerifyTheAddress() throws Exception {
+        User user = users.saveAndFlush(TestFixtures.user("nestampano"));
+        resets.saveAndFlush(TestFixtures.resetToken(user, "nestampano-token"));
+        clearContext();
+
+        mvc.perform(confirmReset("nestampano-token", "NovaLozinka1")).andExpect(status().isNoContent());
+        clearContext();
+
+        assertThat(users.findById(user.getId()).orElseThrow().getEmailVerifiedAt()).isNull();
+        mvc.perform(login("nestampano", "NovaLozinka1"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("/problems/email-not-verified"));
+    }
+
+    @Test
+    void confirmRefusesAResetTokenNobodyIssued() throws Exception {
+        mvc.perform(confirmReset("izmisljen", "NovaLozinka1"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.token").isString());
+    }
+
+    @Test
     void authMeServesTheFieldListTheClientReads() throws Exception {
         User user = verified("profil", "Lozinka123");
         user.setFullName("Marko Markovic");
@@ -396,6 +510,17 @@ class AuthFlowIntegrationTest {
     private void rewriteLiveLink(User user, String plaintext) {
         entities.createNativeQuery("""
                 UPDATE email_verification_tokens SET token_hash = :hash
+                 WHERE user_id = :id AND consumed_at IS NULL""")
+                .setParameter("hash", SecureTokens.hash(plaintext))
+                .setParameter("id", user.getId())
+                .executeUpdate();
+        clearContext();
+    }
+
+    /** The reset table's live index is plain, so this rewrites every live row the user holds. */
+    private void rewriteLiveReset(User user, String plaintext) {
+        entities.createNativeQuery("""
+                UPDATE password_reset_tokens SET token_hash = :hash
                  WHERE user_id = :id AND consumed_at IS NULL""")
                 .setParameter("hash", SecureTokens.hash(plaintext))
                 .setParameter("id", user.getId())
@@ -448,5 +573,19 @@ class AuthFlowIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"email": "%s"}""".formatted(email));
+    }
+
+    private static RequestBuilder passwordReset(String email) {
+        return post("/auth/password-reset")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email": "%s"}""".formatted(email));
+    }
+
+    private static RequestBuilder confirmReset(String token, String newPassword) {
+        return post("/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"token": "%s", "newPassword": "%s"}""".formatted(token, newPassword));
     }
 }

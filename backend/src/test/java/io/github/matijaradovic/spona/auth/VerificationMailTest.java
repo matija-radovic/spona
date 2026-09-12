@@ -72,7 +72,6 @@ class VerificationMailTest {
         registry.add("spring.mail.port", () -> SMTP_PORT);
     }
 
-    /** These rows really commit, so the class removes them rather than rolling them back. */
     @AfterEach
     void removeTheCommittedAccounts() {
         WRITTEN.forEach(username -> users.findByUsername(username).ifPresent(users::delete));
@@ -108,7 +107,6 @@ class VerificationMailTest {
         assertThat(users.findById(user.getId()).orElseThrow().getEmailVerifiedAt()).isNotNull();
     }
 
-    /** The whole point of waiting for the commit: no inbox holds a link to a row that never landed. */
     @Test
     void aRegistrationThatRollsBackMailsNothing() {
         assertThatThrownBy(() -> transactions.executeWithoutResult(status -> {

@@ -8,6 +8,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
+import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.organization.Organization;
@@ -36,6 +37,12 @@ public final class TestFixtures {
             String email, String plaintext) {
         return new EmailVerificationToken(user, purpose, email, SecureTokens.hash(plaintext),
                 Instant.now().plus(purpose.lifetime()));
+    }
+
+    /** Live reset link, unlike a verification one may sit beside others just like it */
+    public static PasswordResetToken resetToken(User user, String plaintext) {
+        return new PasswordResetToken(user, SecureTokens.hash(plaintext),
+                Instant.now().plus(PasswordResetToken.LIFETIME));
     }
 
     public static Organization organization(String slug) {

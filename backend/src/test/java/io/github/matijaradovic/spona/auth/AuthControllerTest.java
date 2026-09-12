@@ -2,6 +2,8 @@ package io.github.matijaradovic.spona.auth;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -33,6 +35,7 @@ import io.github.matijaradovic.spona.auth.dto.RegisterRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
+import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.support.TestFixtures;
@@ -56,9 +59,10 @@ class AuthControllerTest {
     private static final UUID PRINCIPAL_ID = UUID.fromString("11111111-2222-3333-4444-555555555555");
 
     private final AuthService auth = mock(AuthService.class);
+    private final PasswordResetService reset = mock(PasswordResetService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new AuthController(auth))
+            .standaloneSetup(new AuthController(auth, reset))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
@@ -230,6 +234,70 @@ class AuthControllerTest {
     }
 
     @Test
+    void passwordResetAnswersTheSame204ToEveryValidAddress() throws Exception {
+        mvc.perform(passwordReset("registrovan@example.com"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        mvc.perform(passwordReset("niko@example.com"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        verify(reset).request("registrovan@example.com");
+        verify(reset).request("niko@example.com");
+    }
+
+    @Test
+    void passwordResetRefusesAMalformedAddress() throws Exception {
+        mvc.perform(passwordReset("not-an-address"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.email").isString());
+
+        verifyNoInteractions(reset);
+    }
+
+    @Test
+    void confirmAnswers204AndHandsTheServiceBothHalves() throws Exception {
+        mvc.perform(confirmReset("a-token", "NovaLozinka1"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        verify(reset).confirm("a-token", "NovaLozinka1");
+    }
+
+    @Test
+    void confirmRefusesABlankToken() throws Exception {
+        mvc.perform(confirmReset("   ", "NovaLozinka1"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.token").isString());
+    }
+
+    @Test
+    void confirmRefusesAPasswordShorterThanEight() throws Exception {
+        mvc.perform(confirmReset("a-token", "Loz1"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.newPassword").isString());
+    }
+
+    @Test
+    void confirmRefusesAPasswordCarryingACharacterOutsideTheSet() throws Exception {
+        mvc.perform(confirmReset("a-token", "Nova Lozinka1"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.newPassword").isString());
+    }
+
+    @Test
+    void confirmAnswers422WithTheMessageUnderErrorsToken() throws Exception {
+        doThrow(UnprocessableException.on("token", "Link is invalid or has expired."))
+                .when(reset).confirm(anyString(), anyString());
+
+        mvc.perform(confirmReset("mrtav-token", "NovaLozinka1"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.token").value("Link is invalid or has expired."))
+                .andExpect(jsonPath("$.instance").value("/auth/password-reset/confirm"));
+    }
+
+    @Test
     void meServesEveryFieldTheClientReadsOffTheSignedInRow() throws Exception {
         signedInAs(principal());
 
@@ -299,6 +367,20 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"email": "%s"}""".formatted(email));
+    }
+
+    private static RequestBuilder passwordReset(String email) {
+        return post("/auth/password-reset")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email": "%s"}""".formatted(email));
+    }
+
+    private static RequestBuilder confirmReset(String token, String newPassword) {
+        return post("/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"token": "%s", "newPassword": "%s"}""".formatted(token, newPassword));
     }
 
     private static String body() {

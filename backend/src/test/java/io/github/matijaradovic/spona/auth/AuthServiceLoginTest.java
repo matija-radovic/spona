@@ -108,7 +108,6 @@ class AuthServiceLoginTest {
                         .isEqualTo(ProblemTypes.EMAIL_NOT_VERIFIED));
     }
 
-    /** The address is on the row, so the `403` arm mails a link without the client naming one. */
     @Test
     void theUnverifiedArmIssuesAFreshLinkToTheAddressOnTheRow() {
         User user = unverified("nepotvrdjen");

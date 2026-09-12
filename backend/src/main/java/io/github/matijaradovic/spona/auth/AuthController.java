@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.matijaradovic.spona.auth.dto.AuthResponse;
 import io.github.matijaradovic.spona.auth.dto.LoginRequest;
+import io.github.matijaradovic.spona.auth.dto.PasswordResetConfirmRequest;
+import io.github.matijaradovic.spona.auth.dto.PasswordResetRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
 import io.github.matijaradovic.spona.auth.dto.ResendRequest;
@@ -25,9 +27,11 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService auth;
+    private final PasswordResetService reset;
 
-    public AuthController(AuthService auth) {
+    public AuthController(AuthService auth, PasswordResetService reset) {
         this.auth = auth;
+        this.reset = reset;
     }
 
     @PostMapping("/register")
@@ -52,6 +56,18 @@ public class AuthController {
     @PostMapping("/login")
     AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return auth.login(request);
+    }
+
+    @PostMapping("/password-reset")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        reset.request(request.email());
+    }
+
+    @PostMapping("/password-reset/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        reset.confirm(request.token(), request.newPassword());
     }
 
     /** The filter loaded and checked already, so the principal is never null here. */
