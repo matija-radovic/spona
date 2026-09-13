@@ -33,7 +33,7 @@ import type { OrganizationRole } from './organizations'
 export const userIdFor = (username: string): string =>
   PEOPLE.find((person) => person.username === username)?.id ?? `user-${username}`
 
-export const orgIdFor = (slug: string): string => `org-${slug}`
+const orgIdFor = (slug: string): string => `org-${slug}`
 
 // ── People ────────────────────────────────────────────────────────────────────
 
@@ -71,15 +71,8 @@ export const PEOPLE: readonly MockPerson[] = [
 
 export const VIEWER = PEOPLE[0]
 
-export const findPerson = (username: string): MockPerson | undefined =>
+const findPerson = (username: string): MockPerson | undefined =>
   PEOPLE.find((row) => row.username === username)
-
-/** The id-keyed lookup, beside `findOrgById`. It exists because the
- *  `<actorType>-<handle>` rule cannot be inverted for `bez-oglasa`, whose id
- *  carries the `-empty` suffix, so a resolver going from an id back to a handle
- *  has to consult the fixtures before it falls back to the rule. */
-export const findPersonById = (id: string): MockPerson | undefined =>
-  PEOPLE.find((row) => row.id === id)
 
 export const personRef = (username: string): ActorRefDto => {
   const row = findPerson(username)
@@ -235,7 +228,7 @@ export const ORGANIZATIONS: readonly MockOrg[] = [
   ),
 ]
 
-export const findOrg = (slug: string): MockOrg | undefined =>
+const findOrg = (slug: string): MockOrg | undefined =>
   ORGANIZATIONS.find((row) => row.slug === slug)
 
 export const findOrgById = (id: string): MockOrg | undefined =>
@@ -270,10 +263,6 @@ export const viewerRoleIn = (slug: string): OrganizationRole | null =>
 // may derive them: `viewerCanManageJobPostings` gates request parameters the
 // server rejects, which is exactly why it travels on the DTO rather than being
 // worked out in the browser (design-choices.md, §Acting Identity).
-
-/** Editing an organization's profile and settings is OWNER/ADMIN; every member may read them. */
-export const orgViewerCanEdit = (role: OrganizationRole | null): boolean =>
-  role === 'OWNER' || role === 'ADMIN'
 
 /** Managing an organization's posts and comments is everyone but a RECRUITER. */
 const orgViewerCanManageContent = (role: OrganizationRole | null): boolean =>

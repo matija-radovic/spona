@@ -6,6 +6,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +19,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,8 +29,11 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import io.github.matijaradovic.spona.actor.dto.FollowActorDto;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
+import io.github.matijaradovic.spona.actor.follow.FollowService;
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
+import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
@@ -37,9 +46,11 @@ class ActorControllerTest {
     private static final UUID ORG_ID = UUID.fromString("00000000-0000-4000-8000-0000000000c4");
 
     private final PrivacyService privacy = mock(PrivacyService.class);
+    private final ActorService actorsService = mock(ActorService.class);
+    private final FollowService followService = mock(FollowService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new ActorController(privacy))
+            .standaloneSetup(new ActorController(privacy, actorsService, followService))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
@@ -55,6 +66,67 @@ class ActorControllerTest {
     @AfterEach
     void clearPrincipal() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void followIsA204ForTheCaller() throws Exception {
+        mvc.perform(put("/actors/" + ORG_ID + "/follow"))
+                .andExpect(status().isNoContent());
+
+        verify(followService).follow(ORG_ID, caller);
+    }
+
+    @Test
+    void unfollowIsA204ForTheCaller() throws Exception {
+        mvc.perform(delete("/actors/" + ORG_ID + "/follow"))
+                .andExpect(status().isNoContent());
+
+        verify(followService).unfollow(ORG_ID, caller);
+    }
+
+    @Test
+    void searchDefaultsToAnEmptyQueryOnTheFirstPageOfTwenty() throws Exception {
+        Pageable first = PageRequest.of(0, 20);
+        when(actorsService.search("", "org", first, caller)).thenReturn(new PageImpl<>(List.of(), first, 0));
+
+        mvc.perform(get("/actors").param("type", "org"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
+    void searchWithoutATypeIsA400() throws Exception {
+        mvc.perform(get("/actors").param("q", "ana"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(actorsService);
+    }
+
+    @Test
+    void followersPassQAndThePageAndServeTheCallersEdge() throws Exception {
+        Pageable second = PageRequest.of(1, 5);
+        FollowActorDto row = FollowActorDto.from(ActorRefDto.from(TestFixtures.userWithId("ana", CALLER_ID)), true);
+        when(followService.followers(ORG_ID, "ana", second, caller))
+                .thenReturn(new PageImpl<>(List.of(row), second, 6));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/followers").param("q", "ana").param("page", "2").param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.totalElements").value(6))
+                .andExpect(jsonPath("$.content[0].handle").value("ana"))
+                .andExpect(jsonPath("$.content[0].actorType").value("user"))
+                .andExpect(jsonPath("$.content[0].isFollowedByViewer").value(true));
+    }
+
+    @Test
+    void followingOfAnOrganizationIsA404() throws Exception {
+        when(followService.following(eq(ORG_ID), eq(""), any(), eq(caller)))
+                .thenThrow(new NotFoundException("An organization follows nobody."));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/following"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
