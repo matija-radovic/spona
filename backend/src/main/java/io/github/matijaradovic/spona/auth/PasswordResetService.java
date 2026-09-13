@@ -67,13 +67,8 @@ public class PasswordResetService {
 
         String address = user.getEmail();
         String recipient = user.resolveDisplayName();
-        String url = link(plaintext);
+        String url = app.link("/reset/" + plaintext);
         TransactionHooks.afterCommit(() -> mail.send(address, SUBJECT, TEMPLATE,
                 Map.of("displayName", recipient, "link", url)));
-    }
-
-    private String link(String plaintext) {
-        String base = app.url();
-        return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/reset/" + plaintext;
     }
 }

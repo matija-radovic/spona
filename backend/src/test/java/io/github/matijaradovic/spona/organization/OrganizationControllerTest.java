@@ -26,6 +26,7 @@ import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
@@ -38,7 +39,7 @@ class OrganizationControllerTest {
 
     private final MockMvc mvc = MockMvcBuilders
             .standaloneSetup(new OrganizationController(actors, mock(OrganizationService.class),
-                    mock(MembershipService.class)))
+                    mock(MembershipService.class), mock(InvitationService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();

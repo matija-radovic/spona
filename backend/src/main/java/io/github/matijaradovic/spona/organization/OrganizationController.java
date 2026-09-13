@@ -19,13 +19,16 @@ import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
 import io.github.matijaradovic.spona.organization.dto.ChangeRoleRequest;
 import io.github.matijaradovic.spona.organization.dto.ChangeSlugRequest;
+import io.github.matijaradovic.spona.organization.dto.CreateInvitationRequest;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.DeleteOrganizationRequest;
+import io.github.matijaradovic.spona.organization.dto.InvitationDto;
 import io.github.matijaradovic.spona.organization.dto.OrgMemberDto;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
 import io.github.matijaradovic.spona.organization.dto.TransferOwnershipRequest;
 import io.github.matijaradovic.spona.organization.dto.UpdateOrganizationRequest;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.user.User;
 
@@ -38,12 +41,14 @@ public class OrganizationController {
     private final ActorService actors;
     private final OrganizationService organizations;
     private final MembershipService memberships;
+    private final InvitationService invitations;
 
     public OrganizationController(ActorService actors, OrganizationService organizations,
-            MembershipService memberships) {
+            MembershipService memberships, InvitationService invitations) {
         this.actors = actors;
         this.organizations = organizations;
         this.memberships = memberships;
+        this.invitations = invitations;
     }
 
     @PostMapping
@@ -104,5 +109,29 @@ public class OrganizationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void removeMember(@PathVariable String slug, @PathVariable UUID userId, @CurrentUser User caller) {
         memberships.remove(slug, caller, userId);
+    }
+
+    @GetMapping("/{slug}/invitations")
+    List<InvitationDto> invitations(@PathVariable String slug, @CurrentUser User caller) {
+        return invitations.list(slug, caller);
+    }
+
+    @PostMapping("/{slug}/invitations")
+    @ResponseStatus(HttpStatus.CREATED)
+    InvitationDto invite(@PathVariable String slug, @CurrentUser User caller,
+            @Valid @RequestBody CreateInvitationRequest request) {
+        return invitations.create(slug, caller, request.identifier(), request.role());
+    }
+
+    @DeleteMapping("/{slug}/invitations/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void cancelInvitation(@PathVariable String slug, @PathVariable UUID id, @CurrentUser User caller) {
+        invitations.cancel(slug, caller, id);
+    }
+
+    @PostMapping("/{slug}/invitations/{id}/dismiss")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void dismissInvitation(@PathVariable String slug, @PathVariable UUID id, @CurrentUser User caller) {
+        invitations.dismiss(slug, caller, id);
     }
 }

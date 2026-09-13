@@ -18,7 +18,9 @@ import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
+import io.github.matijaradovic.spona.organization.dto.MyInvitationDto;
 import io.github.matijaradovic.spona.organization.dto.MyOrganizationDto;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.user.dto.ChangeEmailRequest;
 import io.github.matijaradovic.spona.user.dto.ChangePasswordRequest;
@@ -36,11 +38,14 @@ public class UserController {
     private final UserService usersService;
     private final ActorService actors;
     private final MembershipService memberships;
+    private final InvitationService invitations;
 
-    public UserController(UserService usersService, ActorService actors, MembershipService memberships) {
+    public UserController(UserService usersService, ActorService actors, MembershipService memberships,
+            InvitationService invitations) {
         this.usersService = usersService;
         this.actors = actors;
         this.memberships = memberships;
+        this.invitations = invitations;
     }
 
     @GetMapping
@@ -100,6 +105,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void leave(@PathVariable String username, @PathVariable String slug, @CurrentUser User caller) {
         memberships.leave(slug, self(username, caller));
+    }
+
+    @GetMapping("/{username}/invitations")
+    List<MyInvitationDto> invitations(@PathVariable String username, @CurrentUser User caller) {
+        return invitations.mine(self(username, caller));
     }
 
     private static User self(String username, User caller) {

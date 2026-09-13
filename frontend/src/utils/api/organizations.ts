@@ -1,34 +1,11 @@
-// -----------------------------------------------------------------------------
-// "An organization I belong to" service. The organization and member functions
-// call the backend; the invitation functions are still MOCKS, with the real
-// axios call left commented above each mock body. Their rejections are
-// `ProblemDetail` shapes, and these magic inputs reach every persona and failure:
-//   - fetchInvitations   : any seat below ADMIN         -> 403 (OWNER and ADMIN only)
-//   - createInvitation   : identifier === "nepostojeci" -> 422 "Korisnik ne postoji."
-//                          identifier === "marko"       -> 409 already a member
-//                          identifier containing "@"    -> 201, unresolved row
-//
-// Every role comes from `mockActors.ts`, which is where the profile, membership
-// and job mocks read the same organizations from.
-//
-// The invitation lists are MUTABLE module state, seeded per slug on first read; a
-// pure mock would silently undo every successful action on the next `Osveži`.
-//
-// Creating an invitation SENDS AN EMAIL; cancel/decline/dismiss do not.
-// -----------------------------------------------------------------------------
-
 import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
 import type { PrivacyDto } from './settings'
-import type { ProblemDetail } from './types'
-import { VIEWER, viewerRoleIn } from './mockActors'
-
-// ── Local enum mirror (the project mirrors backend enums as local unions) ──────
 
 export type OrganizationRole = 'OWNER' | 'ADMIN' | 'PUBLISHER' | 'EDITOR' | 'RECRUITER'
 
-// ── DTOs ──────────────────────────────────────────────────────────────────────
+// --- DTOs ---
 
 export interface OrgSettingsDto {
   id: string
@@ -104,78 +81,11 @@ export interface InvitationDto {
   createdAt: string
   /** ISO - when it was declined; null while WAITING. */
   resolvedAt: string | null
-  invitedByUsername: string
+  /** Null once the inviter's account is gone. */
+  invitedByUsername: string | null
 }
 
-// ── Mock plumbing ─────────────────────────────────────────────────────────────
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const makeProblem = (status: number, detail: string, title = ''): ProblemDetail => ({
-  type: 'about:blank',
-  title,
-  status,
-  detail,
-  instance: '/api/organizations',
-})
-
-const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
-  Promise.reject(makeProblem(status, detail, title))
-
-const iso = (daysAgo: number): string =>
-  new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString()
-
-const MAGIC_UNKNOWN_IDENTIFIER = 'nepostojeci'
-const MAGIC_EXISTING_MEMBER = 'marko'
-
-const VIEWER_USERNAME = VIEWER.username
-
-// ── Mutable store (see the header note) ───────────────────────────────────────
-
-const invitations = new Map<string, InvitationDto[]>()
-
-const seedInvitations = (slug: string): InvitationDto[] => {
-  const existing = invitations.get(slug)
-  if (existing) return existing
-
-  const rows: InvitationDto[] = [
-    {
-      id: `inv-${slug}-1`,
-      status: 'WAITING',
-      invitee: { username: 'sara', fullName: 'Sara Đukić', avatarUrl: null },
-      email: null,
-      role: 'EDITOR',
-      createdAt: iso(3),
-      resolvedAt: null,
-      invitedByUsername: VIEWER_USERNAME,
-    },
-    {
-      id: `inv-${slug}-2`,
-      status: 'WAITING',
-      invitee: null,
-      email: 'nova.koleginica@primer.rs',
-      role: 'RECRUITER',
-      createdAt: iso(9),
-      resolvedAt: null,
-      invitedByUsername: 'jelena',
-    },
-    {
-      id: `inv-${slug}-3`,
-      status: 'DECLINED',
-      invitee: { username: 'bojan', fullName: 'Bojan Lukić', avatarUrl: null },
-      email: null,
-      role: 'ADMIN',
-      createdAt: iso(21),
-      resolvedAt: iso(18),
-      invitedByUsername: VIEWER_USERNAME,
-    },
-  ]
-
-  invitations.set(slug, rows)
-  return rows
-}
-
-// ── Organization ──────────────────────────────────────────────────────────────
+// --- Organization ---
 
 export const createOrganization = async (
   payload: CreateOrganizationPayload,
@@ -214,7 +124,7 @@ export const deleteOrg = async (slug: string, confirmSlug: string): Promise<void
   await api.delete(`/organizations/${slug}`, { data: { confirmSlug } })
 }
 
-// ── Members ───────────────────────────────────────────────────────────────────
+// --- Members ---
 
 export const fetchOrgMembers = async (slug: string): Promise<OrgMemberDto[]> => {
   const { data } = await api.get<OrgMemberDto[]>(`/organizations/${slug}/members`)
@@ -233,80 +143,31 @@ export const removeMember = async (slug: string, userId: string): Promise<void> 
   await api.delete(`/organizations/${slug}/members/${userId}`)
 }
 
-// ── Invitations ───────────────────────────────────────────────────────────────
+// --- Invitations ---
 
-/**
- * MOCK - would be: const { data } = await api.get(`/organizations/${slug}/invitations`)
- * WAITING rows plus DECLINED rows the org has not dismissed, newest first. OWNER and
- * ADMIN only: the rows name people outside the organization.
- */
 export const fetchInvitations = async (slug: string): Promise<InvitationDto[]> => {
-  await delay(400)
-  const viewerRole = viewerRoleIn(slug)
-  if (viewerRole !== 'OWNER' && viewerRole !== 'ADMIN') {
-    return rejectProblem(403, 'Pozivnice vide samo vlasnik i administratori.', 'Forbidden')
-  }
-  return seedInvitations(slug)
-    .map((row) => ({ ...row }))
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const { data } = await api.get<InvitationDto[]>(`/organizations/${slug}/invitations`)
+  return data
 }
 
-/**
- * MOCK - would be: const { data } = await api.post(`/organizations/${slug}/invitations`, { identifier, role })
- * The backend classifies `identifier` as a username or an email and answers 201
- * either way, so the endpoint never becomes an account-existence oracle.
- */
+/** The backend classifies `identifier` as a username or an address and never looks an address up. */
 export const createInvitation = async (
   slug: string,
   identifier: string,
   role: OrganizationRole,
 ): Promise<InvitationDto> => {
-  await delay(520)
-
-  const value = identifier.trim()
-  const lower = value.toLowerCase()
-  if (lower === MAGIC_UNKNOWN_IDENTIFIER) {
-    return rejectProblem(422, 'Korisnik ne postoji.', 'Unprocessable Entity')
-  }
-  if (lower === MAGIC_EXISTING_MEMBER) {
-    return rejectProblem(409, 'Korisnik je već član organizacije.', 'Conflict')
-  }
-
-  const isEmail = value.includes('@')
-  const created: InvitationDto = {
-    id: `inv-${slug}-${Date.now()}`,
-    status: 'WAITING',
-    invitee: isEmail
-      ? null
-      : { username: lower, fullName: lower.charAt(0).toUpperCase() + lower.slice(1), avatarUrl: null },
-    email: isEmail ? lower : null,
+  const { data } = await api.post<InvitationDto>(`/organizations/${slug}/invitations`, {
+    identifier,
     role,
-    createdAt: new Date().toISOString(),
-    resolvedAt: null,
-    invitedByUsername: VIEWER_USERNAME,
-  }
-
-  invitations.set(slug, [created, ...seedInvitations(slug)])
-  return { ...created }
+  })
+  return data
 }
 
-/** MOCK - would be: await api.delete(`/organizations/${slug}/invitations/${invitationId}`) */
 export const cancelInvitation = async (slug: string, invitationId: string): Promise<void> => {
-  await delay(360)
-  invitations.set(
-    slug,
-    seedInvitations(slug).filter((row) => row.id !== invitationId),
-  )
+  await api.delete(`/organizations/${slug}/invitations/${invitationId}`)
 }
 
-/**
- * MOCK - would be: await api.post(`/organizations/${slug}/invitations/${invitationId}/dismiss`)
- * DECLINED rows only: sets `dismissedAt`, hiding the row without deleting the history.
- */
+/** DECLINED rows only: sets `dismissedAt`, hiding the row without deleting the history. */
 export const dismissInvitation = async (slug: string, invitationId: string): Promise<void> => {
-  await delay(360)
-  invitations.set(
-    slug,
-    seedInvitations(slug).filter((row) => row.id !== invitationId || row.status !== 'DECLINED'),
-  )
+  await api.post(`/organizations/${slug}/invitations/${invitationId}/dismiss`)
 }

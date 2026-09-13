@@ -44,6 +44,7 @@ import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
 import io.github.matijaradovic.spona.organization.dto.TransferOwnershipRequest;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
 import io.github.matijaradovic.spona.support.TestFixtures;
@@ -65,7 +66,8 @@ class OrganizationSettingsControllerTest {
     private final OrganizationService service = mock(OrganizationService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new OrganizationController(actors, service, mock(MembershipService.class)))
+            .standaloneSetup(new OrganizationController(actors, service, mock(MembershipService.class),
+                    mock(InvitationService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();

@@ -51,10 +51,6 @@ const person = (username: string, fullName: string, bio: string | null, id?: str
   bio,
 })
 
-/** The signed-in viewer's handle. Logging in as anything else still resolves to
- *  this person's memberships: the mock has one viewer, not a user table. */
-export const VIEWER_USERNAME = 'my-account'
-
 export const PEOPLE: readonly MockPerson[] = [
   person('my-account', 'Ana Jovanović', 'Frontend inženjerka. Gradim pristupačne interfejse i volim dobar dizajn sistema.'),
   person('marko', 'Marko Marković', 'Backend developer. Java, Spring, PostgreSQL.'),
@@ -145,9 +141,6 @@ export interface MockOrg {
   description: string
   website: string | null
   location: string
-  /** Where the viewer's role STARTS. Read the live one with `viewerRoleIn`:
-   *  accepting an invitation and leaving both move it, and a mock that answered
-   *  from this field would keep serving the role the session began with. */
   initialViewerRole: OrganizationRole | null
 }
 
@@ -259,12 +252,10 @@ export const orgRef = (slug: string): ActorRefDto => {
   }
 }
 
-// ── The viewer's memberships, as live session state ───────────────────────────
+// ── The viewer's memberships ──────────────────────────────────────────────────
 //
-// Mutable, because accepting an invitation and leaving an organization both
-// change what the viewer may do there. Every mock asks this rather than keeping
-// its own copy, so a role changes in one place and the profile head, the
-// identity picker, the settings page and the postings pane all follow.
+// Every mock asks this rather than keeping its own copy, so the profile head,
+// the identity picker, the settings page and the postings pane agree.
 
 const viewerRoles = new Map<string, OrganizationRole | null>(
   ORGANIZATIONS.map((row) => [row.slug, row.initialViewerRole]),
@@ -272,16 +263,6 @@ const viewerRoles = new Map<string, OrganizationRole | null>(
 
 export const viewerRoleIn = (slug: string): OrganizationRole | null =>
   viewerRoles.get(slug) ?? null
-
-/** `null` leaves the organization. An unknown slug joins it, which is what an
- *  invitation from outside the fixture list resolves to. */
-export const setViewerRole = (slug: string, role: OrganizationRole | null): void => {
-  viewerRoles.set(slug, role)
-}
-
-/** The organizations the viewer currently belongs to, declaration order. */
-export const viewerMemberships = (): readonly MockOrg[] =>
-  ORGANIZATIONS.filter((row) => viewerRoleIn(row.slug) !== null)
 
 // ── The flags the server computes, computed here because this IS the server ───
 //

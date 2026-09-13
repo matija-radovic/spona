@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Poziv u organizaciju</title>
+</head>
+<body style="font-family:Arial,Helvetica,sans-serif;">
+    <p>Zdravo,</p>
+    <p><span th:text="${inviter}">Pozivalac</span> vas je pozvao/la da se pridružite organizaciji <strong th:text="${organization}">Organizacija</strong> na Sponi, u ulozi <span th:text="${role}">Uloga</span>.</p>
+    <p>Da biste prihvatili, napravite nalog sa OVOM email adresom (<span th:text="${email}">adresa</span>). Pozivnica je vezana za adresu; nalog otvoren sa drugom je neće videti.</p>
+
+    <div style="text-align:center;margin:2rem">
+        <a th:href="${registerLink}" href="#" style="border-radius:.5rem;background:violet;color:#ffffff;border:none;padding:12px 20px;text-decoration:none;">
+            Napravite nalog
+        </a>
+    </div>
+
+    <p style="margin:0;font-size: small;color:grey">Ako dugme ne radi, otvorite ovu adresu:</p>
+    <p style="margin: .25rem 0 1rem 0;word-break:break-all;font-size: small;"><a th:href="${registerLink}" th:text="${registerLink}" href="#">https://example.invalid</a></p>
+
+    <p>Kada potvrdite adresu, pozivnica će vas čekati u podešavanjima naloga: <a th:href="${link}" th:text="${link}" href="#">https://example.invalid</a></p>
+
+    <p style="font-size: small;color:grey">Pozivnica nema rok. Ukoliko ne želite da prihvatite pozivnicu, ignorišite ovaj email.</p>
+</body>
+</html>

@@ -10,20 +10,21 @@ class PublishAuthorityTest {
 
     @ParameterizedTest
     @CsvSource({
-            "OWNER,     true,  true,  true,  true, true,  true",
-            "ADMIN,     true,  true,  true,  true, false, true",
-            "PUBLISHER, true,  true,  false, true, false, false",
-            "EDITOR,    true,  false, false, true, false, false",
-            "RECRUITER, false, true,  false, true, false, false"
+            "OWNER,     true,  true,  true,  true, true,  true,  true",
+            "ADMIN,     true,  true,  true,  true, false, true,  true",
+            "PUBLISHER, true,  true,  false, true, false, false, false",
+            "EDITOR,    true,  false, false, true, false, false, false",
+            "RECRUITER, false, true,  false, true, false, false, false"
     })
     void answersTheMatrixForEveryRole(OrganizationRole role, boolean content, boolean jobs,
-            boolean profile, boolean settings, boolean management, boolean members) {
+            boolean profile, boolean settings, boolean management, boolean members, boolean invitations) {
         assertThat(PublishAuthority.canPublishContent(role)).isEqualTo(content);
         assertThat(PublishAuthority.canManageJobPostings(role)).isEqualTo(jobs);
         assertThat(PublishAuthority.canEditProfile(role)).isEqualTo(profile);
         assertThat(PublishAuthority.canReadSettings(role)).isEqualTo(settings);
         assertThat(PublishAuthority.canManageOrganization(role)).isEqualTo(management);
         assertThat(PublishAuthority.canManageMembers(role)).isEqualTo(members);
+        assertThat(PublishAuthority.canManageInvitations(role)).isEqualTo(invitations);
     }
 
     @ParameterizedTest
@@ -66,6 +67,18 @@ class PublishAuthorityTest {
         assertThat(PublishAuthority.canReadSettings(null)).isFalse();
         assertThat(PublishAuthority.canManageOrganization(null)).isFalse();
         assertThat(PublishAuthority.canManageMembers(null)).isFalse();
+        assertThat(PublishAuthority.canManageInvitations(null)).isFalse();
+    }
+
+    @Test
+    void whoeverManagesInvitationsMayOfferSomeRoleAndNobodyElseMayOfferAny() {
+        for (OrganizationRole caller : OrganizationRole.values()) {
+            boolean offersSome = false;
+            for (OrganizationRole role : OrganizationRole.values()) {
+                offersSome |= PublishAuthority.canManageRole(caller, role);
+            }
+            assertThat(offersSome).as(caller.name()).isEqualTo(PublishAuthority.canManageInvitations(caller));
+        }
     }
 
     @Test

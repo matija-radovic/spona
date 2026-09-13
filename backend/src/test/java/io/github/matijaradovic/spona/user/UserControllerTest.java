@@ -26,6 +26,7 @@ import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 
@@ -37,7 +38,8 @@ class UserControllerTest {
     private final ActorService actors = mock(ActorService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new UserController(service, actors, mock(MembershipService.class)))
+            .standaloneSetup(new UserController(service, actors, mock(MembershipService.class),
+                    mock(InvitationService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();

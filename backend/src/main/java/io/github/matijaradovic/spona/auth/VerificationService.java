@@ -16,6 +16,7 @@ import io.github.matijaradovic.spona.common.util.TransactionHooks;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.mail.MailService;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 
@@ -29,13 +30,15 @@ public class VerificationService {
     private final UserRepository users;
     private final MailService mail;
     private final AppProperties app;
+    private final InvitationService invitations;
 
     public VerificationService(EmailVerificationTokenRepository tokens, UserRepository users,
-            MailService mail, AppProperties app) {
+            MailService mail, AppProperties app, InvitationService invitations) {
         this.tokens = tokens;
         this.users = users;
         this.mail = mail;
         this.app = app;
+        this.invitations = invitations;
     }
 
     /**
@@ -55,11 +58,11 @@ public class VerificationService {
                 Instant.now().plus(purpose.lifetime())));
 
         String recipient = user.resolveDisplayName();
-        String url = link(plaintext);
+        String url = app.link("/verify/" + plaintext);
         TransactionHooks.afterCommit(() -> mail.sendVerification(email, recipient, url));
     }
 
-    /** Spends a token and applies what its purpose means */
+    /** Spends a token and applies what its purpose means, then binds what waits for the proven address */
     @Transactional
     public void confirm(String presented) {
         Instant now = Instant.now();
@@ -73,6 +76,7 @@ public class VerificationService {
             applyEmailChange(user, token.getEmail());
         }
         user.setEmailVerifiedAt(now);
+        invitations.bind(user);
     }
 
     /**
@@ -89,10 +93,5 @@ public class VerificationService {
         String recipient = user.resolveDisplayName();
         TransactionHooks.afterCommit(() -> mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
                 Map.of("displayName", recipient, "newEmail", requested)));
-    }
-
-    private String link(String plaintext) {
-        String base = app.url();
-        return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/verify/" + plaintext;
     }
 }

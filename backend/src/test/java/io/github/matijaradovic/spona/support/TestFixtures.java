@@ -12,6 +12,7 @@ import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.organization.Organization;
+import io.github.matijaradovic.spona.organization.invitation.OrganizationInvitation;
 import io.github.matijaradovic.spona.organization.member.OrganizationMember;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
 import io.github.matijaradovic.spona.organization.member.RoleAssignment;
@@ -61,6 +62,18 @@ public final class TestFixtures {
     public static RoleAssignment roleAssignment(User user, Organization organization,
             OrganizationRole role) {
         return new RoleAssignment(user, organization, role, user);
+    }
+
+    /** invitation addressed by username, carrying the snapshot of the invitee's address. */
+    public static OrganizationInvitation invitation(Organization organization, User invitee, User inviter,
+            OrganizationRole role) {
+        return new OrganizationInvitation(organization, role, invitee, invitee.getEmail(), inviter);
+    }
+
+    /** invitation thats addressed to an email address, bound to nobody */
+    public static OrganizationInvitation addressInvitation(Organization organization, String email, User inviter,
+            OrganizationRole role) {
+        return new OrganizationInvitation(organization, role, null, email, inviter);
     }
 
     /** Two entries, one of them carrying the empty description the bound allows. */

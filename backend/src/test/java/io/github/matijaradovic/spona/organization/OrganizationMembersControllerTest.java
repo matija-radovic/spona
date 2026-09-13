@@ -35,6 +35,7 @@ import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.OrgMemberDto;
+import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
 import io.github.matijaradovic.spona.support.TestFixtures;
@@ -50,7 +51,7 @@ class OrganizationMembersControllerTest {
 
     private final MockMvc mvc = MockMvcBuilders
             .standaloneSetup(new OrganizationController(mock(ActorService.class), mock(OrganizationService.class),
-                    memberships))
+                    memberships, mock(InvitationService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
