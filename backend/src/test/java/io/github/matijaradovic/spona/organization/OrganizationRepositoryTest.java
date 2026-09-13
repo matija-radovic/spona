@@ -27,7 +27,7 @@ class OrganizationRepositoryTest extends AbstractDataJpaTest {
         Organization organization = TestFixtures.organization("stolarija-novak");
         organization.setDescription("Porodična stolarska radionica.");
         organization.setWebsite("https://novak.rs");
-        organization.setAvatarUrl("http://localhost:9000/spona-avatars/novak.webp");
+        organization.setAvatarUrl("http://localhost:9000/spona-avatars/novak.png");
         organization.setLocation("Kragujevac");
         organization.setOtherContactInfo(TestFixtures.contacts());
 
@@ -40,7 +40,7 @@ class OrganizationRepositoryTest extends AbstractDataJpaTest {
         assertThat(loaded.getLegalName()).isEqualTo("Legal stolarija-novak d.o.o.");
         assertThat(loaded.getDescription()).isEqualTo("Porodična stolarska radionica.");
         assertThat(loaded.getWebsite()).isEqualTo("https://novak.rs");
-        assertThat(loaded.getAvatarUrl()).isEqualTo("http://localhost:9000/spona-avatars/novak.webp");
+        assertThat(loaded.getAvatarUrl()).isEqualTo("http://localhost:9000/spona-avatars/novak.png");
         assertThat(loaded.getLocation()).isEqualTo("Kragujevac");
         assertThat(loaded.getOtherContactInfo()).containsExactlyElementsOf(TestFixtures.contacts());
         assertThat(loaded.getCreatedAt()).isNotNull();

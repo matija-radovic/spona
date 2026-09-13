@@ -5,8 +5,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
@@ -14,6 +12,7 @@ import io.github.matijaradovic.spona.auth.token.EmailVerificationTokenRepository
 import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
+import io.github.matijaradovic.spona.common.util.TransactionHooks;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.mail.MailService;
@@ -57,7 +56,7 @@ public class VerificationService {
 
         String recipient = user.resolveDisplayName();
         String url = link(plaintext);
-        afterCommit(() -> mail.sendVerification(email, recipient, url));
+        TransactionHooks.afterCommit(() -> mail.sendVerification(email, recipient, url));
     }
 
     /** Spends a token and applies what its purpose means */
@@ -88,22 +87,8 @@ public class VerificationService {
 
         user.setEmail(requested);
         String recipient = user.resolveDisplayName();
-        afterCommit(() -> mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
+        TransactionHooks.afterCommit(() -> mail.send(previous, CHANGED_SUBJECT, CHANGED_TEMPLATE,
                 Map.of("displayName", recipient, "newEmail", requested)));
-    }
-
-    private static void afterCommit(Runnable send) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            send.run();
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-
-            @Override
-            public void afterCommit() {
-                send.run();
-            }
-        });
     }
 
     private String link(String plaintext) {

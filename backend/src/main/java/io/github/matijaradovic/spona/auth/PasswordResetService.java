@@ -7,13 +7,12 @@ import java.util.Map;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
+import io.github.matijaradovic.spona.common.util.TransactionHooks;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.mail.MailService;
 import io.github.matijaradovic.spona.user.User;
@@ -69,21 +68,8 @@ public class PasswordResetService {
         String address = user.getEmail();
         String recipient = user.resolveDisplayName();
         String url = link(plaintext);
-        afterCommit(() -> mail.send(address, SUBJECT, TEMPLATE,
+        TransactionHooks.afterCommit(() -> mail.send(address, SUBJECT, TEMPLATE,
                 Map.of("displayName", recipient, "link", url)));
-    }
-
-    private static void afterCommit(Runnable send) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            send.run();
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                send.run();
-            }
-        });
     }
 
     private String link(String plaintext) {

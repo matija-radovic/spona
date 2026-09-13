@@ -7,6 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +32,7 @@ import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationTokenRepository;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
+import io.github.matijaradovic.spona.support.AvatarFixtures;
 import io.github.matijaradovic.spona.support.ContainersConfig;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
@@ -94,6 +99,43 @@ class AuthFlowIntegrationTest {
                 .andExpect(jsonPath("$.email").value("velika@example.com"));
 
         assertThat(users.findByUsername("velika").orElseThrow().getEmail()).isEqualTo("velika@example.com");
+    }
+
+    @Test
+    void registerStoresTheAvatarItCarriesWhereAnyoneCanFetchIt() throws Exception {
+        byte[] avatar = AvatarFixtures.canvasPng();
+
+        mvc.perform(registerWithAvatar("slikovit", AvatarFixtures.pngDataUrl(avatar)))
+                .andExpect(status().isCreated());
+
+        HttpResponse<byte[]> served = fetch(users.findByUsername("slikovit").orElseThrow().getAvatarUrl());
+        assertThat(served.statusCode()).isEqualTo(200);
+        assertThat(served.headers().firstValue("Content-Type")).hasValue("image/png");
+        assertThat(served.body()).isEqualTo(avatar);
+    }
+
+    @Test
+    void registerRefusesAnAvatarOfTheWrongSizeAndCreatesNoAccount() throws Exception {
+        String avatar = AvatarFixtures.pngDataUrl(AvatarFixtures.image("png", 300, 200));
+
+        mvc.perform(registerWithAvatar("prevelik", avatar))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.avatar").value("The avatar must be exactly 256 by 256 pixels."));
+
+        assertThat(users.findByUsername("prevelik")).isEmpty();
+    }
+
+    @Test
+    void registerIgnoresAnAvatarUrlTheClientSends() throws Exception {
+        mvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username": "tudja", "email": "tudja@example.com", "password": "Lozinka123",
+                         "fullName": "", "avatarUrl": "https://elsewhere.example/tudja.png",
+                         "otherContactInfo": []}"""))
+                .andExpect(status().isCreated());
+
+        assertThat(users.findByUsername("tudja").orElseThrow().getAvatarUrl()).isNull();
     }
 
     @Test
@@ -546,12 +588,27 @@ class AuthFlowIntegrationTest {
     }
 
     private static RequestBuilder register(String username, String email, String password) {
+        return register(username, email, password, "null");
+    }
+
+    private static RequestBuilder registerWithAvatar(String username, String avatar) {
+        return register(username, username + "@example.com", "Lozinka123", "\"" + avatar + "\"");
+    }
+
+    private static RequestBuilder register(String username, String email, String password, String avatar) {
         return post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"username": "%s", "email": "%s", "password": "%s", "fullName": "",
-                         "bio": null, "avatarUrl": null, "location": null, "otherContactInfo": []}"""
-                        .formatted(username, email, password));
+                         "bio": null, "avatar": %s, "location": null, "otherContactInfo": []}"""
+                        .formatted(username, email, password, avatar));
+    }
+
+    private static HttpResponse<byte[]> fetch(String url) throws Exception {
+        try (HttpClient http = HttpClient.newHttpClient()) {
+            return http.send(HttpRequest.newBuilder(URI.create(url)).GET().build(),
+                    HttpResponse.BodyHandlers.ofByteArray());
+        }
     }
 
     private static RequestBuilder verify(String token) {

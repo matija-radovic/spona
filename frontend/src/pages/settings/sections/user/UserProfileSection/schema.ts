@@ -30,6 +30,7 @@ export const buildUserProfileSchema = (t: Translate) =>
     fullName: z.string().max(FULL_NAME_MAX, t('errors.maxLength', { max: FULL_NAME_MAX })),
     bio: z.string().max(BIO_MAX, t('errors.maxLength', { max: BIO_MAX })),
     avatarUrl: z.string(),
+    avatar: z.string(),
     location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
     otherContactInfo: contactInfoSchema(t),
   })
@@ -40,6 +41,7 @@ export const toUserProfileData = (dto: UserSettingsDto): UserProfileData => ({
   fullName: dto.fullName,
   bio: dto.bio ?? '',
   avatarUrl: dto.avatarUrl ?? '',
+  avatar: '',
   location: dto.location ?? '',
   otherContactInfo: dto.otherContactInfo,
 })
@@ -47,7 +49,7 @@ export const toUserProfileData = (dto: UserSettingsDto): UserProfileData => ({
 export const toUpdateProfilePayload = (data: UserProfileData): UpdateProfilePayload => ({
   fullName: data.fullName.trim(),
   bio: data.bio.trim() === '' ? null : data.bio.trim(),
-  avatarUrl: data.avatarUrl || null,
+  avatar: data.avatar || null,
   location: data.location.trim() === '' ? null : data.location.trim(),
   otherContactInfo: data.otherContactInfo,
 })

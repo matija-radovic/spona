@@ -33,8 +33,7 @@ public record RegisterRequest(
         @Size(max = 500, message = "At most 500 characters.")
         String bio,
 
-        @Size(max = 2048, message = "At most 2048 characters.")
-        String avatarUrl,
+        String avatar,
 
         @Size(max = 120, message = "At most 120 characters.")
         String location,

@@ -39,7 +39,7 @@ export interface UserSettingsDto {
 export interface UpdateProfilePayload {
   fullName: string
   bio: string | null
-  avatarUrl: string | null
+  avatar: string | null
   location: string | null
   otherContactInfo: ContactEntry[]
 }
@@ -118,7 +118,8 @@ export const fetchUserSettings = async (username: string): Promise<UserSettingsD
 export const updateProfile = async (payload: UpdateProfilePayload): Promise<UserSettingsDto> => {
   await delay(500)
   const current = seedAccount('my-account')
-  account = { ...current, ...payload }
+  const { avatar, ...profile } = payload
+  account = { ...current, ...profile, avatarUrl: avatar ?? current.avatarUrl }
   return { ...account }
 }
 

@@ -10,7 +10,6 @@ import { FieldShell } from '../FieldShell'
 
 interface AvatarPickerProps {
   label: string
-  /** The stored avatar URL, or '' when none picked. */
   value: string
   onChange: (file: File) => Promise<void>
 }

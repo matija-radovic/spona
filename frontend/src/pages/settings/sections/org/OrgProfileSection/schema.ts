@@ -46,6 +46,7 @@ export const buildOrgProfileSchema =(t: Translate) =>
       .max(ORG_WEBSITE_MAX, t('errors.maxLength', { max: ORG_WEBSITE_MAX }))
       .refine((value) => value === '' || /^https?:\/\/.+/.test(value), t('errors.invalidUrl')),
     avatarUrl: z.string(),
+    avatar: z.string(),
     location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
     otherContactInfo: contactInfoSchema(t),
   })
@@ -58,6 +59,7 @@ export const toOrgProfileData = (dto: OrgSettingsDto): OrgProfileData => ({
   description: dto.description ?? '',
   website: dto.website ?? '',
   avatarUrl: dto.avatarUrl ?? '',
+  avatar: '',
   location: dto.location ?? '',
   otherContactInfo: dto.otherContactInfo,
 })
@@ -67,7 +69,7 @@ export const toUpdateOrgPayload = (data: OrgProfileData): UpdateOrgProfilePayloa
   legalName: data.legalName.trim(),
   description: data.description.trim() === '' ? null : data.description.trim(),
   website: data.website.trim() === '' ? null : data.website.trim(),
-  avatarUrl: data.avatarUrl || null,
+  avatar: data.avatar || null,
   location: data.location.trim() === '' ? null : data.location.trim(),
   otherContactInfo: data.otherContactInfo,
 })

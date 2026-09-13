@@ -30,7 +30,7 @@ class UserRepositoryTest extends AbstractDataJpaTest {
         User user = TestFixtures.user("marko");
         user.setFullName("Marko Marković");
         user.setBio("Radim sa drvetom.");
-        user.setAvatarUrl("http://localhost:9000/spona-avatars/marko.webp");
+        user.setAvatarUrl("http://localhost:9000/spona-avatars/marko.png");
         user.setLocation("Novi Sad");
         user.setEmailVerifiedAt(Instant.parse("2026-01-01T10:15:30Z"));
         user.setOtherContactInfo(TestFixtures.contacts());
@@ -45,7 +45,7 @@ class UserRepositoryTest extends AbstractDataJpaTest {
         assertThat(loaded.getPasswordDigest()).isEqualTo("digest-marko");
         assertThat(loaded.getEmailVerifiedAt()).isEqualTo(Instant.parse("2026-01-01T10:15:30Z"));
         assertThat(loaded.getBio()).isEqualTo("Radim sa drvetom.");
-        assertThat(loaded.getAvatarUrl()).isEqualTo("http://localhost:9000/spona-avatars/marko.webp");
+        assertThat(loaded.getAvatarUrl()).isEqualTo("http://localhost:9000/spona-avatars/marko.png");
         assertThat(loaded.getLocation()).isEqualTo("Novi Sad");
         assertThat(loaded.getOtherContactInfo()).containsExactlyElementsOf(TestFixtures.contacts());
         assertThat(loaded.getCreatedAt()).isNotNull();

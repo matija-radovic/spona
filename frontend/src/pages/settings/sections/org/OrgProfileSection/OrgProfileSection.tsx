@@ -1,6 +1,6 @@
 import './OrgProfileSection.scss'
 import { useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import {
@@ -21,7 +21,7 @@ import {
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
 import { updateOrgProfile } from '@utils/api/organizations'
-import { uploadAvatar } from '@utils/api/uploads'
+import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { canEditOrgProfile } from '../../../lib/permissions'
 import { useOrgSettingsContext } from '../../../lib/settingsOutletContext'
 import {
@@ -55,6 +55,8 @@ const OrgProfileSection = () => {
     defaultValues: defaults,
   })
 
+  const avatarUrl = useWatch({ control, name: 'avatarUrl' })
+
   const persist = async (values: OrgProfileData): Promise<boolean> => {
     setError(null)
     try {
@@ -86,12 +88,12 @@ const OrgProfileSection = () => {
         {canEdit ? (
           <Controller
             control={control}
-            name="avatarUrl"
+            name="avatar"
             render={({ field }) => (
               <AvatarPicker
                 label={t('auth.avatar')}
-                value={field.value}
-                onChange={async (file) => field.onChange(await uploadAvatar(file))}
+                value={field.value || avatarUrl}
+                onChange={async (file) => field.onChange(await resizeImageToSquare(file))}
               />
             )}
           />

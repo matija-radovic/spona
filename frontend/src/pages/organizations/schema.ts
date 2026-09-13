@@ -55,7 +55,7 @@ export const buildCreateOrgSchema = (t: Translate) =>
       .string()
       .max(ORG_WEBSITE_MAX, t('errors.maxLength', { max: ORG_WEBSITE_MAX }))
       .refine((value) => value === '' || /^https?:\/\/.+/.test(value), t('errors.invalidUrl')),
-    avatarUrl: z.string(),
+    avatar: z.string(),
     location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
     otherContactInfo: contactInfoSchema(t),
   })
@@ -68,7 +68,7 @@ export const CREATE_ORG_DEFAULTS: CreateOrgData = {
   legalName: '',
   description: '',
   website: '',
-  avatarUrl: '',
+  avatar: '',
   location: '',
   otherContactInfo: [],
 }
@@ -79,7 +79,7 @@ export const toCreateOrgPayload = (data: CreateOrgData): CreateOrganizationPaylo
   legalName: data.legalName.trim(),
   description: orNull(data.description),
   website: orNull(data.website),
-  avatarUrl: data.avatarUrl || null,
+  avatar: data.avatar || null,
   location: orNull(data.location),
   otherContactInfo: data.otherContactInfo,
 })

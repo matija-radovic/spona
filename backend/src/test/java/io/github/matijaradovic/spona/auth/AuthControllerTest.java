@@ -51,7 +51,7 @@ class AuthControllerTest {
               "password": %s,
               "fullName": %s,
               "bio": %s,
-              "avatarUrl": null,
+              "avatar": null,
               "location": null,
               "otherContactInfo": %s
             }""";

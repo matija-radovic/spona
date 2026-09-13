@@ -62,7 +62,8 @@ export interface UpdateOrgProfilePayload {
   legalName: string
   description: string | null
   website: string | null
-  avatarUrl: string | null
+  /** A new pick's PNG data URL; null keeps the current avatar. */
+  avatar: string | null
   location: string | null
   otherContactInfo: ContactEntry[]
 }
@@ -88,8 +89,7 @@ export interface CreateOrganizationPayload {
   legalName: string
   description: string | null
   website: string | null
-  /** Set from the create form's AvatarPicker; settings edits it later. */
-  avatarUrl: string | null
+  avatar: string | null
   location: string | null
   otherContactInfo: ContactEntry[]
 }
@@ -320,7 +320,7 @@ export const createOrganization = async (
     legalName: payload.legalName,
     description: payload.description,
     website: payload.website,
-    avatarUrl: payload.avatarUrl,
+    avatarUrl: payload.avatar,
     location: payload.location,
     otherContactInfo: payload.otherContactInfo,
   }
@@ -351,7 +351,9 @@ export const updateOrgProfile = async (
   payload: UpdateOrgProfilePayload,
 ): Promise<OrgSettingsDto> => {
   await delay(520)
-  return store(slug, { ...seedOrg(slug), ...payload })
+  const current = seedOrg(slug)
+  const { avatar, ...profile } = payload
+  return store(slug, { ...current, ...profile, avatarUrl: avatar ?? current.avatarUrl })
 }
 
 /**

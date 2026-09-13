@@ -9,6 +9,7 @@ import io.github.matijaradovic.spona.config.props.StorageProperties;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Utilities;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -27,7 +28,7 @@ public class S3StorageService implements StorageService {
      * land.
      */
     private static final Map<String, String> EXTENSIONS = Map.of(
-            "image/webp", "webp",
+            "image/png", "png",
             "application/pdf", "pdf");
 
     private final S3Client client;
@@ -47,13 +48,19 @@ public class S3StorageService implements StorageService {
     public String putAvatar(byte[] content, String contentType) {
         String key = newKey(contentType);
         put(storage.avatarBucket(), key, content, contentType);
-        return publicUrls.getUrl(
-                GetUrlRequest
-                        .builder()
-                        .bucket(storage.avatarBucket())
-                        .key(key)
-                        .build())
-                .toExternalForm();
+        return avatarUrl(key);
+    }
+
+    @Override
+    public void deleteAvatar(String url) {
+        String key = url.substring(url.lastIndexOf('/') + 1);
+        if (key.isEmpty() || !avatarUrl(key).equals(url)) {
+            return;
+        }
+        client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(storage.avatarBucket())
+                .key(key)
+                .build());
     }
 
     @Override
@@ -74,6 +81,16 @@ public class S3StorageService implements StorageService {
                                 .build())
                 .build())
                 .url()
+                .toExternalForm();
+    }
+
+    private String avatarUrl(String key) {
+        return publicUrls.getUrl(
+                GetUrlRequest
+                        .builder()
+                        .bucket(storage.avatarBucket())
+                        .key(key)
+                        .build())
                 .toExternalForm();
     }
 

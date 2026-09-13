@@ -8,7 +8,7 @@ import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/comp
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { parseProblem } from '@utils/api/types'
 import { createOrganization } from '@utils/api/organizations'
-import { uploadAvatar } from '@utils/api/uploads'
+import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { SLUG_MIN, SLUG_MAX } from '@utils/constants/validation'
 import {
   buildCreateOrgSchema,
@@ -55,12 +55,12 @@ const CreateOrganization = () => {
         <form className="org-create-form" onSubmit={onSubmit} noValidate>
           <Controller
             control={control}
-            name="avatarUrl"
+            name="avatar"
             render={({ field }) => (
               <AvatarPicker
                 label={t('auth.avatar')}
                 value={field.value}
-                onChange={async (file) => field.onChange(await uploadAvatar(file))}
+                onChange={async (file) => field.onChange(await resizeImageToSquare(file))}
               />
             )}
           />

@@ -26,7 +26,7 @@ import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 @Import(ContainersConfig.class)
 class S3StorageServiceTest {
 
-    private static final byte[] AVATAR = "not really a webp".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] AVATAR = "not really a png".getBytes(StandardCharsets.UTF_8);
     private static final byte[] CV = "not really a pdf".getBytes(StandardCharsets.UTF_8);
 
     @Autowired
@@ -46,17 +46,17 @@ class S3StorageServiceTest {
 
     @Test
     void anAvatarUrlNamesThePublicEndpointAndTheAvatarBucket() {
-        String url = storage.putAvatar(AVATAR, "image/webp");
+        String url = storage.putAvatar(AVATAR, "image/png");
 
         assertThat(url)
                 .startsWith(properties.publicEndpoint())
                 .contains(properties.avatarBucket())
-                .endsWith(".webp");
+                .endsWith(".png");
     }
 
     @Test
     void anAvatarIsReadableWithoutCredentials() throws Exception {
-        String url = storage.putAvatar(AVATAR, "image/webp");
+        String url = storage.putAvatar(AVATAR, "image/png");
 
         HttpResponse<byte[]> response = get(url);
         assertThat(response.statusCode()).isEqualTo(200);
@@ -65,8 +65,24 @@ class S3StorageServiceTest {
 
     @Test
     void everyUploadGetsItsOwnKey() {
-        assertThat(storage.putAvatar(AVATAR, "image/webp"))
-                .isNotEqualTo(storage.putAvatar(AVATAR, "image/webp"));
+        assertThat(storage.putAvatar(AVATAR, "image/png"))
+                .isNotEqualTo(storage.putAvatar(AVATAR, "image/png"));
+    }
+
+    @Test
+    void aDeletedAvatarIsGone() throws Exception {
+        String url = storage.putAvatar(AVATAR, "image/png");
+        storage.deleteAvatar(url);
+        assertThat(get(url).statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void aUrlThatIsNotOneOfOursIsNeverDeleted() throws Exception {
+        String url = storage.putAvatar(AVATAR, "image/png");
+        String key = url.substring(url.lastIndexOf('/') + 1);
+        storage.deleteAvatar("https://elsewhere.example/" + properties.avatarBucket() + "/" + key);
+
+        assertThat(get(url).statusCode()).isEqualTo(200);
     }
 
     @Test

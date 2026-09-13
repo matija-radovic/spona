@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import {
@@ -17,7 +17,7 @@ import { useUser } from '@shared/contexts'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
 import { updateProfile } from '@utils/api/settings'
-import { uploadAvatar } from '@utils/api/uploads'
+import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { useUserSettingsContext } from '../../../lib/settingsOutletContext'
 import {
   buildUserProfileSchema,
@@ -50,6 +50,8 @@ const UserProfileSection = () => {
     defaultValues: defaults,
   })
 
+  const avatarUrl = useWatch({ control, name: 'avatarUrl' })
+
   const persist = async (values: UserProfileData): Promise<boolean> => {
     setError(null)
     try {
@@ -77,12 +79,12 @@ const UserProfileSection = () => {
       <form className="settings-form" onSubmit={handleSubmit(persist)} noValidate>
         <Controller
           control={control}
-          name="avatarUrl"
+          name="avatar"
           render={({ field }) => (
             <AvatarPicker
               label={t('auth.avatar')}
-              value={field.value}
-              onChange={async (file) => field.onChange(await uploadAvatar(file))}
+              value={field.value || avatarUrl}
+              onChange={async (file) => field.onChange(await resizeImageToSquare(file))}
             />
           )}
         />

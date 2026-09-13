@@ -34,7 +34,7 @@ export interface CreateUserPayload {
   password: string
   fullName: string
   bio: string | null
-  avatarUrl: string | null
+  avatar: string | null
   location: string | null
   otherContactInfo: AdditionalContactInformation
 }

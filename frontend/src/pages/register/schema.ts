@@ -54,7 +54,7 @@ export const buildRegisterSchema = (t: Translate) =>
       // Personal stage - all optional.
       fullName: z.string().max(FULL_NAME_MAX, t('errors.maxLength', { max: FULL_NAME_MAX })),
       bio: z.string().max(BIO_MAX, t('errors.maxLength', { max: BIO_MAX })),
-      avatarUrl: z.string(),
+      avatar: z.string(),
       location: z.string().max(LOCATION_MAX, t('errors.maxLength', { max: LOCATION_MAX })),
       otherContactInfo: contactInfoSchema(t),
     })
@@ -72,7 +72,7 @@ export const REGISTER_DEFAULTS: RegisterData = {
   confirmPassword: '',
   fullName: '',
   bio: '',
-  avatarUrl: '',
+  avatar: '',
   location: '',
   otherContactInfo: [],
 }

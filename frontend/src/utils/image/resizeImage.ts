@@ -4,7 +4,7 @@ import { AVATAR_SIZE } from '@utils/constants/validation'
  * Resizes an image file to a `size`x`size` square entirely in the browser.
  * Uses `object-fit: cover` semantics: the source is scaled so the smaller side
  * fills the square (scaled up when smaller than the target) and whatever falls
- * outside the centered square is cropped off. Returns a WebP data URL.
+ * outside the centered square is cropped off. Returns a PNG data URL.
  */
 export const resizeImageToSquare = (file: File, size = AVATAR_SIZE): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ export const resizeImageToSquare = (file: File, size = AVATAR_SIZE): Promise<str
 
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
       URL.revokeObjectURL(objectUrl)
-      resolve(canvas.toDataURL('image/webp', 0.9))
+      resolve(canvas.toDataURL('image/png'))
     }
 
     img.onerror = () => {

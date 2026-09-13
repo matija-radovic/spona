@@ -11,6 +11,9 @@ public interface StorageService {
     /** returns public url*/
     String putAvatar(byte[] content, String contentType);
 
+    /** deletes what putAvatar stored at that url */
+    void deleteAvatar(String url);
+
     /** returns a cv key */
     String putCv(byte[] content, String contentType);
 

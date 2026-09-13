@@ -18,6 +18,7 @@ import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.util.ReservedHandles;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.storage.AvatarService;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 import io.github.matijaradovic.spona.user.dto.UserDto;
@@ -32,16 +33,18 @@ public class AuthService {
     private final VerificationService verification;
     private final PasswordEncoder passwords;
     private final JwtService jwt;
+    private final AvatarService avatars;
 
     /** What an unknown identifier is compared against, so a miss costs a hashing round too. */
     private final String absentUserDigest;
 
     public AuthService(UserRepository users, VerificationService verification, PasswordEncoder passwords,
-            JwtService jwt) {
+            JwtService jwt, AvatarService avatars) {
         this.users = users;
         this.verification = verification;
         this.passwords = passwords;
         this.jwt = jwt;
+        this.avatars = avatars;
         this.absentUserDigest = passwords.encode(SecureTokens.newToken());
     }
 
@@ -64,9 +67,11 @@ public class AuthService {
         User user = new User(username, email, passwords.encode(request.password()));
         user.setFullName(trimToEmpty(request.fullName()));
         user.setBio(trimToNull(request.bio()));
-        user.setAvatarUrl(trimToNull(request.avatarUrl()));
         user.setLocation(trimToNull(request.location()));
         user.setOtherContactInfo(request.otherContactInfo());
+        if (request.avatar() != null) {
+            user.setAvatarUrl(avatars.store(request.avatar()));
+        }
         users.saveAndFlush(user); // the token row's foreign key needs the id written first
 
         verification.issue(user, EmailVerificationPurpose.SIGNUP, email);

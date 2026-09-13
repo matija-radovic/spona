@@ -1,7 +1,7 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
-import { uploadAvatar } from '@utils/api/uploads'
+import { resizeImageToSquare } from '@utils/image/resizeImage'
 import type { RegisterData } from '../schema'
 
 interface StagePersonalProps {
@@ -20,12 +20,12 @@ const StagePersonal = ({ form }: StagePersonalProps) => {
     <div className="register-fields">
       <Controller
         control={control}
-        name="avatarUrl"
+        name="avatar"
         render={({ field }) => (
           <AvatarPicker
             label={t('auth.avatar')}
             value={field.value}
-            onChange={async (file) => field.onChange(await uploadAvatar(file))}
+            onChange={async (file) => field.onChange(await resizeImageToSquare(file))}
           />
         )}
       />

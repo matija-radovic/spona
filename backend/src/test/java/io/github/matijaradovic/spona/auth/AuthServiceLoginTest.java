@@ -28,6 +28,7 @@ import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.storage.AvatarService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
@@ -48,7 +49,7 @@ class AuthServiceLoginTest {
         when(users.findByUsername(anyString())).thenReturn(Optional.empty());
         when(users.findByEmailIgnoreCase(anyString())).thenReturn(Optional.empty());
         when(jwt.sign(any(User.class))).thenReturn("signed.jwt.value");
-        auth = new AuthService(users, verification, passwords, jwt);
+        auth = new AuthService(users, verification, passwords, jwt, mock(AvatarService.class));
     }
 
     @Test

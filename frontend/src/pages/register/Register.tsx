@@ -33,7 +33,7 @@ const toUserPayload = (data: RegisterData): CreateUserPayload => ({
   password: data.password,
   fullName: data.fullName.trim(),
   bio: orNull(data.bio),
-  avatarUrl: data.avatarUrl || null,
+  avatar: data.avatar || null,
   location: orNull(data.location),
   otherContactInfo: data.otherContactInfo,
 })
