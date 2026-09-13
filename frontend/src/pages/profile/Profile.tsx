@@ -111,7 +111,7 @@ const ProfileBody = ({ profile, postings }: ProfileBodyProps) => {
       <ProfileTabs tabs={tabs} active={active} onChange={setActive} />
 
       <section className="profile-pane">
-        {active === ProfileTab.ACTIVITY && <ActivityPane actorId={profile.id} owner={owner} />}
+        {active === ProfileTab.ACTIVITY && <ActivityPane actorId={profile.id} />}
         {active === ProfileTab.CONTACTS && <ContactPane entries={profile.otherContactInfo} />}
         {active === ProfileTab.JOB_POSTINGS && postings && (
           <JobPostingsPane

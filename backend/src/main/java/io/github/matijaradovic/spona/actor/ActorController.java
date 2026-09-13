@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.matijaradovic.spona.actor.activity.ActivityService;
+import io.github.matijaradovic.spona.actor.activity.dto.ActivityItemDto;
 import io.github.matijaradovic.spona.actor.dto.ActorSearchItemDto;
 import io.github.matijaradovic.spona.actor.dto.FollowActorDto;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
@@ -34,11 +36,14 @@ public class ActorController {
     private final PrivacyService privacy;
     private final ActorService actorsService;
     private final FollowService followService;
+    private final ActivityService activityService;
 
-    public ActorController(PrivacyService privacy, ActorService actorsService, FollowService followService) {
+    public ActorController(PrivacyService privacy, ActorService actorsService, FollowService followService,
+            ActivityService activityService) {
         this.privacy = privacy;
         this.actorsService = actorsService;
         this.followService = followService;
+        this.activityService = activityService;
     }
 
     @GetMapping
@@ -72,6 +77,15 @@ public class ActorController {
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = DEFAULT_SIZE) int size,
             @CurrentUser User viewer) {
         return PageMapper.toResponse(followService.following(actorId, q, PageMapper.toPageable(page, size), viewer));
+    }
+
+    @GetMapping("/{actorId}/activity")
+    PagedResponse<ActivityItemDto> activity(@PathVariable UUID actorId,
+            @RequestParam(defaultValue = "all") String kind,
+            @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = DEFAULT_SIZE) int size,
+            @CurrentUser User viewer) {
+        return PageMapper.toResponse(activityService.activity(actorId, kind, PageMapper.toPageable(page, size),
+                viewer));
     }
 
     @PutMapping("/{actorId}/privacy")

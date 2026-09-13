@@ -5,7 +5,6 @@ import { Button, ButtonVariant, PostCard } from '@shared/components'
 import { fetchActorActivity, type ActivityItemDto, type ActivityKind } from '@utils/api/activity'
 import { setReaction } from '@utils/api/reactions'
 import { applyReactionDelta } from '@utils/applyReactionDelta'
-import type { ActorRefDto } from '@utils/api/profiles'
 import { activityCacheKey, getActivityCache, setActivityCache } from '@pages/profile/lib/activityCache'
 import { CommentActivityCard } from './CommentActivityCard'
 
@@ -15,7 +14,6 @@ type ListState = 'loading' | 'error' | 'ready'
 
 interface ActivityListProps {
   actorId: string
-  owner: ActorRefDto
   kind: ActivityKind
 }
 
@@ -25,7 +23,7 @@ interface ActivityListProps {
  * the JobsView discipline, but scrolling against the page (viewport) scroller.
  * Optimistic reaction updates write through to the cache.
  */
-const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
+const ActivityList = ({ actorId, kind }: ActivityListProps) => {
   const { t } = useTranslation()
   const cacheKey = activityCacheKey(actorId, kind)
   const initial = useMemo(() => getActivityCache(cacheKey), [cacheKey])
@@ -69,7 +67,7 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
 
     let alive = true
     loadingRef.current = true
-    fetchActorActivity(actorId, kind, owner, 1, PAGE_SIZE)
+    fetchActorActivity(actorId, kind, 1, PAGE_SIZE)
       .then((res) => {
         if (!alive) return
         applyPage(res, false)
@@ -84,7 +82,7 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     return () => {
       alive = false
     }
-  }, [actorId, kind, owner, cacheKey, applyPage, reloadKey])
+  }, [actorId, kind, cacheKey, applyPage, reloadKey])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || lastRef.current) return
@@ -92,7 +90,7 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
     setLoadingMore(true)
     setLoadMoreError(false)
     try {
-      const res = await fetchActorActivity(actorId, kind, owner, pageRef.current + 1, PAGE_SIZE)
+      const res = await fetchActorActivity(actorId, kind, pageRef.current + 1, PAGE_SIZE)
       applyPage(res, true)
     } catch {
       setLoadMoreError(true)
@@ -100,7 +98,7 @@ const ActivityList = ({ actorId, owner, kind }: ActivityListProps) => {
       setLoadingMore(false)
       loadingRef.current = false
     }
-  }, [actorId, kind, owner, applyPage])
+  }, [actorId, kind, applyPage])
 
   const canLoadMore = listState === 'ready' && !last && !loadMoreError && items.length > 0
   const sentinelVisible = useOnScreen(sentinelRef, { rootMargin: '250px', enabled: canLoadMore })

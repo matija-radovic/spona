@@ -3,13 +3,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FilterCapsules, type CapsuleOption } from '@pages/profile/components/FilterCapsules'
 import type { ActivityKind } from '@utils/api/activity'
-import type { ActorRefDto } from '@utils/api/profiles'
 import ActivityList from './ActivityList'
 
 interface ActivityPaneProps {
   actorId: string
-  /** The profile owner, stamped as each item's author. */
-  owner: ActorRefDto
 }
 
 /**
@@ -17,7 +14,7 @@ interface ActivityPaneProps {
  * own cached list, so switching kind remounts the list (keyed by actorId::kind)
  * which lazy-inits from the module cache instead of refetching.
  */
-const ActivityPane = ({ actorId, owner }: ActivityPaneProps) => {
+const ActivityPane = ({ actorId }: ActivityPaneProps) => {
   const { t } = useTranslation()
   const [kind, setKind] = useState<ActivityKind>('all')
 
@@ -36,7 +33,7 @@ const ActivityPane = ({ actorId, owner }: ActivityPaneProps) => {
         ariaLabel={t('profile.tabs.activity')}
       />
 
-      <ActivityList key={`${actorId}::${kind}`} actorId={actorId} owner={owner} kind={kind} />
+      <ActivityList key={`${actorId}::${kind}`} actorId={actorId} kind={kind} />
     </div>
   )
 }

@@ -12,9 +12,9 @@
 //
 // THE RULE: an actor id is `<actorType>-<handle>`, for every actor, everywhere,
 // including the deterministic fallback a typed handle resolves to. Derive it
-// with `userIdFor` / `orgIdFor`; never write the string. The one exception is
-// `bez-oglasa`, whose id carries the `-empty` suffix `jobs.ts` reads to serve an
-// actor with no postings, and it is declared here rather than at a call site.
+// with `orgIdFor`; never write the string. The one exception is `bez-oglasa`,
+// whose id carries the `-empty` suffix `jobs.ts` reads to serve an actor with
+// no postings, and it is declared here rather than at a call site.
 //
 // `REACTOR_POOL` is filler and is deliberately NOT part of `PEOPLE`. `PEOPLE` is
 // read by organization rosters, job applicants and profile lookups, so the
@@ -29,9 +29,6 @@ import type { ActorRefDto } from './profiles'
 import type { OrganizationRole } from './organizations'
 
 // ── The id rule ───────────────────────────────────────────────────────────────
-
-export const userIdFor = (username: string): string =>
-  PEOPLE.find((person) => person.username === username)?.id ?? `user-${username}`
 
 const orgIdFor = (slug: string): string => `org-${slug}`
 

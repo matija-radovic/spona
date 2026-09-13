@@ -29,6 +29,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import io.github.matijaradovic.spona.actor.activity.ActivityService;
 import io.github.matijaradovic.spona.actor.dto.FollowActorDto;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.actor.follow.FollowService;
@@ -36,6 +37,7 @@ import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
+import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
@@ -48,9 +50,10 @@ class ActorControllerTest {
     private final PrivacyService privacy = mock(PrivacyService.class);
     private final ActorService actorsService = mock(ActorService.class);
     private final FollowService followService = mock(FollowService.class);
+    private final ActivityService activityService = mock(ActivityService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new ActorController(privacy, actorsService, followService))
+            .standaloneSetup(new ActorController(privacy, actorsService, followService, activityService))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
@@ -180,5 +183,47 @@ class ActorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"showJobPostings\":true}"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void activityDefaultsToKindAllOnTheFirstPageOfTwenty() throws Exception {
+        Pageable first = PageRequest.of(0, 20);
+        when(activityService.activity(ORG_ID, "all", first, caller)).thenReturn(new PageImpl<>(List.of(), first, 0));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/activity"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
+    void activityPassesTheKindAndThePage() throws Exception {
+        Pageable second = PageRequest.of(1, 5);
+        when(activityService.activity(ORG_ID, "posts", second, caller))
+                .thenReturn(new PageImpl<>(List.of(), second, 0));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/activity")
+                .param("kind", "posts").param("page", "2").param("size", "5"))
+                .andExpect(status().isOk());
+
+        verify(activityService).activity(ORG_ID, "posts", second, caller);
+    }
+
+    @Test
+    void activityOfAnUnknownActorIs404() throws Exception {
+        when(activityService.activity(eq(ORG_ID), any(), any(), eq(caller)))
+                .thenThrow(new NotFoundException("Actor not found."));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/activity")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void anInvalidKindIs422() throws Exception {
+        when(activityService.activity(eq(ORG_ID), eq("bogus"), any(), eq(caller)))
+                .thenThrow(UnprocessableException.on("kind", "Kind must be all, posts or comments."));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/activity").param("kind", "bogus"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.kind").exists());
     }
 }
