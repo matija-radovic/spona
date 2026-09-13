@@ -36,6 +36,7 @@ import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.dto.ChangeEmailRequest;
 import io.github.matijaradovic.spona.user.dto.ChangePasswordRequest;
@@ -51,7 +52,7 @@ class UserSettingsControllerTest {
     private final ActorService actors = mock(ActorService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new UserController(service, actors))
+            .standaloneSetup(new UserController(service, actors, mock(MembershipService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();

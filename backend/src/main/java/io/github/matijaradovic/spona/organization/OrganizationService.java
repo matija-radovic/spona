@@ -3,7 +3,6 @@ package io.github.matijaradovic.spona.organization;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
-import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.ReservedHandles;
 import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.organization.OrganizationGate.Seat;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
@@ -45,15 +44,18 @@ public class OrganizationService {
     private final UserRepository users;
     private final PrivacyService privacy;
     private final AvatarService avatars;
+    private final OrganizationGate gate;
 
     public OrganizationService(OrganizationRepository organizations, OrganizationMemberRepository members,
-            RoleAssignmentRepository roles, UserRepository users, PrivacyService privacy, AvatarService avatars) {
+            RoleAssignmentRepository roles, UserRepository users, PrivacyService privacy, AvatarService avatars,
+            OrganizationGate gate) {
         this.organizations = organizations;
         this.members = members;
         this.roles = roles;
         this.users = users;
         this.privacy = privacy;
         this.avatars = avatars;
+        this.gate = gate;
     }
 
     @Transactional
@@ -80,12 +82,12 @@ public class OrganizationService {
 
     @Transactional(readOnly = true)
     public OrgSettingsDto settings(String slug, User caller) {
-        return settingsOf(seat(slug, caller, PublishAuthority::canReadSettings, NOT_A_MEMBER));
+        return settingsOf(gate.seat(slug, caller, PublishAuthority::canReadSettings, NOT_A_MEMBER));
     }
 
     @Transactional
     public OrgSettingsDto updateProfile(String slug, User caller, UpdateOrganizationRequest request) {
-        Seat seat = seat(slug, caller, PublishAuthority::canEditProfile, NOT_AN_ADMIN);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canEditProfile, NOT_AN_ADMIN);
         Organization organization = seat.organization();
         organization.setDisplayName(Strings.trimToEmpty(request.displayName()));
         organization.setLegalName(Strings.trimToEmpty(request.legalName()));
@@ -101,7 +103,7 @@ public class OrganizationService {
 
     @Transactional
     public OrgSettingsDto changeSlug(String slug, User caller, String nextSlug) {
-        Seat seat = seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER);
         Organization organization = seat.organization();
         if (!nextSlug.equals(organization.getSlug())) {
             requireFreeSlug(nextSlug);
@@ -112,7 +114,7 @@ public class OrganizationService {
 
     @Transactional
     public void transferOwnership(String slug, User caller, TransferOwnershipRequest request) {
-        Organization organization = seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
+        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
                 .organization();
         requireConfirmation(organization, request.confirmSlug());
 
@@ -135,22 +137,12 @@ public class OrganizationService {
 
     @Transactional
     public void delete(String slug, User caller, String confirmSlug) {
-        Organization organization = seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
+        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
                 .organization();
         requireConfirmation(organization, confirmSlug);
 
         avatars.discard(organization.getAvatarUrl());
         organizations.delete(organization);
-    }
-
-    private Seat seat(String slug, User caller, Predicate<OrganizationRole> allowed, String refusal) {
-        Organization organization = organizations.findBySlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organization not found."));
-        OrganizationRole role = roles.findLiveRole(organization.getId(), caller.getId()).orElse(null);
-        if (!allowed.test(role)) {
-            throw new ForbiddenException(refusal);
-        }
-        return new Seat(organization, role);
     }
 
     private Optional<RoleAssignment> liveAssignment(Organization organization, UUID userId) {
@@ -176,8 +168,5 @@ public class OrganizationService {
         if (!organization.getSlug().equals(confirmSlug)) {
             throw UnprocessableException.on("confirmSlug", "The slug you typed does not match.");
         }
-    }
-
-    private record Seat(Organization organization, OrganizationRole role) {
     }
 }

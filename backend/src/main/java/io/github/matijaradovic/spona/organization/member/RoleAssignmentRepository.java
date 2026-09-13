@@ -12,6 +12,10 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
     Optional<RoleAssignment> findByOrganizationIdAndUserIdAndRevokedAtIsNull(
             UUID organizationId, UUID userId);
 
+    List<RoleAssignment> findByOrganizationIdAndRevokedAtIsNull(UUID organizationId);
+
+    List<RoleAssignment> findByUserIdAndRevokedAtIsNull(UUID userId);
+
     @Query("select r.role from RoleAssignment r"
             + " where r.organization.id = :organizationId and r.user.id = :userId and r.revokedAt is null")
     Optional<OrganizationRole> findLiveRole(UUID organizationId, UUID userId);

@@ -30,4 +30,16 @@ public final class PublishAuthority {
     public static boolean canManageOrganization(OrganizationRole role) {
         return role == OrganizationRole.OWNER;
     }
+
+    public static boolean canManageMembers(OrganizationRole role) {
+        return role == OrganizationRole.OWNER || role == OrganizationRole.ADMIN;
+    }
+
+    public static boolean canManageRole(OrganizationRole caller, OrganizationRole role) {
+        if (role == null || role == OrganizationRole.OWNER) {
+            return false;
+        }
+        return caller == OrganizationRole.OWNER
+                || (caller == OrganizationRole.ADMIN && role != OrganizationRole.ADMIN);
+    }
 }

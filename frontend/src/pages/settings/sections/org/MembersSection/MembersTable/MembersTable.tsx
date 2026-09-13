@@ -76,7 +76,7 @@ const MembersTable = ({
                 </div>
               </td>
 
-              <td data-label={t('settings.members.joined')}>{format.date(member.assignedAt)}</td>
+              <td data-label={t('settings.members.joined')}>{format.date(member.joinedAt)}</td>
 
               <td data-label={t('settings.members.role')}>
                 {manageable ? (

@@ -1,24 +1,23 @@
 // -----------------------------------------------------------------------------
-// MOCK "my memberships & my invitations" service (backend spec §3.3); the real
-// axios call is left commented above each mock body. Rejections are
-// `ProblemDetail` shapes, and one magic input reaches the error branch:
-//   - leaveOrganization : the OWNER row's slug -> 409 "Prenesite vlasništvo…"
+// "My memberships & my invitations" service. The membership functions call the
+// backend; the invitation functions are still MOCKS, with the real axios call
+// left commented above each mock body. Their rejections are `ProblemDetail`
+// shapes.
 //
-// The membership rows come from `mockActors.ts`, which is also where the profile,
+// The invitations come from `mockActors.ts`, which is also where the profile,
 // settings and job mocks read the same organizations from - one role per
-// organization, one actor id per handle. A role declared here and contradicted
-// there is what made every organization read as "not mine" on its own profile.
+// organization, one actor id per handle.
 //
-// The lists are MUTABLE module state so an accept produces the membership card the
-// UI highlights and a refetch after leave/decline does not resurrect the row.
+// The invitation list is MUTABLE module state so a refetch after accept/decline
+// does not resurrect the row.
 // -----------------------------------------------------------------------------
 
-// import api from '@utils/api'
+import api from '@utils/api'
 
 import type { ActorRefDto } from './profiles'
 import type { OrganizationRole } from './organizations'
 import type { ProblemDetail } from './types'
-import { ORGANIZATIONS, orgRef, personRef, setViewerRole, viewerMemberships, viewerRoleIn } from './mockActors'
+import { ORGANIZATIONS, orgRef, personRef, setViewerRole, viewerRoleIn } from './mockActors'
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
 
@@ -66,35 +65,9 @@ const iso = (daysAgo: number): string =>
  *  start in, so accepting one is a state change rather than a no-op. */
 const NON_MEMBER_ORGS = ORGANIZATIONS.filter((row) => row.initialViewerRole === null)
 
-// ── Mutable stores (see the header note) ──────────────────────────────────────
+// ── Mutable store (see the header note) ───────────────────────────────────────
 
-let myOrganizations: MyOrganizationDto[] | null = null
 let myInvitations: MyInvitationDto[] | null = null
-
-/** Founder of the one organization the viewer owns; invited into the rest. */
-const INVITERS: readonly (ActorRefDto | null)[] = [
-  null,
-  personRef('marko'),
-  personRef('jelena'),
-  personRef('ivana'),
-]
-
-const seedOrganizations = (): MyOrganizationDto[] => {
-  if (!myOrganizations) {
-    myOrganizations = viewerMemberships().map((row, index) => {
-      const role = viewerRoleIn(row.slug) as OrganizationRole
-      return {
-        organization: orgRef(row.slug),
-        role,
-        joinedAt: iso(320 - index * 80),
-        roleUpdatedAt: iso(320 - index * 90),
-        invitedBy: INVITERS[index % INVITERS.length],
-        memberCount: 10,
-      }
-    })
-  }
-  return myOrganizations
-}
 
 const seedInvitations = (): MyInvitationDto[] => {
   if (!myInvitations) {
@@ -109,43 +82,15 @@ const seedInvitations = (): MyInvitationDto[] => {
   return myInvitations
 }
 
-/** The membership an accepted invitation turns into. */
-const membershipFrom = (invitation: MyInvitationDto): MyOrganizationDto => ({
-  organization: invitation.organization,
-  role: invitation.role,
-  joinedAt: new Date().toISOString(),
-  roleUpdatedAt: new Date().toISOString(),
-  invitedBy: invitation.invitedBy,
-  memberCount: 11,
-})
-
 // ── Calls ─────────────────────────────────────────────────────────────────────
 
-/**
- * MOCK - would be: const { data } = await api.get(`/users/${username}/organizations`)
- * Bare array - you belong to a handful of organizations, so there is no paging.
- */
 export const fetchMyOrganizations = async (username: string): Promise<MyOrganizationDto[]> => {
-  void username
-  await delay(430)
-  return seedOrganizations().map((row) => ({ ...row }))
+  const { data } = await api.get<MyOrganizationDto[]>(`/users/${username}/organizations`)
+  return data
 }
 
-/**
- * MOCK - would be: await api.delete(`/users/${username}/organizations/${slug}`)
- * The UI hides the control on an OWNER row; this proves the SERVER is the real gate.
- */
 export const leaveOrganization = async (username: string, slug: string): Promise<void> => {
-  void username
-  await delay(480)
-
-  const row = seedOrganizations().find((entry) => entry.organization.handle === slug)
-  if (row?.role === 'OWNER') {
-    return rejectProblem(409, 'Prenesite vlasništvo pre napuštanja organizacije.', 'Conflict')
-  }
-
-  myOrganizations = seedOrganizations().filter((entry) => entry.organization.handle !== slug)
-  setViewerRole(slug, null)
+  await api.delete(`/users/${username}/organizations/${slug}`)
 }
 
 /** MOCK - would be: const { data } = await api.get(`/users/${username}/invitations`) */
@@ -169,15 +114,10 @@ export const acceptInvitation = async (id: string): Promise<void> => {
   }
 
   myInvitations = seedInvitations().filter((row) => row.id !== id)
-  const already = seedOrganizations().some(
-    (row) => row.organization.handle === invitation.organization.handle,
-  )
-  // Joining twice is not an error worth showing a person (backend spec §4.3).
-  if (already) return
-  myOrganizations = [...seedOrganizations(), membershipFrom(invitation)]
+  // Joining twice is not an error worth showing a person.
+  if (viewerRoleIn(invitation.organization.handle) !== null) return
   // The role is shared state: the profile head, the identity picker, the
-  // settings page and the postings pane all read it, so joining has to move it
-  // rather than only appending a row to this list.
+  // settings page and the postings pane all read it.
   setViewerRole(invitation.organization.handle, invitation.role)
 }
 

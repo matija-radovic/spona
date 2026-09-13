@@ -61,7 +61,7 @@ class OrganizationServiceTest {
     private final AvatarService avatars = mock(AvatarService.class);
 
     private final OrganizationService service = new OrganizationService(organizations, members, roles, users,
-            privacy, avatars);
+            privacy, avatars, new OrganizationGate(organizations, roles));
 
     private final User marko = TestFixtures.userWithId("marko", CALLER_ID);
     private final User jelena = TestFixtures.userWithId("jelena", ADMIN_ID);

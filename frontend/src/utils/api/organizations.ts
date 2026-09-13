@@ -1,10 +1,8 @@
 // -----------------------------------------------------------------------------
-// "An organization I belong to" service. The organization functions call the
-// backend; the member and invitation functions are still MOCKS, with the real
+// "An organization I belong to" service. The organization and member functions
+// call the backend; the invitation functions are still MOCKS, with the real
 // axios call left commented above each mock body. Their rejections are
 // `ProblemDetail` shapes, and these magic inputs reach every persona and failure:
-//   - setMemberRole      : userId === MAGIC_FAILING_MEMBER_ID -> 500 (revert test)
-//   - removeMember       : the same id                  -> 500
 //   - fetchInvitations   : any seat below ADMIN         -> 403 (OWNER and ADMIN only)
 //   - createInvitation   : identifier === "nepostojeci" -> 422 "Korisnik ne postoji."
 //                          identifier === "marko"       -> 409 already a member
@@ -13,8 +11,8 @@
 // Every role comes from `mockActors.ts`, which is where the profile, membership
 // and job mocks read the same organizations from.
 //
-// The member and invitation lists are MUTABLE module state, seeded per slug on first
-// read; a pure mock would silently undo every successful action on the next `Osveži`.
+// The invitation lists are MUTABLE module state, seeded per slug on first read; a
+// pure mock would silently undo every successful action on the next `Osveži`.
 //
 // Creating an invitation SENDS AN EMAIL; cancel/decline/dismiss do not.
 // -----------------------------------------------------------------------------
@@ -24,7 +22,7 @@ import api from '@utils/api'
 import type { ContactEntry } from '@shared/components'
 import type { PrivacyDto } from './settings'
 import type { ProblemDetail } from './types'
-import { PEOPLE, VIEWER, userIdFor, viewerRoleIn } from './mockActors'
+import { VIEWER, viewerRoleIn } from './mockActors'
 
 // ── Local enum mirror (the project mirrors backend enums as local unions) ──────
 
@@ -91,8 +89,7 @@ export interface OrgMemberDto {
   fullName: string
   avatarUrl: string | null
   role: OrganizationRole
-  /** ISO - when they joined. */
-  assignedAt: string
+  joinedAt: string
 }
 
 /** Org-side view: WAITING rows plus not-yet-dismissed DECLINED rows, nothing else. */
@@ -131,66 +128,11 @@ const iso = (daysAgo: number): string =>
 const MAGIC_UNKNOWN_IDENTIFIER = 'nepostojeci'
 const MAGIC_EXISTING_MEMBER = 'marko'
 
-/** The one member whose every mutation fails, so the optimistic revert is testable. */
-export const MAGIC_FAILING_MEMBER_ID = userIdFor('luka')
-
 const VIEWER_USERNAME = VIEWER.username
 
-// ── Mutable stores (see the header note) ──────────────────────────────────────
+// ── Mutable store (see the header note) ───────────────────────────────────────
 
-const members = new Map<string, OrgMemberDto[]>()
 const invitations = new Map<string, InvitationDto[]>()
-
-/** Everyone but the viewer, by handle. Exactly one OWNER and two ADMINs, so
- *  transfer always has options; the names come from the shared fixture. */
-const ROSTER: readonly { username: string; role: OrganizationRole }[] = [
-  { username: 'marko', role: 'OWNER' },
-  { username: 'jelena', role: 'ADMIN' },
-  { username: 'nikola', role: 'ADMIN' },
-  { username: 'milica', role: 'EDITOR' },
-  { username: 'stefan', role: 'EDITOR' },
-  { username: 'ivana', role: 'RECRUITER' },
-  { username: 'luka', role: 'RECRUITER' },
-  { username: 'dusan', role: 'PUBLISHER' },
-  { username: 'tijana', role: 'RECRUITER' },
-]
-
-const fullNameOf = (username: string): string =>
-  PEOPLE.find((row) => row.username === username)?.fullName ?? username
-
-/** The viewer's role from the shared membership state, or ADMIN for an organization
- *  the fixtures do not know. */
-const roleOf = (slug: string): OrganizationRole => viewerRoleIn(slug) ?? 'ADMIN'
-
-const seedMembers = (slug: string, viewerRole: OrganizationRole = roleOf(slug)): OrgMemberDto[] => {
-  const existing = members.get(slug)
-  if (existing) return existing
-
-  const viewerIsOwner = viewerRole === 'OWNER'
-
-  const rows: OrgMemberDto[] = [
-    {
-      userId: userIdFor(VIEWER_USERNAME),
-      username: VIEWER_USERNAME,
-      fullName: VIEWER.fullName,
-      avatarUrl: null,
-      role: viewerRole,
-      assignedAt: iso(320),
-    },
-    // Demote the founder when the viewer owns the org, keeping EXACTLY ONE OWNER row.
-    ...ROSTER.map((member, index) => ({
-      userId: userIdFor(member.username),
-      username: member.username,
-      fullName: fullNameOf(member.username),
-      avatarUrl: null,
-      role: viewerIsOwner && member.role === 'OWNER' ? ('ADMIN' as OrganizationRole) : member.role,
-      assignedAt: iso(300 - index * 24),
-    })),
-  ]
-
-  members.set(slug, rows)
-  return rows
-}
 
 const seedInvitations = (slug: string): InvitationDto[] => {
   const existing = invitations.get(slug)
@@ -274,41 +216,21 @@ export const deleteOrg = async (slug: string, confirmSlug: string): Promise<void
 
 // ── Members ───────────────────────────────────────────────────────────────────
 
-/**
- * MOCK - would be: const { data } = await api.get(`/organizations/${slug}/members`)
- * Bare array (a member list is a bounded set - no paging speculatively).
- */
 export const fetchOrgMembers = async (slug: string): Promise<OrgMemberDto[]> => {
-  await delay(1420)
-  return seedMembers(slug).map((row) => ({ ...row }))
+  const { data } = await api.get<OrgMemberDto[]>(`/organizations/${slug}/members`)
+  return data
 }
 
-/** MOCK - would be: await api.put(`/organizations/${slug}/members/${userId}`, { role }) */
 export const setMemberRole = async (
   slug: string,
   userId: string,
   role: OrganizationRole,
 ): Promise<void> => {
-  await delay(380)
-  if (userId === MAGIC_FAILING_MEMBER_ID) {
-    return rejectProblem(500, 'Greška servera. Pokušajte ponovo.', 'Internal Server Error')
-  }
-  members.set(
-    slug,
-    seedMembers(slug).map((row) => (row.userId === userId ? { ...row, role } : row)),
-  )
+  await api.put(`/organizations/${slug}/members/${userId}`, { role })
 }
 
-/** MOCK - would be: await api.delete(`/organizations/${slug}/members/${userId}`) */
 export const removeMember = async (slug: string, userId: string): Promise<void> => {
-  await delay(380)
-  if (userId === MAGIC_FAILING_MEMBER_ID) {
-    return rejectProblem(500, 'Greška servera. Pokušajte ponovo.', 'Internal Server Error')
-  }
-  members.set(
-    slug,
-    seedMembers(slug).filter((row) => row.userId !== userId),
-  )
+  await api.delete(`/organizations/${slug}/members/${userId}`)
 }
 
 // ── Invitations ───────────────────────────────────────────────────────────────

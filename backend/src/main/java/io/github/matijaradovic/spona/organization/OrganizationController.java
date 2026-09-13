@@ -1,5 +1,8 @@
 package io.github.matijaradovic.spona.organization;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
+import io.github.matijaradovic.spona.organization.dto.ChangeRoleRequest;
 import io.github.matijaradovic.spona.organization.dto.ChangeSlugRequest;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.DeleteOrganizationRequest;
+import io.github.matijaradovic.spona.organization.dto.OrgMemberDto;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
 import io.github.matijaradovic.spona.organization.dto.TransferOwnershipRequest;
 import io.github.matijaradovic.spona.organization.dto.UpdateOrganizationRequest;
+import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.user.User;
 
 import jakarta.validation.Valid;
@@ -31,10 +37,13 @@ public class OrganizationController {
 
     private final ActorService actors;
     private final OrganizationService organizations;
+    private final MembershipService memberships;
 
-    public OrganizationController(ActorService actors, OrganizationService organizations) {
+    public OrganizationController(ActorService actors, OrganizationService organizations,
+            MembershipService memberships) {
         this.actors = actors;
         this.organizations = organizations;
+        this.memberships = memberships;
     }
 
     @PostMapping
@@ -77,5 +86,23 @@ public class OrganizationController {
     void delete(@PathVariable String slug, @CurrentUser User caller,
             @Valid @RequestBody DeleteOrganizationRequest request) {
         organizations.delete(slug, caller, request.confirmSlug());
+    }
+
+    @GetMapping("/{slug}/members")
+    List<OrgMemberDto> members(@PathVariable String slug, @CurrentUser User caller) {
+        return memberships.roster(slug, caller);
+    }
+
+    @PutMapping("/{slug}/members/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void changeRole(@PathVariable String slug, @PathVariable UUID userId, @CurrentUser User caller,
+            @Valid @RequestBody ChangeRoleRequest request) {
+        memberships.changeRole(slug, caller, userId, request.role());
+    }
+
+    @DeleteMapping("/{slug}/members/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void removeMember(@PathVariable String slug, @PathVariable UUID userId, @CurrentUser User caller) {
+        memberships.remove(slug, caller, userId);
     }
 }
