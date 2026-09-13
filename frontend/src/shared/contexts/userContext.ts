@@ -20,6 +20,7 @@ export interface UserContextValue {
    *  the session token untouched. */
   updateUser: (user: User) => void
   logout: () => void
+  forgetSession: () => void
 }
 
 export const UserContext = createContext<UserContextValue | null>(null)

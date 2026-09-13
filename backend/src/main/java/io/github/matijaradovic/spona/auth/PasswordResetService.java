@@ -1,7 +1,6 @@
 package io.github.matijaradovic.spona.auth;
 
 import java.time.Instant;
-import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +11,7 @@ import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
+import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.common.util.TransactionHooks;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.mail.MailService;
@@ -42,7 +42,7 @@ public class PasswordResetService {
 
     @Transactional
     public void request(String email) {
-        users.findByEmailIgnoreCase(normalize(email)).ifPresent(this::issue);
+        users.findByEmailIgnoreCase(Strings.normalizeEmail(email)).ifPresent(this::issue);
     }
 
     /** spends every live link of that user in one transaction */
@@ -75,9 +75,5 @@ public class PasswordResetService {
     private String link(String plaintext) {
         String base = app.url();
         return (base.endsWith("/") ? base.substring(0, base.length() - 1) : base) + "/reset/" + plaintext;
-    }
-
-    private static String normalize(String email) {
-        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

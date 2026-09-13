@@ -36,7 +36,7 @@ const EmailForm = ({ settings }: EmailFormProps) => {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      await changeEmail(values)
+      await changeEmail(settings.username, values)
       reset({ email: values.email, currentPassword: '' })
       markRequested()
     } catch (caught) {

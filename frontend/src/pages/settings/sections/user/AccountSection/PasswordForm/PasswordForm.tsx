@@ -12,11 +12,12 @@ import { CredentialForm } from '../CredentialForm'
 import { buildPasswordSchema, PASSWORD_DEFAULTS, type PasswordData } from '../schema'
 
 interface PasswordFormProps {
+  username: string
   /** The account address the reset link is sent to. */
   email: string
 }
 
-const PasswordForm = ({ email }: PasswordFormProps) => {
+const PasswordForm = ({ username, email }: PasswordFormProps) => {
   const { t } = useTranslation()
   const { active: justSaved, raise: markSaved } = useTimedFlag()
 
@@ -41,7 +42,10 @@ const PasswordForm = ({ email }: PasswordFormProps) => {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await changePassword({ currentPassword: data.currentPassword, newPassword: data.newPassword })
+      await changePassword(username, {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      })
       reset(PASSWORD_DEFAULTS)
       setNotice(null)
       markSaved()

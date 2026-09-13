@@ -45,15 +45,27 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const updateUser = useCallback((next: User) => setUser(next), [])
 
-  const logout = useCallback(() => {
-    logoutRequest().catch(() => {})
+  const forgetSession = useCallback(() => {
     clearSessionData(user?.id ?? null)
     setUser(null)
   }, [user])
 
+  const logout = useCallback(() => {
+    logoutRequest().catch(() => {})
+    forgetSession()
+  }, [forgetSession])
+
   const value = useMemo<UserContextValue>(
-    () => ({ user, isAuthenticated: user !== null, isBootstrapping, login, updateUser, logout }),
-    [user, isBootstrapping, login, updateUser, logout],
+    () => ({
+      user,
+      isAuthenticated: user !== null,
+      isBootstrapping,
+      login,
+      updateUser,
+      logout,
+      forgetSession,
+    }),
+    [user, isBootstrapping, login, updateUser, logout, forgetSession],
   )
 
   return <UserContext value={value}>{children}</UserContext>

@@ -55,7 +55,7 @@ const UserProfileSection = () => {
   const persist = async (values: UserProfileData): Promise<boolean> => {
     setError(null)
     try {
-      const updated = await updateProfile(toUpdateProfilePayload(values))
+      const updated = await updateProfile(settings.username, toUpdateProfilePayload(values))
       reset(toUserProfileData(updated))
       if (user) {
         updateUser({ ...user, fullName: updated.fullName, avatarUrl: updated.avatarUrl ?? '' })

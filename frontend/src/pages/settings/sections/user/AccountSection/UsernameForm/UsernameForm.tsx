@@ -37,7 +37,7 @@ const UsernameForm = ({ settings, refetch }: UsernameFormProps) => {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      const updated = await changeUsername(values)
+      const updated = await changeUsername(settings.username, values)
       reset({ username: updated.username })
       markSaved()
       if (user) updateUser({ ...user, username: updated.username })

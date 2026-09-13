@@ -54,11 +54,11 @@ const AccountSection = () => {
           isOpen={openRow === 'password'}
           onToggle={() => toggle('password')}
         >
-          <PasswordForm email={settings.email} />
+          <PasswordForm username={settings.username} email={settings.email} />
         </CredentialRow>
       </div>
 
-      <DeleteAccountCard />
+      <DeleteAccountCard username={settings.username} />
     </SectionPanel>
   )
 }

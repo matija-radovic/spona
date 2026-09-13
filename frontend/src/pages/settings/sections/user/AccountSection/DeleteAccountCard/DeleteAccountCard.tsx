@@ -7,10 +7,14 @@ import { parseProblem } from '@utils/api/types'
 import { deleteAccount } from '@utils/api/settings'
 import { SettingsModal } from '../../../../components/SettingsModal'
 
-const DeleteAccountCard = () => {
+interface DeleteAccountCardProps {
+  username: string
+}
+
+const DeleteAccountCard = ({ username }: DeleteAccountCardProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { logout } = useUser()
+  const { forgetSession } = useUser()
 
   const [isOpen, setIsOpen] = useState(false)
   const [password, setPassword] = useState('')
@@ -28,8 +32,8 @@ const DeleteAccountCard = () => {
     setBusy(true)
     setError(null)
     try {
-      await deleteAccount(password)
-      logout()
+      await deleteAccount(username, password)
+      forgetSession()
       navigate('/')
     } catch (caught) {
       setError(parseProblem(caught).detail || t('errors.serverError'))
