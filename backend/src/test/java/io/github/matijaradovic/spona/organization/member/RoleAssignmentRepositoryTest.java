@@ -109,6 +109,36 @@ class RoleAssignmentRepositoryTest extends AbstractDataJpaTest {
     }
 
     @Test
+    void readsTheLiveRoleAsAValue() {
+        User member = users.save(TestFixtures.user("roleprojected"));
+        Organization org = organizations.save(TestFixtures.organization("role-projected-org"));
+        members.save(TestFixtures.membership(member, org));
+        roles.saveAndFlush(TestFixtures.roleAssignment(member, org, OrganizationRole.PUBLISHER));
+        entityManager.clear();
+
+        assertThat(roles.findLiveRole(org.getId(), member.getId())).contains(OrganizationRole.PUBLISHER);
+    }
+
+    @Test
+    void theLiveRoleValueSkipsRevokedRowsAndStrangers() {
+        User member = users.save(TestFixtures.user("rolehistory"));
+        User stranger = users.save(TestFixtures.user("rolehistorystranger"));
+        Organization org = organizations.save(TestFixtures.organization("role-history-org"));
+        members.save(TestFixtures.membership(member, org));
+        RoleAssignment granted = roles
+                .saveAndFlush(TestFixtures.roleAssignment(member, org, OrganizationRole.EDITOR));
+        granted.revoke(granted.getAssignedAt().plusSeconds(1));
+        roles.saveAndFlush(granted);
+
+        assertThat(roles.findLiveRole(org.getId(), member.getId())).isEmpty();
+        assertThat(roles.findLiveRole(org.getId(), stranger.getId())).isEmpty();
+
+        roles.saveAndFlush(TestFixtures.roleAssignment(member, org, OrganizationRole.ADMIN));
+
+        assertThat(roles.findLiveRole(org.getId(), member.getId())).contains(OrganizationRole.ADMIN);
+    }
+
+    @Test
     void refusesASecondLiveRowForTheSamePair() {
         User member = users.save(TestFixtures.user("roletwice"));
         Organization org = organizations.save(TestFixtures.organization("role-twice-org"));

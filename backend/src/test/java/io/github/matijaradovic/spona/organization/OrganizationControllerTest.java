@@ -36,7 +36,7 @@ class OrganizationControllerTest {
     private final ActorService actors = mock(ActorService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new OrganizationController(actors))
+            .standaloneSetup(new OrganizationController(actors, mock(OrganizationService.class)))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();

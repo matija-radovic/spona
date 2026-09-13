@@ -10,17 +10,19 @@ class PublishAuthorityTest {
 
     @ParameterizedTest
     @CsvSource({
-            "OWNER,     true,  true,  true",
-            "ADMIN,     true,  true,  true",
-            "PUBLISHER, true,  true,  false",
-            "EDITOR,    true,  false, false",
-            "RECRUITER, false, true,  false"
+            "OWNER,     true,  true,  true,  true, true",
+            "ADMIN,     true,  true,  true,  true, false",
+            "PUBLISHER, true,  true,  false, true, false",
+            "EDITOR,    true,  false, false, true, false",
+            "RECRUITER, false, true,  false, true, false"
     })
     void answersTheMatrixForEveryRole(OrganizationRole role, boolean content, boolean jobs,
-            boolean profile) {
+            boolean profile, boolean settings, boolean management) {
         assertThat(PublishAuthority.canPublishContent(role)).isEqualTo(content);
         assertThat(PublishAuthority.canManageJobPostings(role)).isEqualTo(jobs);
         assertThat(PublishAuthority.canEditProfile(role)).isEqualTo(profile);
+        assertThat(PublishAuthority.canReadSettings(role)).isEqualTo(settings);
+        assertThat(PublishAuthority.canManageOrganization(role)).isEqualTo(management);
     }
 
     @Test
@@ -28,6 +30,8 @@ class PublishAuthorityTest {
         assertThat(PublishAuthority.canPublishContent(null)).isFalse();
         assertThat(PublishAuthority.canManageJobPostings(null)).isFalse();
         assertThat(PublishAuthority.canEditProfile(null)).isFalse();
+        assertThat(PublishAuthority.canReadSettings(null)).isFalse();
+        assertThat(PublishAuthority.canManageOrganization(null)).isFalse();
     }
 
     @Test
@@ -44,5 +48,11 @@ class PublishAuthorityTest {
         assertThat(PublishAuthority.canEditProfile(OrganizationRole.EDITOR)).isFalse();
         assertThat(PublishAuthority.canEditProfile(OrganizationRole.RECRUITER)).isFalse();
         assertThat(PublishAuthority.canEditProfile(OrganizationRole.ADMIN)).isTrue();
+    }
+
+    @Test
+    void anAdminEditsTheProfileButDoesNotManageTheOrganization() {
+        assertThat(PublishAuthority.canEditProfile(OrganizationRole.ADMIN)).isTrue();
+        assertThat(PublishAuthority.canManageOrganization(OrganizationRole.ADMIN)).isFalse();
     }
 }

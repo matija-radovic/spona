@@ -22,4 +22,12 @@ public final class PublishAuthority {
     public static boolean canEditProfile(OrganizationRole role) {
         return role == OrganizationRole.OWNER || role == OrganizationRole.ADMIN;
     }
+
+    public static boolean canReadSettings(OrganizationRole role) {
+        return role != null;
+    }
+
+    public static boolean canManageOrganization(OrganizationRole role) {
+        return role == OrganizationRole.OWNER;
+    }
 }
