@@ -1,6 +1,7 @@
 package io.github.matijaradovic.spona.post;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -9,6 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface PostRepository extends JpaRepository<Post, UUID> {
+
+    @Query("select p from Post p join fetch p.createdFor where p.id = :postId")
+    Optional<Post> findWithCreatedFor(UUID postId);
 
     @Query("select p from Post p where p.createdFor.id = :actorId order by p.createdAt desc, p.id desc")
     Page<Post> findByCreatedFor(UUID actorId, Pageable pageable);

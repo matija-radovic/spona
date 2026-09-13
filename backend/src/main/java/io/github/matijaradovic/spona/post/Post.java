@@ -22,6 +22,8 @@ import jakarta.persistence.Table;
 @Table(name = "post")
 public class Post {
 
+    public static final int CONTENT_MAX = 5000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
@@ -45,12 +47,22 @@ public class Post {
     protected Post() {
     }
 
+    public Post(User createdBy, Actor createdFor, String content) {
+        this.createdBy = createdBy;
+        this.createdFor = createdFor;
+        this.content = content;
+    }
+
     public UUID getId() {
         return id;
     }
 
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public User getCreatedBy() {

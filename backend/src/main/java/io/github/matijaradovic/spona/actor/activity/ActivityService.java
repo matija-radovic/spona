@@ -13,17 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.actor.ActorRepository;
+import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.activity.dto.ActivityItemDto;
 import io.github.matijaradovic.spona.comment.Comment;
 import io.github.matijaradovic.spona.comment.CommentRepository;
 import io.github.matijaradovic.spona.common.domain.Actor;
-import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.organization.member.OrganizationRole;
-import io.github.matijaradovic.spona.organization.member.PublishAuthority;
-import io.github.matijaradovic.spona.organization.member.RoleAssignmentRepository;
 import io.github.matijaradovic.spona.post.Post;
 import io.github.matijaradovic.spona.post.PostRepository;
 import io.github.matijaradovic.spona.user.User;
@@ -34,21 +31,21 @@ public class ActivityService {
     private final ActorRepository actors;
     private final PostRepository posts;
     private final CommentRepository comments;
-    private final RoleAssignmentRepository roles;
+    private final ContentAuthority authority;
 
     public ActivityService(ActorRepository actors, PostRepository posts, CommentRepository comments,
-            RoleAssignmentRepository roles) {
+            ContentAuthority authority) {
         this.actors = actors;
         this.posts = posts;
         this.comments = comments;
-        this.roles = roles;
+        this.authority = authority;
     }
 
     @Transactional(readOnly = true)
     public Page<ActivityItemDto> activity(UUID actorId, String kind, Pageable pageable, User viewer) {
         Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException("Actor not found."));
         ActorRefDto author = ActorRefDto.from(owner);
-        Boolean canManage = viewer == null ? null : canManage(owner, viewer);
+        Boolean canManage = viewer == null ? null : authority.canManage(owner, viewer);
 
         return switch (kind) {
             case "all" -> allPage(actorId, pageable, author, canManage);
@@ -111,13 +108,5 @@ public class ActivityService {
                 .toList();
 
         return new PageImpl<>(items, pageable, total);
-    }
-
-    private boolean canManage(Actor owner, User viewer) {
-        if (owner.getActorType() == ActorType.USER) {
-            return owner.getId().equals(viewer.getId());
-        }
-        OrganizationRole role = roles.findLiveRole(owner.getId(), viewer.getId()).orElse(null);
-        return PublishAuthority.canPublishContent(role);
     }
 }

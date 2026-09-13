@@ -1,9 +1,9 @@
 // -----------------------------------------------------------------------------
-// MOCK posts + comments service (the post page and its thread). The Spring Boot
-// backend does not exist yet, so every call fakes a delayed response; the real
-// axios call is left commented above each mock body. DTOs are separate from the
-// DB model (new_docx/types.ts): `responseCount`, `siblingIndex`, `siblingTotal`
-// and the `viewerCan*` pair are DERIVED, not columns.
+// Posts are served by the backend. Comments are a MOCK service (the post page's
+// thread): every comment call fakes a delayed response, with the real axios call
+// left commented above each mock body. DTOs are separate from the DB model
+// (new_docx/types.ts): `responseCount`, `siblingIndex`, `siblingTotal` and the
+// `viewerCan*` pair are DERIVED, not columns.
 //
 // The thread is MUTABLE module state, seeded per post on first read, so an edit
 // or a delete survives the next fetch instead of being silently undone - the
@@ -15,14 +15,6 @@
 // the summary on a card and the breakdown behind its "+N" cannot disagree.
 //
 // Magic inputs:
-//   - fetchPost      : postId === "post-reactions" -> twenty distinct emojis and
-//                                                 roughly six hundred reactors
-//   - fetchPost      : postId === "post-404"   -> 404 Not Found
-//   - fetchPost      : postId === "post-mine"  -> authored by user-my-account,
-//                                                 both viewerCan* flags set
-//   - fetchPost      : any post the rotation gives the viewer or an organization
-//                      whose content they manage also carries both flags, so an
-//                      org-authored editable post is reachable too
 //   - fetchComments  : postId === "post-empty" -> zero comments, empty thread
 //   - every post     : root comment #1 has 23 replies, to exercise the
 //                      load-more arithmetic and the sibling windows
@@ -31,10 +23,9 @@
 //                      viewer manages; both carry the viewerCan* flags
 //   - createComment  : content containing "403" -> 403, which is how the
 //                      acting-identity cache invalidation path is reachable
-//   - createPost     : content containing "403" -> 403, same path from /posts/new
 // -----------------------------------------------------------------------------
 
-// import api from '@utils/api'
+import api from '@utils/api'
 
 import type { PagedResponse, ProblemDetail } from './types'
 import type { ActorRefDto } from './profiles'
@@ -370,84 +361,27 @@ const pageOf = <T>(rows: T[], page: number, size: number, self: string, next: st
 
 // ── Posts ────────────────────────────────────────────────────────────────────
 
-/** MOCK - would be: const { data } = await api.get(`/posts/${postId}`) */
 export const fetchPost = async (postId: string): Promise<PostDto> => {
-  await delay(380)
-  if (postId === MAGIC_NOT_FOUND_POST) {
-    return rejectProblem(404, 'Objava ne postoji ili je obrisana.', 'Not Found')
-  }
-  return projectPost(seedPost(postId))
+  const { data } = await api.get<PostDto>(`/posts/${postId}`)
+  return data
 }
 
-/**
- * MOCK - would be: const { data } = await api.post('/posts', payload)
- * `createdForId` is always sent and never null; the server re-checks the role
- * matrix on every write, so a 403 here means the caller may not publish as that
- * actor and must not be retried under a different identity.
- *
- * The row is written into BOTH stores. `posts` so the redirect to
- * `/posts/{id}` finds the post that was just written instead of one `buildPost`
- * invents out of the id hash, and `threads` so the new post opens on an empty
- * discussion rather than the 26 comments `seedThread` would mint for an id it
- * has not seen. Both flags are set, because the actor who just wrote a post may
- * edit and delete it.
- */
+/** A 403 means the caller may not publish as `createdForId`; do not retry under another identity. */
 export const createPost = async (payload: CreatePostPayload): Promise<PostDto> => {
-  await delay(460)
-  if (payload.content.includes(MAGIC_FORBIDDEN_CONTENT)) {
-    return rejectProblem(403, 'Ne možete objavljivati u ime te organizacije.', 'Forbidden')
-  }
-
-  const author = authorFor(payload.createdForId)
-  const id = makeId()
-  seedEmptyRoster('post', id)
-  const created: PostDto = {
-    id,
-    author,
-    content: payload.content,
-    createdAt: new Date().toISOString(),
-    commentCount: 0,
-    reactions: summaryFor('post', id),
-    authorBio: AUTHOR_BIOS[author.id] ?? null,
-    viewerCanEdit: true,
-    viewerCanDelete: true,
-  }
-  posts.set(created.id, created)
-  threads.set(created.id, [])
-  return projectPost(created)
+  const { data } = await api.post<PostDto>('/posts', payload)
+  return data
 }
 
-/**
- * MOCK - would be: const { data } = await api.put(`/posts/${postId}`, { content })
- * There is no `updatedAt` and no "edited" marker: an edit is a silent in-place
- * replacement, which is a decision and not an oversight.
- */
 export const updatePost = async (postId: string, content: string): Promise<PostDto> => {
-  await delay(360)
-  const post = seedPost(postId)
-  if (!post.viewerCanEdit) {
-    return rejectProblem(403, 'Nemate pravo da menjate ovu objavu.', 'Forbidden')
-  }
-  const next = { ...post, content }
-  posts.set(postId, next)
-  return projectPost(next)
+  const { data } = await api.put<PostDto>(`/posts/${postId}`, { content })
+  return data
 }
 
-/** MOCK - would be: await api.delete(`/posts/${postId}`) */
 export const deletePost = async (postId: string): Promise<void> => {
-  await delay(380)
-  const post = seedPost(postId)
-  if (!post.viewerCanDelete) {
-    return rejectProblem(403, 'Nemate pravo da obrišete ovu objavu.', 'Forbidden')
-  }
-  posts.delete(postId)
-  threads.delete(postId)
+  await api.delete(`/posts/${postId}`)
 }
 
-/** MOCK ONLY - hands another mock a row from this file's store, so the feed
- *  serves exactly what `fetchPost` will serve for the same id. Two fixture
- *  sets over one entity is how a list and a page start disagreeing about a
- *  post. The real API has one table and needs no such seam. */
+/** MOCK ONLY - the feed mock's rows, drawn from this file's post store. */
 export const mockPostRow = (postId: string): PostDto => projectPost(seedPost(postId))
 
 // ── Comments ─────────────────────────────────────────────────────────────────

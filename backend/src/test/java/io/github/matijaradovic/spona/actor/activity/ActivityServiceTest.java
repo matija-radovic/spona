@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import io.github.matijaradovic.spona.actor.ActorRepository;
+import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.activity.dto.ActivityItemDto;
 import io.github.matijaradovic.spona.actor.activity.dto.ActivityItemDto.ActivityCommentDto;
 import io.github.matijaradovic.spona.actor.activity.dto.ActivityItemDto.ActivityPostDto;
@@ -50,7 +51,7 @@ class ActivityServiceTest {
     private final PostRepository posts = mock(PostRepository.class);
     private final CommentRepository comments = mock(CommentRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
-    private final ActivityService service = new ActivityService(actors, posts, comments, roles);
+    private final ActivityService service = new ActivityService(actors, posts, comments, new ContentAuthority(roles));
 
     private final User viewer = TestFixtures.userWithId("viewer", VIEWER_ID);
 

@@ -31,7 +31,6 @@ import io.github.matijaradovic.spona.user.UserRepository;
 
 import jakarta.persistence.EntityManager;
 
-/** Post and Comment have no writer yet (B21/B22), so rows are seeded by SQL, as B16 did for roles. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ContainersConfig.class)
