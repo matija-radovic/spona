@@ -54,6 +54,8 @@ public class SecurityConfig {
             "/jobs/*",
             "/posts/*",
             "/posts/*/comments",
+            "/posts/*/comments/*",
+            "/posts/*/comments/*/responses",
             "/comments/*",
             "/comments/*/responses",
             "/reactions/*/*"

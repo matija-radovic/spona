@@ -23,6 +23,8 @@ import jakarta.persistence.Table;
 @Table(name = "comment")
 public class Comment {
 
+    public static final int CONTENT_MAX = 2000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
@@ -55,12 +57,24 @@ public class Comment {
     protected Comment() {
     }
 
+    public Comment(Post post, Comment responseToComment, User createdBy, Actor createdFor, String content) {
+        this.post = post;
+        this.responseToComment = responseToComment;
+        this.createdBy = createdBy;
+        this.createdFor = createdFor;
+        this.content = content;
+    }
+
     public UUID getId() {
         return id;
     }
 
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Comment getResponseToComment() {
