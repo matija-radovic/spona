@@ -23,12 +23,7 @@ const mergeById = (base: SavedJobItemDto[], extra: SavedJobItemDto[]): SavedJobI
   return [...base, ...extra.filter((job) => !seen.has(job.id))]
 }
 
-/**
- * Own-profile Saved-jobs pane. localStorage is the source of truth (§10). The
- * initial fetch hydrates OPEN only; Finished/All lazily hydrate CLOSED once, all
- * into a single array filtered in code. A module cache survives tab switches and
- * is invalidated when the saved set changed.
- */
+/** Own-profile saved jobs, with localStorage as the source of truth */
 const SavedJobsPane = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()

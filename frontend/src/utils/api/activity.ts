@@ -7,28 +7,19 @@ import type { PostDto } from './posts'
 
 // --- DTOs ---
 
-/** A post in an activity feed is the post, discriminated - one shape, so the
- *  feed row and the post page cannot drift apart. */
 export type ActivityPostDto = PostDto & { kind: 'post' }
 
 export interface ActivityCommentDto {
   kind: 'comment'
   id: string
   postId: string
-  /** responseToCommentId != null - replies get the "replied to a comment"
-   *  heading and NO comment-jump button. */
   isReply: boolean
   author: ActorRefDto
   content: string
   createdAt: string
   reactions: ReactionSummaryDto
-  /** Direct replies; always 0 on a reply, because the depth cap makes it
-   *  structurally so. Carried here too so the delete confirmation can say how
-   *  many replies go with the comment - a cascade the reader must be told about
-   *  before it happens. */
+  /** Direct replies, always 0 on a reply */
   responseCount: number
-  /** As on `PostDto`: server-computed, mutually independent, and absent
-   *  = false. */
   viewerCanEdit?: boolean
   viewerCanDelete?: boolean
 }

@@ -3,15 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { ContactValue, contactTypeOption, type ContactEntry } from '@shared/components'
 
 interface ContactPaneProps {
-  /** The tab only renders when this is non-empty (§6), so it is always populated. */
+  /** Never empty, the tab only renders when there are entries */
   entries: ContactEntry[]
 }
 
-/**
- * The actor's additional contacts in a grid of equal boxes (icon + description /
- * type fallback + value). Mirrors ContactApply's per-entry rendering, reusing the
- * icon-per-type map and the shared `ContactValue` (which decides link vs text).
- */
 const ContactPane = ({ entries }: ContactPaneProps) => {
   const { t } = useTranslation()
 

@@ -31,12 +31,8 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
   const [type, setType] = useState<string>(CONTACT_TYPE_OPTIONS[0].key)
   const [description, setDescription] = useState('')
   const [draftValue, setDraftValue] = useState('')
-  // Errors only surface once the row has been touched or an Add was attempted,
-  // so the builder starts clean instead of flagging an empty value on mount.
   const [touched, setTouched] = useState(false)
 
-  // The panel is ~8 rows tall; near the bottom of a form it would otherwise run
-  // past the fold and only be reachable by scrolling.
   const {
     open: typeOpen,
     setOpen: setTypeOpen,
@@ -47,7 +43,6 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
     above: openAbove,
   } = usePopover()
 
-  // ── Live validity (read per keystroke, the same way the rest of the form does)
   const trimmedValue = draftValue.trim()
   const limitReached = value.length >= CONTACT_MAX_ENTRIES
   const descTooLong = description.length > CONTACT_DESC_MAX
@@ -56,9 +51,6 @@ const ContactInfoWidget = ({ label, value, onChange }: ContactInfoWidgetProps) =
   const valueError = touched && (valueEmpty || valueTooLong)
   const canAdd = !limitReached && !valueEmpty && !descTooLong && !valueTooLong
 
-  // Upgrades `website`/`other` to a recognised brand as the value is typed, so
-  // the icon the entry will be stored with is visible before Add. An explicit
-  // pick is never overridden (see `resolveContactType`).
   const effectiveType = resolveContactType(type, trimmedValue)
 
   const addEntry = () => {

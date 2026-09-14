@@ -3,20 +3,19 @@ import api from '@utils/api'
 import type { ActorRefDto } from './profiles'
 import type { OrganizationRole } from './organizations'
 
-/** One organization I belong to, plus the facts about *my* membership. */
 export interface MyOrganizationDto {
-  /** Always actorType 'org'; ActorRefDto so ActorAvatar/actorPath work unchanged. */
+  /** Always an organization */
   organization: ActorRefDto
   role: OrganizationRole
   joinedAt: string
-  /** When my role last changed; equals joinedAt until the first change. */
+  /** Equals joinedAt until the first role change */
   roleUpdatedAt: string
-  /** Who invited me - null for a founder. */
+  /** Null for a founder */
   invitedBy: ActorRefDto | null
   memberCount: number
 }
 
-/** An invitation addressed to me and still waiting. */
+/** A waiting invitation addressed to the caller */
 export interface MyInvitationDto {
   id: string
   organization: ActorRefDto

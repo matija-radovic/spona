@@ -39,11 +39,6 @@ export interface CreateUserPayload {
   otherContactInfo: AdditionalContactInformation
 }
 
-/**
- * An unverified account is `403` with `/problems/email-not-verified`, and that
- * arm mails a fresh link itself, so the form only says to check the inbox. Bad
- * credentials are a plain 401.
- */
 export const loginRequest = async (payload: LoginPayload): Promise<AuthResponse> => {
   const { data } = await api.post<AuthResponse>('/auth/login', payload)
   return data

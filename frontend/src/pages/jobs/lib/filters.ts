@@ -28,8 +28,7 @@ export interface FilterState {
 
 export type JobQuery = FilterState
 
-// -- Option sets - labels mirror the backend enum spellings exactly ------------
-// (an empty `value` is the "none"/clear entry for single-select filters).
+// An empty value is the clear entry of a single-select filter
 
 const POSTED_OPTIONS: readonly FilterOption[] = [
   { value: '', labelKey: 'jobs.filters.postedOpt.any' },
@@ -99,8 +98,6 @@ export const emptyFilters = (): FilterState => ({
   experience: [],
   salary: false,
 })
-
-// -- Serialise / deserialise --------------------------------------------------
 
 /** Selected -> flat param value. Omitted (empty) when none or all are chosen. */
 const serialiseMulti = (selected: string[], options: readonly FilterOption[]): string =>

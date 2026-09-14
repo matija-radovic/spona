@@ -53,7 +53,7 @@ export const useCvApply = (jobId: string): CvApply => {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  // Frontend validation — mirrored exactly in handleSubmit before firing.
+  // Frontend validation - mirrored exactly in handleSubmit before firing.
   const validateCv = (candidate: File): string | null => {
     const nameOk = CV_ACCEPTED_EXT.some((ext) => candidate.name.toLowerCase().endsWith(ext))
     const typeOk = CV_ACCEPTED_TYPES.includes(candidate.type)

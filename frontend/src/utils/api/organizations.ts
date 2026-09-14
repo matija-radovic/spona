@@ -18,7 +18,7 @@ export interface OrgSettingsDto {
   location: string | null
   otherContactInfo: ContactEntry[]
   privacy: PrivacyDto
-  /** Drives ALL gating; recomputed server-side per request, never read from a token. */
+  /** Drives all gating, recomputed on every request */
   viewerRole: OrganizationRole
   memberCount: number
 }
@@ -28,13 +28,12 @@ export interface UpdateOrgProfilePayload {
   legalName: string
   description: string | null
   website: string | null
-  /** A new pick's PNG data URL; null keeps the current avatar. */
+  /** PNG data URL of a new pick, null keeps the current avatar */
   avatar: string | null
   location: string | null
   otherContactInfo: ContactEntry[]
 }
 
-/** The public org shape returned when a new organization is created. */
 export interface OrganizationDto {
   id: string
   actorType: 'org'
@@ -69,19 +68,19 @@ export interface OrgMemberDto {
   joinedAt: string
 }
 
-/** Org-side view: WAITING rows plus not-yet-dismissed DECLINED rows, nothing else. */
+/** Org-side view, a declined invitation stays until dismissed */
 export interface InvitationDto {
   id: string
   status: 'WAITING' | 'DECLINED'
-  /** Set when the invitation was addressed to a profile. */
+  /** Set when addressed to a profile */
   invitee: { username: string; fullName: string; avatarUrl: string | null } | null
-  /** Set instead of `invitee` when it was addressed to an email address. */
+  /** Set instead of invitee when addressed to an email */
   email: string | null
   role: OrganizationRole
   createdAt: string
-  /** ISO - when it was declined; null while WAITING. */
+  /** When it was declined, null while waiting */
   resolvedAt: string | null
-  /** Null once the inviter's account is gone. */
+  /** Null once the inviter's account is deleted */
   invitedByUsername: string | null
 }
 
@@ -150,7 +149,6 @@ export const fetchInvitations = async (slug: string): Promise<InvitationDto[]> =
   return data
 }
 
-/** The backend classifies `identifier` as a username or an address and never looks an address up. */
 export const createInvitation = async (
   slug: string,
   identifier: string,
@@ -167,7 +165,6 @@ export const cancelInvitation = async (slug: string, invitationId: string): Prom
   await api.delete(`/organizations/${slug}/invitations/${invitationId}`)
 }
 
-/** DECLINED rows only: sets `dismissedAt`, hiding the row without deleting the history. */
 export const dismissInvitation = async (slug: string, invitationId: string): Promise<void> => {
   await api.post(`/organizations/${slug}/invitations/${invitationId}/dismiss`)
 }

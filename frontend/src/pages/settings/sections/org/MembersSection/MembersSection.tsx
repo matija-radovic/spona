@@ -86,7 +86,7 @@ const MembersSection = () => {
     setRefreshing(false)
   }
 
-  // ── Members: optimistic, revert on rejection ───────────────────────────────
+  // --- Members: optimistic, reverted on rejection ---
 
   const onRoleChange = async (member: OrgMemberDto, role: OrganizationRole) => {
     if (member.role === role) return
@@ -120,7 +120,7 @@ const MembersSection = () => {
     }
   }
 
-  // ── Invitations: request, then refetch - on success AND on failure ─────────
+  // --- Invitations: refetched after every request, successful or not ---
 
   const onInvite = async (identifier: string, role: OrganizationRole): Promise<string | null> => {
     setInvitationsError(null)

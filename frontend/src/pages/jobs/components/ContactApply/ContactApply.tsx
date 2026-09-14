@@ -5,11 +5,6 @@ interface ContactApplyProps {
   entries: ContactEntry[]
 }
 
-/**
- * Read-only render of a job's `contactInformation` (applicationType
- * CONTACT_ONLY). Reuses the ContactInfoWidget icon-per-type map; display only —
- * no add/remove builder.
- */
 const ContactApply = ({ entries }: ContactApplyProps) => (
   <ul className="contact-apply">
     {entries.map((entry, index) => {

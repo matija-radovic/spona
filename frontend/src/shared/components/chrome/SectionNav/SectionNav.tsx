@@ -7,7 +7,7 @@ import type { SectionItem } from './sectionItem'
 
 interface SectionNavProps {
   sections: readonly SectionItem[]
-  /** Accessible name of the lane — the surface it navigates. */
+  /** Accessible name of the lane - the surface it navigates. */
   label: string
 }
 

@@ -35,13 +35,6 @@ interface JobsViewProps {
   detailOnly: boolean
 }
 
-/**
- * List/bar owner. The parent (`JobsLayout`) keys this by `queryKey::detailOnly`,
- * so a new search or a mode change remounts it with a clean slate - which lets
- * the list state lazy-initialise from the cache and keeps the fetch effect's
- * setState confined to async callbacks. Across index <-> :slug (same key) it
- * stays mounted: no refetch, scroll preserved.
- */
 const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -52,7 +45,6 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
 
   const isMobile = useMediaQuery(MQ.phone)
 
-  // -- List state (lazy-initialised from cache; refs shadow it for async logic) --
   const [items, setItems] = useState<JobListItemDto[]>(initialCache?.items ?? [])
   const [totalElements, setTotalElements] = useState(initialCache?.totalElements ?? 0)
   const [last, setLast] = useState(initialCache?.last ?? false)
@@ -157,7 +149,6 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
     setReloadKey((k) => k + 1)
   }
 
-  // -- Navigation ----------------------------------------------------------------
   const onSearch = useCallback(
     (next: FilterState) => {
       const params = filtersToSearchParams(next).toString()

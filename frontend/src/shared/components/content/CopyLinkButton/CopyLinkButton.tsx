@@ -11,12 +11,6 @@ interface CopyLinkButtonProps {
   className?: string
 }
 
-/**
- * The quiet, card-sized copy control: copies `url` (via `useCopyLink`) and
- * briefly swaps the link icon for a check. Sized to sit among post-card
- * actions (§7.2); surfaces that need a full-size control render `useCopyLink`
- * through `Button` instead - see the profile head.
- */
 const CopyLinkButton = ({ url, label, className }: CopyLinkButtonProps) => {
   const { t } = useTranslation()
   const { copied, copy } = useCopyLink(url)

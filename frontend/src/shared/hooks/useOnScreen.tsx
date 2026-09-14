@@ -22,7 +22,7 @@ const useOnScreen = <T extends Element>(
     const el = targetRef.current
     if (!enabled || !el) return
 
-    // setState lives in the observer callback (an external subscription) — not
+    // setState lives in the observer callback (an external subscription) - not
     // synchronously in the effect body. When disabled the observer is torn down;
     // any stale `true` is harmless since callers also gate on their own flag.
     const observer = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), {

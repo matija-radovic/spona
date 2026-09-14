@@ -2,7 +2,6 @@ import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
 
-/** Boolean-only and additive. There is no public/private-account flag. */
 export interface PrivacyDto {
   showJobPostings: boolean
 }
@@ -10,7 +9,7 @@ export interface PrivacyDto {
 export interface UserSettingsDto {
   id: string
   username: string
-  /** Private: never in a public profile DTO. A *display* email is an otherContactInfo entry. */
+  /** Private, never in a public profile */
   email: string
   fullName: string
   bio: string | null
@@ -55,7 +54,6 @@ export const updateProfile = async (
   return data
 }
 
-/** The URL carries the username, so the caller must move the address bar with it. */
 export const changeUsername = async (
   username: string,
   payload: ChangeUsernamePayload,
@@ -64,7 +62,6 @@ export const changeUsername = async (
   return data
 }
 
-/** A request, not a write: the address changes when the link mailed to it is opened. */
 export const changeEmail = async (username: string, payload: ChangeEmailPayload): Promise<void> => {
   await api.post(`/users/${username}/email`, payload)
 }
@@ -76,7 +73,6 @@ export const changePassword = async (
   await api.put(`/users/${username}/password`, payload)
 }
 
-/** Privacy is per actor, so one endpoint serves both privacy sections. */
 export const updatePrivacy = async (actorId: string, privacy: PrivacyDto): Promise<void> => {
   await api.put(`/actors/${actorId}/privacy`, privacy)
 }
