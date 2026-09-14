@@ -30,7 +30,8 @@ public record PostDto(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Boolean viewerCanDelete) {
 
-    public static PostDto from(Post post, long commentCount, Boolean authorFollowedByViewer, Boolean canManage) {
+    public static PostDto from(Post post, long commentCount, ReactionSummaryDto reactions,
+            Boolean authorFollowedByViewer, Boolean canManage) {
         Actor author = post.getCreatedFor();
         String authorBio = switch (author) {
             case User user -> user.getBio();
@@ -38,6 +39,6 @@ public record PostDto(
             default -> throw new IllegalArgumentException("Unknown actor subtype " + author.getClass());
         };
         return new PostDto(post.getId(), ActorRefDto.from(author), post.getContent(), post.getCreatedAt(),
-                commentCount, ReactionSummaryDto.empty(), authorBio, authorFollowedByViewer, canManage, canManage);
+                commentCount, reactions, authorBio, authorFollowedByViewer, canManage, canManage);
     }
 }

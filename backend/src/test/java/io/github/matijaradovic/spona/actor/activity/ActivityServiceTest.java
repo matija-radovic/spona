@@ -36,6 +36,7 @@ import io.github.matijaradovic.spona.organization.member.OrganizationRole;
 import io.github.matijaradovic.spona.organization.member.RoleAssignmentRepository;
 import io.github.matijaradovic.spona.post.Post;
 import io.github.matijaradovic.spona.post.PostRepository;
+import io.github.matijaradovic.spona.reaction.ReactionService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 
@@ -51,7 +52,8 @@ class ActivityServiceTest {
     private final PostRepository posts = mock(PostRepository.class);
     private final CommentRepository comments = mock(CommentRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
-    private final ActivityService service = new ActivityService(actors, posts, comments, new ContentAuthority(roles));
+    private final ActivityService service = new ActivityService(actors, posts, comments, new ContentAuthority(roles),
+            mock(ReactionService.class));
 
     private final User viewer = TestFixtures.userWithId("viewer", VIEWER_ID);
 

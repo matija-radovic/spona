@@ -26,6 +26,9 @@ import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.post.PostRepository;
+import io.github.matijaradovic.spona.reaction.ReactionService;
+import io.github.matijaradovic.spona.reaction.ReactionTargetType;
+import io.github.matijaradovic.spona.reaction.dto.ReactionSummaryDto;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 
@@ -40,14 +43,16 @@ public class CommentService {
     private final ActorRepository actors;
     private final UserRepository users;
     private final ContentAuthority authority;
+    private final ReactionService reactions;
 
     public CommentService(CommentRepository comments, PostRepository posts, ActorRepository actors,
-            UserRepository users, ContentAuthority authority) {
+            UserRepository users, ContentAuthority authority, ReactionService reactions) {
         this.comments = comments;
         this.posts = posts;
         this.actors = actors;
         this.users = users;
         this.authority = authority;
+        this.reactions = reactions;
     }
 
     @Transactional(readOnly = true)
@@ -59,11 +64,14 @@ public class CommentService {
             case "old" -> comments.findRoots(postId, withheld(exclude), byCreatedAt(pageable, Sort.Direction.ASC));
             default -> throw UnprocessableException.on("sort", "Sort must be top, new or old.");
         };
-        Map<UUID, Long> replyCounts = comments.replyCounts(page.map(root -> root.getId()).getContent());
+        List<UUID> rootIds = page.map(root -> root.getId()).getContent();
+        Map<UUID, Long> replyCounts = comments.replyCounts(rootIds);
+        Map<UUID, ReactionSummaryDto> summaries = reactions.summaries(ReactionTargetType.COMMENT, rootIds, viewer);
         Function<Comment, Boolean> canManage = managerCheck(viewer);
         return page.map(root -> CommentDto.from(
                 root,
                 replyCounts.getOrDefault(root.getId(), 0L),
+                summaries.get(root.getId()),
                 canManage.apply(root)));
     }
 
@@ -73,6 +81,7 @@ public class CommentService {
         return CommentDto.from(
                 comment,
                 responseCount(comment),
+                reactions.summary(ReactionTargetType.COMMENT, commentId, viewer),
                 managerCheck(viewer).apply(comment));
     }
 
@@ -83,16 +92,19 @@ public class CommentService {
         if (comment.getResponseToComment() == null) {
             UUID ownPostId = comment.getPost().getId();
             return new CommentContextDto(
-                    CommentDto.from(comment, responseCount(comment), canManage.apply(comment)),
+                    CommentDto.from(comment, responseCount(comment),
+                            reactions.summary(ReactionTargetType.COMMENT, commentId, viewer), canManage.apply(comment)),
                     null,
                     comments.countRootsRankedBefore(ownPostId, commentId),
                     comments.countRoots(ownPostId, NOTHING));
         }
         Comment parent = load(comment.getResponseToComment().getId(), null);
         long siblingTotal = responseCount(parent);
+        Map<UUID, ReactionSummaryDto> summaries = reactions.summaries(ReactionTargetType.COMMENT,
+                List.of(commentId, parent.getId()), viewer);
         return new CommentContextDto(
-                CommentDto.from(comment, 0, canManage.apply(comment)),
-                CommentDto.from(parent, siblingTotal, canManage.apply(parent)),
+                CommentDto.from(comment, 0, summaries.get(commentId), canManage.apply(comment)),
+                CommentDto.from(parent, siblingTotal, summaries.get(parent.getId()), canManage.apply(parent)),
                 comments.countResponsesBefore(commentId),
                 siblingTotal);
     }
@@ -101,8 +113,10 @@ public class CommentService {
     public Page<CommentDto> responses(UUID commentId, UUID postId, Pageable pageable, User viewer) {
         load(commentId, postId);
         Function<Comment, Boolean> canManage = managerCheck(viewer);
-        return comments.findResponses(commentId, pageable)
-                .map(reply -> CommentDto.from(reply, 0, canManage.apply(reply)));
+        Page<Comment> page = comments.findResponses(commentId, pageable);
+        Map<UUID, ReactionSummaryDto> summaries = reactions.summaries(ReactionTargetType.COMMENT,
+                page.map(reply -> reply.getId()).getContent(), viewer);
+        return page.map(reply -> CommentDto.from(reply, 0, summaries.get(reply.getId()), canManage.apply(reply)));
     }
 
     @Transactional
@@ -117,7 +131,7 @@ public class CommentService {
         }
         Comment comment = comments.saveAndFlush(new Comment(posts.getReferenceById(postId), parent,
                 users.getReferenceById(caller.getId()), author, content));
-        return CommentDto.from(comment, 0, true);
+        return CommentDto.from(comment, 0, ReactionSummaryDto.of(List.of(), List.of()), true);
     }
 
     @Transactional
@@ -128,7 +142,8 @@ public class CommentService {
             throw new ForbiddenException("You may not edit this comment.");
         }
         comment.setContent(content);
-        return CommentDto.from(comment, responseCount(comment), true);
+        return CommentDto.from(comment, responseCount(comment),
+                reactions.summary(ReactionTargetType.COMMENT, commentId, caller), true);
     }
 
     @Transactional

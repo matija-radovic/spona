@@ -50,15 +50,17 @@ public sealed interface ActivityItemDto {
             Boolean viewerCanDelete) implements ActivityItemDto {
     }
 
-    static ActivityItemDto post(Post post, ActorRefDto author, long commentCount, Boolean canManage) {
+    static ActivityItemDto post(Post post, ActorRefDto author, long commentCount, ReactionSummaryDto reactions,
+            Boolean canManage) {
         return new ActivityPostDto("post", post.getId(), author, post.getContent(), post.getCreatedAt(),
-                commentCount, ReactionSummaryDto.empty(), canManage, canManage);
+                commentCount, reactions, canManage, canManage);
     }
 
-    static ActivityItemDto comment(Comment comment, ActorRefDto author, long responseCount, Boolean canManage) {
+    static ActivityItemDto comment(Comment comment, ActorRefDto author, long responseCount,
+            ReactionSummaryDto reactions, Boolean canManage) {
         boolean isReply = comment.getResponseToComment() != null;
         return new ActivityCommentDto("comment", comment.getId(), comment.getPost().getId(), isReply, author,
-                comment.getContent(), comment.getCreatedAt(), ReactionSummaryDto.empty(),
+                comment.getContent(), comment.getCreatedAt(), reactions,
                 isReply ? 0 : responseCount, canManage, canManage);
     }
 }

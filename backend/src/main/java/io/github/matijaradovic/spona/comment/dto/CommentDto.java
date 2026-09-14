@@ -25,10 +25,11 @@ public record CommentDto(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Boolean viewerCanDelete) {
 
-    public static CommentDto from(Comment comment, long responseCount, Boolean canManage) {
+    public static CommentDto from(Comment comment, long responseCount, ReactionSummaryDto reactions,
+            Boolean canManage) {
         Comment parent = comment.getResponseToComment();
         return new CommentDto(comment.getId(), comment.getPost().getId(), parent == null ? null : parent.getId(),
                 ActorRefDto.from(comment.getCreatedFor()), comment.getContent(), comment.getCreatedAt(),
-                ReactionSummaryDto.empty(), parent == null ? responseCount : 0, canManage, canManage);
+                reactions, parent == null ? responseCount : 0, canManage, canManage);
     }
 }

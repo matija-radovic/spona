@@ -37,6 +37,7 @@ import io.github.matijaradovic.spona.organization.member.RoleAssignmentRepositor
 import io.github.matijaradovic.spona.post.dto.CreatePostRequest;
 import io.github.matijaradovic.spona.post.dto.PostDto;
 import io.github.matijaradovic.spona.post.dto.UpdatePostRequest;
+import io.github.matijaradovic.spona.reaction.ReactionService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
@@ -55,7 +56,7 @@ class PostServiceTest {
     private final FollowRepository follows = mock(FollowRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
     private final PostService service = new PostService(posts, actors, users, comments, follows,
-            new ContentAuthority(roles));
+            new ContentAuthority(roles), mock(ReactionService.class));
 
     private final User author = TestFixtures.userWithId("author", AUTHOR_ID);
     private final User stranger = TestFixtures.userWithId("stranger", STRANGER_ID);

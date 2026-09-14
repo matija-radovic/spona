@@ -18,6 +18,9 @@ import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.post.dto.CreatePostRequest;
 import io.github.matijaradovic.spona.post.dto.PostDto;
 import io.github.matijaradovic.spona.post.dto.UpdatePostRequest;
+import io.github.matijaradovic.spona.reaction.ReactionService;
+import io.github.matijaradovic.spona.reaction.ReactionTargetType;
+import io.github.matijaradovic.spona.reaction.dto.ReactionSummaryDto;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 
@@ -30,22 +33,26 @@ public class PostService {
     private final CommentRepository comments;
     private final FollowRepository follows;
     private final ContentAuthority authority;
+    private final ReactionService reactions;
 
     public PostService(PostRepository posts, ActorRepository actors, UserRepository users,
-            CommentRepository comments, FollowRepository follows, ContentAuthority authority) {
+            CommentRepository comments, FollowRepository follows, ContentAuthority authority,
+            ReactionService reactions) {
         this.posts = posts;
         this.actors = actors;
         this.users = users;
         this.comments = comments;
         this.follows = follows;
         this.authority = authority;
+        this.reactions = reactions;
     }
 
     @Transactional(readOnly = true)
     public PostDto post(UUID postId, User viewer) {
         Post post = load(postId);
         Boolean canManage = viewer == null ? null : authority.canManage(post.getCreatedFor(), viewer);
-        return dto(post, commentCount(postId), viewer, canManage);
+        return dto(post, commentCount(postId), reactions.summary(ReactionTargetType.POST, postId, viewer), viewer,
+                canManage);
     }
 
     @Transactional
@@ -57,7 +64,7 @@ public class PostService {
             throw new ForbiddenException("You may not publish as this actor.");
         }
         Post post = posts.saveAndFlush(new Post(users.getReferenceById(caller.getId()), author, content));
-        return dto(post, 0, caller, true);
+        return dto(post, 0, ReactionSummaryDto.of(List.of(), List.of()), caller, true);
     }
 
     @Transactional
@@ -68,7 +75,8 @@ public class PostService {
             throw new ForbiddenException("You may not edit this post.");
         }
         post.setContent(content);
-        return dto(post, commentCount(postId), caller, true);
+        return dto(post, commentCount(postId), reactions.summary(ReactionTargetType.POST, postId, caller), caller,
+                true);
     }
 
     @Transactional
@@ -88,11 +96,11 @@ public class PostService {
         return comments.commentCounts(List.of(postId)).getOrDefault(postId, 0L);
     }
 
-    private PostDto dto(Post post, long commentCount, User viewer, Boolean canManage) {
+    private PostDto dto(Post post, long commentCount, ReactionSummaryDto summary, User viewer, Boolean canManage) {
         Boolean followed = viewer == null
                 ? null
                 : follows.existsByFollower_IdAndFollowee_Id(viewer.getId(), post.getCreatedFor().getId());
-        return PostDto.from(post, commentCount, followed, canManage);
+        return PostDto.from(post, commentCount, summary, followed, canManage);
     }
 
     private static String checkedContent(String content) {

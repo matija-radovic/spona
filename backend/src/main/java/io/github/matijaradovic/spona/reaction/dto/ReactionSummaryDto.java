@@ -12,11 +12,15 @@ public record ReactionSummaryDto(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         List<String> viewerReactions) {
 
+    public static final int TOP_MAX = 3;
+
     public record TopEntry(String emoji, long count) {
     }
 
-    /** TODO: remove/change when actually implementing the reaction thing */
-    public static ReactionSummaryDto empty() {
-        return new ReactionSummaryDto(List.of(), 0, 0, null);
+    public static ReactionSummaryDto of(List<TopEntry> entries, List<String> viewerReactions) {
+        List<TopEntry> top = List.copyOf(entries.subList(0, Math.min(TOP_MAX, entries.size())));
+        long total = entries.stream().mapToLong(entry -> entry.count()).sum();
+        long inTop = top.stream().mapToLong(entry -> entry.count()).sum();
+        return new ReactionSummaryDto(top, total - inTop, total, viewerReactions);
     }
 }

@@ -53,7 +53,7 @@ class SecurityRouteSplitTest {
         mvc.perform(get("/organizations/spona")).andExpect(status().isNotFound());
         mvc.perform(get("/jobs")).andExpect(status().isNotFound());
         mvc.perform(get("/posts/00000000-0000-4000-8000-000000000001/comments")).andExpect(status().isNotFound());
-        mvc.perform(get("/reactions/post/1")).andExpect(status().isNotFound());
+        mvc.perform(get("/reactions/post/00000000-0000-4000-8000-000000000001")).andExpect(status().isNotFound());
     }
 
     @Test

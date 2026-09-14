@@ -1,49 +1,18 @@
 // -----------------------------------------------------------------------------
-// MOCK reactions service. The Spring Boot backend does not exist yet, so every
-// call fakes a delayed response; the real axios call is left commented above
-// each mock body. Rejections are `ProblemDetail` shapes so callers can
-// `parseProblem(err)`.
+// Reactions are served by the backend. Posts, comments and the profile Activity
+// pane all read the summary and all write through `setReaction`.
 //
-// Reactions are their own domain rather than a corner of one: posts, comments
-// and the profile Activity pane all read the summary and all write through this
-// one call.
+// `fetchReactionBreakdown` is the one read in this folder that is not paged: it
+// takes no `page`, no `size`, no `emoji` and answers no envelope, because the
+// response is bounded by one target's own reactions.
 //
-// THE ROSTER IS THE SOURCE OF TRUTH, AND THE SUMMARY IS DERIVED FROM IT. One
-// seeded `{ emoji, reactors }[]` per target, mutable module state in the
-// `posts.ts` discipline: seeded on first read, mutated in place, so a reaction
-// taken back does not come back on the next fetch. `summaryFor` projects the
-// three-plus-"+N" shape a card renders and `fetchReactionBreakdown` serves the
-// whole thing, so the two can never disagree - which is the one bug this feature
-// is capable of having, since the breakdown opens two pixels under the summary.
-// Every read in `posts.ts` and `activity.ts` re-stamps its summary from here,
-// exactly as `fetchPost` re-stamps `commentCount` from the thread store.
-//
-// `fetchReactionBreakdown` IS THE ONE READ IN THIS FOLDER THAT IS NOT PAGED, and
-// that is deliberate rather than forgotten. It takes no `page`, no `size`, no
-// `emoji` and answers no envelope: the response is bounded by one target's own
-// reactions, the modal is a whole-picture view that has to state every count
-// before the reader picks anything, and paging it would put an infinite scroll
-// inside a modal pane. The cost is honest - a heavily reacted target sends every
-// reactor in one body. The trigger to revisit is a measurement, thousands of
-// reactions on one target or a body past a few hundred kilobytes, and the
-// upgrade is `?emoji=` answering `PagedResponse<ActorRefDto>` with the
-// unfiltered call still serving the counts. It is not served today because
-// nothing sends it, and a parameter no caller sends is an untested shape.
-// backend-contract.md §7e has the same reasoning for the backend.
-//
-// Magic inputs:
-//   - setReaction             : empty targetId -> 400 Bad Request
-//   - fetchReactionBreakdown  : empty targetId -> 400 Bad Request
-//   - fetchReactionBreakdown  : targetId === "post-reactions" -> all twenty
-//                               palette emojis and roughly six hundred reactors,
-//                               which is the row to open when checking that one
-//                               unpaged request and two scrolled panes behave
+// `summaryFor` and its seeded roster are the one mock left in this file: the
+// feed mock stamps its borrowed post rows with them.
 // -----------------------------------------------------------------------------
 
-// import api from '@utils/api'
+import api from '@utils/api'
 
 import { REACTION_EMOJIS } from '@utils/constants/reactions'
-import type { ProblemDetail } from './types'
 import type { ActorRefDto } from './profiles'
 import { PEOPLE, REACTOR_POOL, VIEWER, personRef } from './mockActors'
 
@@ -84,21 +53,6 @@ export interface ReactionBreakdownDto {
 export type ReactionTargetType = 'post' | 'comment'
 
 // ── Mock plumbing ────────────────────────────────────────────────────────────
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const makeProblem = (status: number, detail: string, title = ''): ProblemDetail => ({
-  type: 'about:blank',
-  title,
-  status,
-  detail,
-  instance: '/api/reactions',
-})
-
-const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
-  Promise.reject(makeProblem(status, detail, title))
-
-const MAGIC_MANY_REACTIONS = 'post-reactions'
 
 /** Cheap stable hash so a given target always seeds the same roster. */
 const hashString = (value: string): number => {
@@ -150,23 +104,16 @@ const reactorsFor = (seed: number, index: number, count: number): ActorRefDto[] 
   ...rotate(REACTOR_POOL, seed * 7 + index * 31),
 ].slice(0, count)
 
-/** The `post-reactions` fixture: a steep curve rather than a flat one, so the
- *  lane has a widest row worth measuring and twenty entries still land near six
- *  hundred reactors. */
-const manyCount = (seed: number, index: number): number =>
-  Math.max(20, Math.round(120 / (index + 1))) + ((seed + index) % 5)
-
 const seedRoster = (targetType: ReactionTargetType, targetId: string): ReactionRoster => {
   const seed = hashString(rosterKey(targetType, targetId))
-  const many = targetId === MAGIC_MANY_REACTIONS
   // Every fifth target has no reactions at all: the empty summary path is live
   // and has to stay reachable.
-  const distinct = many ? REACTION_EMOJIS.length : seed % 5 === 0 ? 0 : 1 + (seed % 8)
+  const distinct = seed % 5 === 0 ? 0 : 1 + (seed % 8)
   const start = seed % REACTION_EMOJIS.length
 
   const entries = Array.from({ length: distinct }, (_, index) => {
-    const emoji = REACTION_EMOJIS[many ? index : (start + index) % REACTION_EMOJIS.length]
-    const count = many ? manyCount(seed, index) : 1 + ((seed + index * 13) % 40)
+    const emoji = REACTION_EMOJIS[(start + index) % REACTION_EMOJIS.length]
+    const count = 1 + ((seed + index * 13) % 40)
     return { emoji, reactors: reactorsFor(seed, index, count) }
   }).sort(byCountThenPalette)
 
@@ -187,13 +134,6 @@ const rosterFor = (targetType: ReactionTargetType, targetId: string): ReactionRo
   const seeded = seedRoster(targetType, targetId)
   rosters.set(key, seeded)
   return seeded
-}
-
-/** MOCK ONLY - a row that was just created carries no reactions, and a roster
- *  seeded lazily off the id hash would invent some. The real API has rows and
- *  needs no such seam. */
-export const seedEmptyRoster = (targetType: ReactionTargetType, targetId: string): void => {
-  rosters.set(rosterKey(targetType, targetId), { entries: [] })
 }
 
 // ── Derivations ──────────────────────────────────────────────────────────────
@@ -219,66 +159,23 @@ export const summaryFor = (
 
 // ── Reads ────────────────────────────────────────────────────────────────────
 
-/**
- * MOCK - would be:
- *   const { data } = await api.get(`/reactions/${targetType}/${targetId}`)
- * One request answers the whole breakdown; there is no `emoji` parameter and no
- * `PagedResponse` here, for the reason in this file's header. The response is a
- * deep copy of the roster rather than the roster itself: a caller holding the
- * live arrays would watch counts change under it when `setReaction` runs, which
- * is not what an HTTP response does.
- */
+/** The whole breakdown in one request: no `emoji` parameter and no `PagedResponse`. */
 export const fetchReactionBreakdown = async (
   targetType: ReactionTargetType,
   targetId: string,
 ): Promise<ReactionBreakdownDto> => {
-  await delay(320)
-  if (!targetId) return rejectProblem(400, 'Nedostaje identifikator sadržaja.', 'Bad Request')
-
-  const { entries } = rosterFor(targetType, targetId)
-  return {
-    entries: entries.map((entry) => ({
-      emoji: entry.emoji,
-      count: entry.reactors.length,
-      reactors: entry.reactors.map((actor) => ({ ...actor })),
-    })),
-    total: entries.reduce((sum, entry) => sum + entry.reactors.length, 0),
-  }
+  const { data } = await api.get<ReactionBreakdownDto>(`/reactions/${targetType}/${targetId}`)
+  return data
 }
 
 // ── The write ────────────────────────────────────────────────────────────────
 
-/**
- * MOCK. Adds or removes the viewer's reaction (one user x one emoji x one target,
- * per the Reaction unique constraint). Real call switches verb on `next`:
- *   await api({ method: next ? 'put' : 'delete',
- *               url: `/reactions/${targetType}/${targetId}`, data: { emoji } })
- * It writes the roster rather than only delaying, so a viewer who reacts and
- * then opens the breakdown is in the list they just joined.
- */
+/** Adds or removes the viewer's reaction; both verbs are idempotent. */
 export const setReaction = async (
   targetType: ReactionTargetType,
   targetId: string,
   emoji: string,
   next: boolean,
 ): Promise<void> => {
-  await delay(200)
-  if (!targetId) return rejectProblem(400, 'Nedostaje identifikator sadržaja.', 'Bad Request')
-
-  const roster = rosterFor(targetType, targetId)
-  const entry = roster.entries.find((row) => row.emoji === emoji)
-
-  if (next) {
-    if (!entry) roster.entries.push({ emoji, reactors: [personRef(VIEWER.username)] })
-    else if (!entry.reactors.some((actor) => actor.id === VIEWER.id)) {
-      entry.reactors = [personRef(VIEWER.username), ...entry.reactors]
-    }
-  } else if (entry) {
-    entry.reactors = entry.reactors.filter((actor) => actor.id !== VIEWER.id)
-    if (entry.reactors.length === 0) {
-      roster.entries = roster.entries.filter((row) => row !== entry)
-    }
-  }
-
-  roster.entries.sort(byCountThenPalette)
+  await api({ method: next ? 'put' : 'delete', url: `/reactions/${targetType}/${targetId}`, data: { emoji } })
 }

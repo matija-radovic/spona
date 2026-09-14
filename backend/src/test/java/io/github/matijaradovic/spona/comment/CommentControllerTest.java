@@ -201,6 +201,6 @@ class CommentControllerTest {
     private static CommentDto dto(UUID parentId, Boolean canManage) {
         ActorRefDto author = new ActorRefDto(ActorType.USER, CALLER_ID, "", "caller", null);
         return new CommentDto(COMMENT_ID, POST_ID, parentId, author, "Zdravo", Instant.parse("2026-01-02T03:04:05Z"),
-                ReactionSummaryDto.empty(), 0, canManage, canManage);
+                ReactionSummaryDto.of(List.of(), null), 0, canManage, canManage);
     }
 }

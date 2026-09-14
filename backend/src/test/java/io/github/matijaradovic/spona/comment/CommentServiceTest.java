@@ -45,6 +45,7 @@ import io.github.matijaradovic.spona.organization.member.OrganizationRole;
 import io.github.matijaradovic.spona.organization.member.RoleAssignmentRepository;
 import io.github.matijaradovic.spona.post.Post;
 import io.github.matijaradovic.spona.post.PostRepository;
+import io.github.matijaradovic.spona.reaction.ReactionService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
@@ -68,7 +69,7 @@ class CommentServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
     private final CommentService service = new CommentService(comments, posts, actors, users,
-            new ContentAuthority(roles));
+            new ContentAuthority(roles), mock(ReactionService.class));
 
     private final User author = TestFixtures.userWithId("author", AUTHOR_ID);
     private final User stranger = TestFixtures.userWithId("stranger", STRANGER_ID);

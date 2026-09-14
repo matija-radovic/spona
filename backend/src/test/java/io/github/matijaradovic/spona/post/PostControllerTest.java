@@ -150,6 +150,6 @@ class PostControllerTest {
     private static PostDto dto(String content, Boolean canManage) {
         ActorRefDto author = new ActorRefDto(ActorType.USER, CALLER_ID, "", "caller", null);
         return new PostDto(POST_ID, author, content, Instant.parse("2026-01-02T03:04:05Z"), 0,
-                ReactionSummaryDto.empty(), "Bio", canManage == null ? null : false, canManage, canManage);
+                ReactionSummaryDto.of(List.of(), null), "Bio", canManage == null ? null : false, canManage, canManage);
     }
 }
