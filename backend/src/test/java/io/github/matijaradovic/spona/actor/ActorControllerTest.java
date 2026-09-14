@@ -35,10 +35,12 @@ import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.actor.follow.FollowService;
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
+import io.github.matijaradovic.spona.job.JobService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 
@@ -51,9 +53,10 @@ class ActorControllerTest {
     private final ActorService actorsService = mock(ActorService.class);
     private final FollowService followService = mock(FollowService.class);
     private final ActivityService activityService = mock(ActivityService.class);
+    private final JobService jobService = mock(JobService.class);
 
     private final MockMvc mvc = MockMvcBuilders
-            .standaloneSetup(new ActorController(privacy, actorsService, followService, activityService))
+            .standaloneSetup(new ActorController(privacy, actorsService, followService, activityService, jobService))
             .setControllerAdvice(new GlobalExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
@@ -225,5 +228,39 @@ class ActorControllerTest {
         mvc.perform(get("/actors/" + ORG_ID + "/activity").param("kind", "bogus"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.errors.kind").exists());
+    }
+
+    @Test
+    void postingsAskForNothingOnTheFirstPageOfTwenty() throws Exception {
+        Pageable first = PageRequest.of(0, 20);
+        when(jobService.postings(ORG_ID, null, null, first, caller)).thenReturn(new PageImpl<>(List.of(), first, 0));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/jobs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
+    void postingsPassTheStatusTheSortAndThePage() throws Exception {
+        Pageable second = PageRequest.of(1, 5);
+        when(jobService.postings(ORG_ID, "DRAFT", "updated_asc", second, caller))
+                .thenReturn(new PageImpl<>(List.of(), second, 0));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/jobs")
+                .param("status", "DRAFT").param("sort", "updated_asc").param("page", "2").param("size", "5"))
+                .andExpect(status().isOk());
+
+        verify(jobService).postings(ORG_ID, "DRAFT", "updated_asc", second, caller);
+    }
+
+    @Test
+    void aRefusedPostingsParameterIs400WithNoFieldErrors() throws Exception {
+        when(jobService.postings(eq(ORG_ID), eq("DRAFT"), any(), any(), eq(caller)))
+                .thenThrow(new BadRequestException("Status and sort are only for whoever manages these postings."));
+
+        mvc.perform(get("/actors/" + ORG_ID + "/jobs").param("status", "DRAFT"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").doesNotExist());
     }
 }

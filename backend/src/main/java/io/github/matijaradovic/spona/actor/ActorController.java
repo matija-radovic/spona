@@ -23,6 +23,8 @@ import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
 import io.github.matijaradovic.spona.common.web.PageMapper;
 import io.github.matijaradovic.spona.common.web.PagedResponse;
+import io.github.matijaradovic.spona.job.JobService;
+import io.github.matijaradovic.spona.job.dto.SavedJobItemDto;
 import io.github.matijaradovic.spona.user.User;
 
 import jakarta.validation.Valid;
@@ -37,13 +39,15 @@ public class ActorController {
     private final ActorService actorsService;
     private final FollowService followService;
     private final ActivityService activityService;
+    private final JobService jobService;
 
     public ActorController(PrivacyService privacy, ActorService actorsService, FollowService followService,
-            ActivityService activityService) {
+            ActivityService activityService, JobService jobService) {
         this.privacy = privacy;
         this.actorsService = actorsService;
         this.followService = followService;
         this.activityService = activityService;
+        this.jobService = jobService;
     }
 
     @GetMapping
@@ -85,6 +89,15 @@ public class ActorController {
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = DEFAULT_SIZE) int size,
             @CurrentUser User viewer) {
         return PageMapper.toResponse(activityService.activity(actorId, kind, PageMapper.toPageable(page, size),
+                viewer));
+    }
+
+    @GetMapping("/{actorId}/jobs")
+    PagedResponse<SavedJobItemDto> jobs(@PathVariable UUID actorId, @RequestParam(required = false) String status,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = DEFAULT_SIZE) int size,
+            @CurrentUser User viewer) {
+        return PageMapper.toResponse(jobService.postings(actorId, status, sort, PageMapper.toPageable(page, size),
                 viewer));
     }
 

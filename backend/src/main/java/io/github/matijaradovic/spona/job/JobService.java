@@ -11,13 +11,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.actor.ActorRepository;
 import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.follow.FollowRepository;
+import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.error.BadRequestException;
@@ -50,15 +53,17 @@ public class JobService {
     private final UserRepository users;
     private final FollowRepository follows;
     private final ContentAuthority authority;
+    private final PrivacyService privacy;
 
     public JobService(JobRepository jobs, JobSearch search, ActorRepository actors, UserRepository users,
-            FollowRepository follows, ContentAuthority authority) {
+            FollowRepository follows, ContentAuthority authority, PrivacyService privacy) {
         this.jobs = jobs;
         this.search = search;
         this.actors = actors;
         this.users = users;
         this.follows = follows;
         this.authority = authority;
+        this.privacy = privacy;
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +98,24 @@ public class JobService {
                 .distinct()
                 .toList();
         return jobs.findAllInOrder(parsed, wanted).stream().map(job -> SavedJobItemDto.from(job)).toList();
+    }
+
+    /** Whoever manages the actor's postings may filter and sort them, everone else reads OPEN ones and newest first */
+    @Transactional(readOnly = true)
+    public Page<SavedJobItemDto> postings(UUID actorId, String status, String sort, Pageable pageable, User viewer) {
+        Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException("Actor not found."));
+        if (viewer == null || !authority.canManageJobPostings(owner, viewer)) {
+            if (given(status) || given(sort)) {
+                throw new BadRequestException("Status and sort are only for whoever manages these postings.");
+            }
+            return privacy.of(actorId).showJobPostings()
+                    ? postingsPage(actorId, EnumSet.of(JobStatus.OPEN), null, pageable)
+                    : Page.empty(pageable);
+        }
+        Set<JobStatus> statuses = given(status)
+                ? listed("status", status, JobStatus.class)
+                : EnumSet.allOf(JobStatus.class);
+        return postingsPage(actorId, statuses, sort, pageable);
     }
 
     @Transactional
@@ -164,6 +187,22 @@ public class JobService {
                 ? follows.existsByFollower_IdAndFollowee_Id(caller.getId(), poster.getId())
                 : null;
         return JobDetailDto.from(job, followed, true);
+    }
+
+    /** Every order ends on the id, so tied rows page without repeats or gaps. */
+    private Page<SavedJobItemDto> postingsPage(UUID actorId, Set<JobStatus> statuses, String sort,
+            Pageable pageable) {
+        Sort order = switch (given(sort) ? sort : "created_desc") {
+            case "created_desc" -> Sort.by(Sort.Direction.DESC, "createdAt", "id");
+            case "created_asc" -> Sort.by(Sort.Direction.ASC, "createdAt", "id");
+            case "updated_desc" -> Sort.by(Sort.Direction.DESC, "updatedAt", "id");
+            case "updated_asc" -> Sort.by(Sort.Direction.ASC, "updatedAt", "id");
+            default -> throw UnprocessableException.on("sort",
+                    "Sort must be created_desc, created_asc, updated_desc or updated_asc.");
+        };
+        return jobs.findByCreatedFor(actorId, statuses,
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), order))
+                .map(job -> SavedJobItemDto.from(job));
     }
 
     private String uniqueSlug(String title) {

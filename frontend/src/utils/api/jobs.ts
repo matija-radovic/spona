@@ -1,17 +1,14 @@
 // -----------------------------------------------------------------------------
-// Jobs service. The three reads and the four posting writes hit the backend;
-// `fetchJobApplications`, `submitApplication` and `fetchActorJobPostings` are
-// mocks that fake a delayed response, the real axios call commented above each
-// body. DTO shapes are separate from the DB model (new_docx/types.ts):
-// user-facing DTOs OMIT `createdBy` and ship a stripped, discriminated
-// `createdFor`. Transport envelopes come from `./types`.
+// Jobs service. The four reads and the four posting writes hit the backend;
+// `fetchJobApplications` and `submitApplication` are mocks that fake a delayed
+// response, the real axios call commented above each body. DTO shapes are
+// separate from the DB model (new_docx/types.ts): user-facing DTOs OMIT
+// `createdBy` and ship a stripped, discriminated `createdFor`. Transport
+// envelopes come from `./types`.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
-// uniformly. Magic inputs make the mocks' failure/empty paths reachable:
+// uniformly. A magic input makes the mock's failure path reachable:
 //   - submitApplication : filename contains "fail" -> 413 rejection
-//   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
-//   - fetchActorJobPostings : an actor whose postings the viewer manages -> the
-//                      owner's shape: every status, and the parameters answered
 //
 // Saved jobs no longer live here (new_docx/types.ts, end of the Jobs block —
 // there is no FavoriteJob table); they are browser
@@ -25,15 +22,7 @@ import type { ActorRefDto } from './profiles'
 import type { PagedResponse, ProblemDetail } from './types'
 import type { JobQuery } from '@pages/jobs/lib/filters'
 import { filtersToSearchParams } from '@pages/jobs/lib/filters'
-import {
-  ORGANIZATIONS,
-  VIEWER,
-  findOrgById,
-  orgRef,
-  orgViewerCanManagePostings,
-  personRef,
-  viewerRoleIn,
-} from './mockActors'
+import { personRef } from './mockActors'
 
 // ── Local enum mirrors (the project mirrors backend enums as local unions) ─────
 
@@ -291,51 +280,6 @@ const makeProblem = (status: number, detail: string, title = ''): ProblemDetail 
 const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
   Promise.reject(makeProblem(status, detail, title))
 
-/** Put in the slug of an actor's DRAFT or CLOSED posting. */
-const MAGIC_CLOSED_SLUG = 'zatvoren'
-const MAGIC_DRAFT_SLUG = 'nacrt'
-/** Twelve statuses, so an owner's pane pages at all, and all three kinds so the
- *  capsule renders. */
-const OWNER_STATUSES: readonly JobStatus[] = [
-  'OPEN', 'DRAFT', 'CLOSED', 'OPEN', 'DRAFT', 'OPEN',
-  'CLOSED', 'OPEN', 'DRAFT', 'OPEN', 'OPEN', 'DRAFT',
-]
-/** The statuses an actor's own postings pane serves, or undefined for the public
- *  shape. Set for every actor profiles.ts hands `viewerCanManageJobPostings`: the
- *  viewer, and every organization whose role manages postings (everyone but an
- *  EDITOR). The viewer has no CLOSED posting, which is what makes the
- *  filtered-to-nothing state reachable. Asked per request, since the role is
- *  session state; the real API decides it off the caller's token. */
-const VIEWER_OWN_STATUSES: readonly JobStatus[] = ['DRAFT', 'OPEN', 'OPEN']
-
-/** Whether the viewer's live role in an organization manages its postings; the real API
- *  reads it off the JWT and never off the poster's handle. */
-const viewerManagesPostingsOf = (actorId: string): boolean => {
-  const org = findOrgById(actorId)
-  return !!org && orgViewerCanManagePostings(viewerRoleIn(org.slug))
-}
-
-const ownedStatusesFor = (actorId: string): readonly JobStatus[] | undefined => {
-  if (actorId === VIEWER.id) return VIEWER_OWN_STATUSES
-  return viewerManagesPostingsOf(actorId) ? OWNER_STATUSES : undefined
-}
-
-const TITLES = [
-  'Frontend programer',
-  'Backend programer',
-  'Dizajner proizvoda',
-  'DevOps inženjer',
-  'QA inženjer',
-  'Analitičar podataka',
-  'Menadžer proizvoda',
-  'Softverski inženjer',
-]
-
-const ORGS: readonly (ActorRefDto & { actorType: 'org' })[] = ORGANIZATIONS.map((row) => ({
-  ...orgRef(row.slug),
-  actorType: 'org' as const,
-}))
-
 /** Always people: `JobApplication` has no `createdForId`, so nobody applies in
  *  an organization's name. One id per person, so an applicant row and the
  *  profile it links to are the same human. */
@@ -347,20 +291,6 @@ const APPLICANTS: readonly ActorRefDto[] = [
   personRef('jelena'),
 ]
 
-const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
-/** Poster-authored, so deliberately unruly - mixed case and multi-word entries
- *  are what the detail page's plain-text rendering has to survive. */
-const KEYWORDS: readonly string[] = [
-  'React',
-  'TypeScript',
-  'REST',
-  'Docker',
-  'PostgreSQL',
-  'agilno okruženje',
-  'rad od kuće',
-  'CI/CD',
-]
-
 const slugify = (value: string): string =>
   value
     .toLowerCase()
@@ -368,48 +298,11 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 
-/** Cheap stable hash so a given slug always renders the same detail shape. */
+/** Cheap stable hash so a given posting always mocks the same applications. */
 const hashString = (value: string): number => {
   let hash = 0
   for (let i = 0; i < value.length; i += 1) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
   return hash
-}
-
-const mockSalary = (seed: number): Salary => {
-  const period = (['MONTH', 'HOUR', 'JOB', 'MONTH'] as const)[seed % 4]
-  const min = period === 'HOUR' ? 8 + (seed % 12) : 1200 + (seed % 8) * 400
-  const isRange = seed % 2 === 0
-  return {
-    min,
-    max: isRange ? min + (period === 'HOUR' ? 10 : 900) : null,
-    currency: seed % 3 === 0 ? 'RSD' : 'EUR',
-    period,
-    displayText: null,
-  }
-}
-
-const buildListItem = (index: number): JobListItemDto => {
-  const title = TITLES[index % TITLES.length]
-  const isUser = index % 3 === 0
-  const hasSalary = index % 2 === 0
-  const createdFor: JobPosterDto = isUser ? { actorType: 'user' } : ORGS[index % ORGS.length]
-  // Every fifth posting states none, so the card's "no keywords row" branch is
-  // as reachable as the row itself.
-  // Every fifth posting states none, so the card's no-keywords branch is reachable.
-  const keywordCount = index % 5 === 0 ? 0 : 2 + (index % 3)
-
-  return {
-    id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
-    slug: `${slugify(title)}-${index + 1000}`,
-    title,
-    createdFor,
-    location: LOCATIONS[index % LOCATIONS.length],
-    salary: hasSalary ? mockSalary(index) : null,
-    createdAt: new Date(Date.now() - index * 36 * 60 * 60 * 1000).toISOString(),
-    ...(keywordCount > 0
-      ? { keywords: KEYWORDS.slice(index % 4, (index % 4) + keywordCount) }
-      : {}),
-  }
 }
 
 /** The public list with nothing selected: `GET /jobs` with no parameters. */
@@ -553,127 +446,16 @@ export const fetchJobsByIds = async (
   return data
 }
 
-/** An actor's own postings were published by that actor, so the poster is
- *  stamped from the id rather than left to buildListItem's rotation. The id is
- *  unwound with the `<actorType>-<handle>` rule that built it, so an
- *  organization outside the fixture still attributes its own postings. */
-const postingPoster = (actorId: string): JobPosterDto | null => {
-  if (actorId.startsWith('org-')) {
-    return { ...orgRef(actorId.slice('org-'.length)), actorType: 'org' as const }
-  }
-  return actorId.startsWith('user-') ? { actorType: 'user' } : null
-}
-
-/** A DRAFT or CLOSED row carries its status marker in the slug. */
-const buildPosting = (
-  index: number,
-  status: JobStatus,
-  order: number,
-  poster: JobPosterDto | null,
-): SavedJobItemDto => {
-  const base = buildListItem(index)
-  const marker = status === 'DRAFT' ? MAGIC_DRAFT_SLUG : MAGIC_CLOSED_SLUG
-  return {
-    ...base,
-    ...(poster ? { createdFor: poster } : {}),
-    status,
-    slug:
-      status === 'OPEN' ? base.slug : `${slugify(base.title)}-${marker}-${index + 1000 + order}`,
-    createdAt: new Date(Date.now() - order * 30 * 60 * 60 * 1000).toISOString(),
-  }
-}
-
-/** Stays inside the mock, as the column stays inside the database. Derived from
- *  the row so filtering never restamps it. */
-const mockUpdatedAt = (item: SavedJobItemDto): number =>
-  new Date(item.createdAt).getTime() + (hashString(item.slug) % 5) * 12 * 60 * 60 * 1000
-
-const sortPostings = (rows: SavedJobItemDto[], sort: JobPostingsSort): SavedJobItemDto[] => {
-  const byUpdated = sort.startsWith('updated')
-  const ascending = sort.endsWith('_asc')
-  const stampOf = (item: SavedJobItemDto): number =>
-    byUpdated ? mockUpdatedAt(item) : new Date(item.createdAt).getTime()
-
-  return [...rows].sort((a, b) => (ascending ? stampOf(a) - stampOf(b) : stampOf(b) - stampOf(a)))
-}
-
-const postingsHref = (
-  actorId: string,
-  params: ActorJobPostingsQuery | undefined,
-  page: number,
-  size: number,
-): string => {
-  const sp = new URLSearchParams()
-  sp.set('page', String(page))
-  sp.set('size', String(size))
-  if (params?.status) sp.set('status', params.status)
-  if (params?.sort) sp.set('sort', params.sort)
-  return `/api/actors/${actorId}/jobs?${sp.toString()}`
-}
-
-/** Every posting the caller is allowed to see, before paging. */
-const allPostingsFor = (
-  actorId: string,
-  params?: ActorJobPostingsQuery,
-): SavedJobItemDto[] => {
-  if (actorId.endsWith('-empty')) return []
-
-  const seed = hashString(actorId)
-  const owned = ownedStatusesFor(actorId)
-  const poster = postingPoster(actorId)
-
-  if (!owned) {
-    // A typed handle may return [] (no postings, or hidden by privacy - the two
-    // are indistinguishable by design). A fixture organization never does: which
-    // of the named companies has a postings tab must not depend on how its id
-    // happens to hash, or renaming one silently moves the empty case.
-    if (seed % 3 === 0 && !findOrgById(actorId)) return []
-    const count = (seed % 9) + 4 // 4..12 postings
-    const base = seed % TITLES.length
-    return Array.from({ length: count }, (_, i) => buildPosting(base + i, 'OPEN', i, poster))
-  }
-
-  const rows = owned
-    .map((status, i) => buildPosting((seed + i) % TITLES.length, status, i, poster))
-    .filter((row) => !params?.status || row.status === params.status)
-  return sortPostings(rows, params?.sort ?? 'created_desc')
-}
-
-/**
- * MOCK - would be:
- *   const { data } = await api.get(`/actors/${actorId}/jobs`, { params: { page, size, ...params } })
- * One route, two audiences. Anyone else gets the actor's PUBLIC postings, OPEN
- * only, and an empty page there covers BOTH "has no postings" and "postings
- * hidden by PrivacySettings.showJobPostings" - indistinguishable by design, so
- * the mock does not model the flag at all. Someone who may manage them gets
- * every status plus `status` and `sort`, which the real route answers with a
- * `400` for anyone else rather than narrowing.
- */
+/** One route, two audiences: every status to whoever manages the postings, OPEN
+ *  only to anyone else. An empty page is also what hidden postings answer. */
 export const fetchActorJobPostings = async (
   actorId: string,
   params?: ActorJobPostingsQuery,
   page = 1,
   size = 10,
 ): Promise<PagedResponse<SavedJobItemDto>> => {
-  await delay(400)
-
-  const all = allPostingsFor(actorId, params)
-  const totalElements = all.length
-  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size)
-  const last = page >= totalPages
-  const content = all.slice((page - 1) * size, page * size)
-
-  return {
-    _links: {
-      self: { href: postingsHref(actorId, params, page, size) },
-      ...(page > 1 ? { prev: { href: postingsHref(actorId, params, page - 1, size) } } : {}),
-      ...(last ? {} : { next: { href: postingsHref(actorId, params, page + 1, size) } }),
-    },
-    content,
-    page,
-    size,
-    totalElements,
-    totalPages,
-    last,
-  }
+  const { data } = await api.get<PagedResponse<SavedJobItemDto>>(`/actors/${actorId}/jobs`, {
+    params: { page, size, ...params },
+  })
+  return data
 }

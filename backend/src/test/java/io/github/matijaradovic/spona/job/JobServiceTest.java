@@ -27,6 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import io.github.matijaradovic.spona.actor.ActorRepository;
 import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.follow.FollowRepository;
+import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.error.BadRequestException;
@@ -60,7 +61,7 @@ class JobServiceTest {
     private final FollowRepository follows = mock(FollowRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
     private final JobService service = new JobService(jobs, search, mock(ActorRepository.class),
-            mock(UserRepository.class), follows, new ContentAuthority(roles));
+            mock(UserRepository.class), follows, new ContentAuthority(roles), mock(PrivacyService.class));
 
     private final Pageable firstPage = PageMapper.toPageable(1, 20);
     private final User poster = TestFixtures.userWithId("poster", POSTER_ID);

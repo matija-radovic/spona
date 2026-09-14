@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import io.github.matijaradovic.spona.actor.ActorRepository;
 import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.follow.FollowRepository;
+import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.common.error.ConflictException;
@@ -57,7 +58,7 @@ class JobWriteServiceTest {
     private final FollowRepository follows = mock(FollowRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
     private final JobService service = new JobService(jobs, mock(JobSearch.class), actors, users, follows,
-            new ContentAuthority(roles));
+            new ContentAuthority(roles), mock(PrivacyService.class));
 
     private final User caller = TestFixtures.userWithId("caller", CALLER_ID);
     private final Organization organization = organization();

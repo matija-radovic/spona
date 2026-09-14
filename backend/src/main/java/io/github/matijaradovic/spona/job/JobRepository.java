@@ -8,10 +8,17 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface JobRepository extends JpaRepository<Job, UUID> {
+
+    @Query(value = "select j from Job j join fetch j.createdFor left join fetch j.salary"
+            + " where j.createdFor.id = :actorId and j.status in :statuses",
+            countQuery = "select count(j) from Job j where j.createdFor.id = :actorId and j.status in :statuses")
+    Page<Job> findByCreatedFor(UUID actorId, Collection<JobStatus> statuses, Pageable pageable);
 
     @Query("select j from Job j join fetch j.createdFor left join fetch j.salary where j.slug = :slug")
     Optional<Job> findBySlugWithCreatedFor(String slug);
