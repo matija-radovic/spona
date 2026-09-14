@@ -14,6 +14,7 @@ import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.user.User;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -101,7 +102,7 @@ public class Job {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToOne(mappedBy = "job", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "job", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Salary salary;
 
     protected Job() {
@@ -247,7 +248,16 @@ public class Job {
         return updatedAt;
     }
 
+    /** Marks the row dirty, so a write that changes only the salary still stamps {@code updatedAt}. */
+    public void touch() {
+        this.updatedAt = Instant.now();
+    }
+
     public Salary getSalary() {
         return salary;
+    }
+
+    public void setSalary(Salary salary) {
+        this.salary = salary;
     }
 }

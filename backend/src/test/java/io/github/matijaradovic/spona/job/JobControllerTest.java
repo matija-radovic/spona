@@ -3,11 +3,15 @@ package io.github.matijaradovic.spona.job;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,9 +22,11 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
@@ -32,6 +38,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.common.web.PageMapper;
+import io.github.matijaradovic.spona.job.dto.CreateJobRequest;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto;
 import io.github.matijaradovic.spona.job.dto.JobListItemDto;
 import io.github.matijaradovic.spona.job.dto.JobListQuery;
@@ -155,6 +162,85 @@ class JobControllerTest {
         assertThat(read(body, "$")).doesNotContainKeys("createdForBio", "createdForFollowedByViewer");
     }
 
+    @Test
+    void aCreateIs201AndTheBodyReachesTheServiceAsSent() throws Exception {
+        signIn();
+        when(jobService.create(any(), any())).thenReturn(personPosting(JobStatus.DRAFT));
+
+        mvc.perform(post("/jobs").contentType(MediaType.APPLICATION_JSON).content("""
+                        {"createdForId":"%s","title":"Kuvar","description":"","keywords":["kuhinja"],
+                         "category":null,"jobType":"PERMANENT","workplaceType":null,"workingHours":null,
+                         "experienceLevel":null,"location":"Beograd",
+                         "salary":{"min":1200,"max":null,"currency":"EUR","period":"MONTH"},
+                         "status":"DRAFT","applicationType":"CONTACT_ONLY",
+                         "contactInformation":[{"type":"email","description":"","value":"posao@acme.rs"}],
+                         "externalUrl":null}
+                        """.formatted(ORG_ID)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.slug").value("kuvar-1000"))
+                .andExpect(jsonPath("$.viewerCanEdit").value(true));
+
+        ArgumentCaptor<CreateJobRequest> sent = ArgumentCaptor.forClass(CreateJobRequest.class);
+        verify(jobService).create(eq(caller), sent.capture());
+        assertThat(sent.getValue().createdForId()).isEqualTo(ORG_ID);
+        assertThat(sent.getValue().status()).isEqualTo(JobStatus.DRAFT);
+        assertThat(sent.getValue().salary().min()).isEqualByComparingTo("1200");
+        assertThat(sent.getValue().contactInformation()).hasSize(1);
+    }
+
+    @Test
+    void aMissingActorOrStatusIs422AndAnUnknownStatusIsTheBodyReaders400() throws Exception {
+        signIn();
+
+        mvc.perform(post("/jobs").contentType(MediaType.APPLICATION_JSON).content("{\"applicationType\":\"CV_DROP\"}"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.createdForId").exists())
+                .andExpect(jsonPath("$.errors.status").exists());
+        mvc.perform(post("/jobs").contentType(MediaType.APPLICATION_JSON).content(
+                        "{\"createdForId\":\"%s\",\"status\":\"ARCHIVED\",\"applicationType\":\"CV_DROP\"}"
+                                .formatted(ORG_ID)))
+                .andExpect(status().isBadRequest());
+        verify(jobService, never()).create(any(), any());
+    }
+
+    @Test
+    void aBrokenContactOrSalaryIs422UnderItsPath() throws Exception {
+        signIn();
+
+        mvc.perform(put("/jobs/" + JOB_ID).contentType(MediaType.APPLICATION_JSON).content("""
+                        {"applicationType":"CONTACT_ONLY",
+                         "contactInformation":[{"type":"email","description":"","value":" "}],
+                         "salary":{"min":-1,"currency":"eur","period":"MONTH"}}
+                        """))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors['contactInformation[0].value']").exists())
+                .andExpect(jsonPath("$.errors['salary.min']").exists())
+                .andExpect(jsonPath("$.errors['salary.currency']").exists());
+        verify(jobService, never()).update(any(), any(), any());
+    }
+
+    @Test
+    void anUpdateAndAStatusChangeAnswerTheDetailAndADeleteIs204() throws Exception {
+        signIn();
+        when(jobService.update(eq(JOB_ID), eq(caller), any())).thenReturn(personPosting(JobStatus.OPEN));
+        when(jobService.setStatus(JOB_ID, caller, JobStatus.CLOSED)).thenReturn(personPosting(JobStatus.CLOSED));
+
+        mvc.perform(put("/jobs/" + JOB_ID).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Kuvar\",\"applicationType\":\"CV_DROP\",\"status\":\"CLOSED\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OPEN"));
+        mvc.perform(put("/jobs/" + JOB_ID + "/status").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"CLOSED\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CLOSED"));
+        mvc.perform(put("/jobs/" + JOB_ID + "/status").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors.status").exists());
+        mvc.perform(delete("/jobs/" + JOB_ID)).andExpect(status().isNoContent());
+
+        verify(jobService).delete(JOB_ID, caller);
+    }
+
     private void signIn() {
         SecurityContextHolder.getContext()
                 .setAuthentication(new UsernamePasswordAuthenticationToken(caller, null, List.of()));
@@ -162,6 +248,11 @@ class JobControllerTest {
 
     private static Map<String, Object> read(String body, String path) {
         return JsonPath.read(body, path);
+    }
+
+    private static JobDetailDto personPosting(JobStatus status) {
+        return new JobDetailDto.PersonPosting(JOB_ID, "kuvar-1000", "Kuvar", PERSON, "Beograd", null, CREATED,
+                List.of(), null, null, null, null, null, status, ApplicationType.CV_DROP, null, null, "", true, true);
     }
 
     private static JobDetailDto organizationPosting(Boolean followed, Boolean canEdit) {

@@ -1,25 +1,17 @@
 // -----------------------------------------------------------------------------
-// Jobs service. `fetchJobs`, `fetchJobBySlug` and `fetchJobsByIds` hit the
-// backend; the rest are mocks that fake a delayed response, the real axios
-// call commented above each body. DTO shapes are separate from the DB
-// model (new_docx/types.ts): user-facing DTOs OMIT `createdBy` and ship a stripped,
-// discriminated `createdFor`. Transport envelopes come from `./types`.
+// Jobs service. The three reads and the four posting writes hit the backend;
+// `fetchJobApplications`, `submitApplication` and `fetchActorJobPostings` are
+// mocks that fake a delayed response, the real axios call commented above each
+// body. DTO shapes are separate from the DB model (new_docx/types.ts):
+// user-facing DTOs OMIT `createdBy` and ship a stripped, discriminated
+// `createdFor`. Transport envelopes come from `./types`.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
 // uniformly. Magic inputs make the mocks' failure/empty paths reachable:
 //   - submitApplication : filename contains "fail" -> 413 rejection
-//   - submitApplication : a posting that is not OPEN -> 409 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
 //   - fetchActorJobPostings : an actor whose postings the viewer manages -> the
 //                      owner's shape: every status, and the parameters answered
-//   - createJob   : title containing "greska"  -> 422 rejection
-//   - createJob   : title containing "tudja"   -> 403 (createdForId refused)
-//   - updateJob   : title containing "greska"  -> 422 rejection
-//   - updateJob   : a different applicationType on a published posting -> 409
-//   - updateJob / setJobStatus : a published posting left without the three
-//                      pickers, or CONTACT_ONLY without an entry -> 422
-//   - setJobStatus / deleteJob / fetchJobApplications : a posting whose stored
-//                      title contains "greska" -> 409 / 409 / 500 rejection
 //
 // Saved jobs no longer live here (new_docx/types.ts, end of the Jobs block —
 // there is no FavoriteJob table); they are browser
@@ -302,13 +294,6 @@ const rejectProblem = <T>(status: number, detail: string, title?: string): Promi
 /** Put in the slug of an actor's DRAFT or CLOSED posting. */
 const MAGIC_CLOSED_SLUG = 'zatvoren'
 const MAGIC_DRAFT_SLUG = 'nacrt'
-/** A posting created with this in its slug has an empty applications inbox. */
-const MAGIC_EMPTY_INBOX_SLUG = 'bez-prijava'
-/** Every id-addressed write refuses a posting whose title carries this, the way
- *  `createJob` already refuses one. */
-const MAGIC_FAIL_TITLE = 'greska'
-/** Carried on the id, because the writes are addressed by id and never see a slug. */
-const EMPTY_INBOX_MARK = '-empty'
 /** Twelve statuses, so an owner's pane pages at all, and all three kinds so the
  *  capsule renders. */
 const OWNER_STATUSES: readonly JobStatus[] = [
@@ -362,10 +347,6 @@ const APPLICANTS: readonly ActorRefDto[] = [
   personRef('jelena'),
 ]
 
-const ORG_BIOS: Readonly<Record<string, string>> = Object.fromEntries(
-  ORGANIZATIONS.map((row) => [row.id, row.description]),
-)
-
 const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
 /** Poster-authored, so deliberately unruly - mixed case and multi-word entries
  *  are what the detail page's plain-text rendering has to survive. */
@@ -393,11 +374,6 @@ const hashString = (value: string): number => {
   for (let i = 0; i < value.length; i += 1) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
   return hash
 }
-
-/** Derived rather than random, so a posting keeps its id across reloads: the
- *  saved-jobs set, `applicationCount` and the inbox all key off it. */
-const jobIdFromSlug = (slug: string): string =>
-  `job-${hashString(slug)}${slug.includes(MAGIC_EMPTY_INBOX_SLUG) ? EMPTY_INBOX_MARK : ''}`
 
 const mockSalary = (seed: number): Salary => {
   const period = (['MONTH', 'HOUR', 'JOB', 'MONTH'] as const)[seed % 4]
@@ -461,159 +437,36 @@ export const fetchJobs = async (
   return data
 }
 
-/** How many applications a posting holds. CV_DROP only - the other two types
- *  are answered outside the system and leave no row - and pinned above a page so
- *  the inbox's "load more" is reachable. */
-const applicationCountFor = (id: string, applicationType: ApplicationType): number =>
-  applicationType !== 'CV_DROP' || id.endsWith(EMPTY_INBOX_MARK) ? 0 : 11 + (hashString(id) % 9)
-
-/** The mock's only mutable state: the postings `createJob` made, which the
- *  mocked writes merge onto. A reload empties it. */
-const jobStore = new Map<string, JobDetailDto>()
-
-/** Every id-addressed write refuses the same posting, the way `createJob`
- *  refuses the same title. */
-const refuses = (id: string): boolean =>
-  (jobStore.get(id)?.title ?? '').toLowerCase().includes(MAGIC_FAIL_TITLE)
+/** How many applications the mocked inbox holds, pinned above a page so its
+ *  "load more" is reachable. */
+const applicationCountFor = (id: string): number => 11 + (hashString(id) % 9)
 
 export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   const { data } = await api.get<JobDetailDto>(`/jobs/${slug}`)
   return data
 }
 
-/**
- * MOCK - would be: const { data } = await api.post('/jobs', payload)
- * A title containing "greska" is rejected so the error UI is testable, and one
- * containing "tudja" comes back 403 - the server disagreeing with the identity
- * the picker offered, which is the one failure that must never be retried.
- *
- * The slug is derived from the title plus a numeric suffix because a real slug
- * is server-assigned and unique, and the page navigates to it.
- */
+/** Answers the created posting, whose server-assigned slug the page navigates to. */
 export const createJob = async (payload: CreateJobPayload): Promise<JobDetailDto> => {
-  await delay(650)
-
-  const title = payload.title.trim()
-  if (title.toLowerCase().includes(MAGIC_FAIL_TITLE)) {
-    return rejectProblem(422, 'Oglas nije sačuvan. Proverite unos i pokušajte ponovo.', 'Unprocessable Entity')
-  }
-  if (title.toLowerCase().includes('tudja')) {
-    return rejectProblem(403, 'Nemate pravo da objavljujete u ime izabrane organizacije.', 'Forbidden')
-  }
-
-  const org = ORGS.find((row) => row.id === payload.createdForId)
-  const createdFor: JobPosterDto = org ?? { actorType: 'user' }
-  const slug = `${slugify(title)}-${1000 + (hashString(title) % 9000)}`
-
-  const created: JobDetailDto = {
-    id: jobIdFromSlug(slug),
-    slug,
-    title,
-    createdFor,
-    location: payload.location,
-    salary: payload.salary ? { ...payload.salary, displayText: null } : null,
-    createdAt: new Date().toISOString(),
-    category: payload.category,
-    jobType: payload.jobType,
-    workplaceType: payload.workplaceType,
-    workingHours: payload.workingHours,
-    experienceLevel: payload.experienceLevel,
-    status: payload.status,
-    applicationType: payload.applicationType,
-    contactInformation: payload.contactInformation,
-    externalUrl: payload.externalUrl,
-    description: payload.description,
-    keywords: payload.keywords,
-    ...(org ? { createdForBio: ORG_BIOS[org.id] ?? null, createdForFollowedByViewer: false } : {}),
-    viewerCanEdit: true,
-    viewerCanDelete: true,
-    applicationCount: 0,
-  }
-
-  jobStore.set(created.id, created)
-  return created
+  const { data } = await api.post<JobDetailDto>('/jobs', payload)
+  return data
 }
 
-/** `job_publishable_check`, as the row sees it: the three pickers a publish
- *  demands, plus one contact entry when contact is the way in. A posting whose
- *  only way in is a phone number nobody wrote down has no way in. */
-const publishable = (job: JobDetailDto): boolean =>
-  job.category !== null &&
-  job.jobType !== null &&
-  job.workplaceType !== null &&
-  (job.applicationType !== 'CONTACT_ONLY' || (job.contactInformation?.length ?? 0) > 0)
-
-/**
- * MOCK - would be: const { data } = await api.put(`/jobs/${id}`, payload)
- * Every column the manage page's two sections write, in one request. The status
- * is not among them - it moves through the route below - and neither is the
- * application type once the posting is published: switching it would strand the
- * applications already collected under it.
- */
+/** Every column but the status, which moves only through `setJobStatus`. */
 export const updateJob = async (id: string, payload: UpdateJobPayload): Promise<JobDetailDto> => {
-  await delay(650)
-
-  const held = jobStore.get(id)
-  if (!held) return rejectProblem(404, 'Traženi oglas ne postoji.', 'Not Found')
-  if (payload.title.trim().toLowerCase().includes(MAGIC_FAIL_TITLE)) {
-    return rejectProblem(422, 'Oglas nije sačuvan. Proverite unos i pokušajte ponovo.', 'Unprocessable Entity')
-  }
-  if (held.status !== 'DRAFT' && payload.applicationType !== held.applicationType) {
-    return rejectProblem(409, 'Način prijave se ne menja nakon objave oglasa.', 'Conflict')
-  }
-
-  const updated: JobDetailDto = {
-    ...held,
-    ...payload,
-    title: payload.title.trim(),
-    description: payload.description.trim(),
-    salary: payload.salary ? { ...payload.salary, displayText: null } : null,
-    applicationCount: applicationCountFor(id, payload.applicationType),
-  }
-
-  if (held.status !== 'DRAFT' && !publishable(updated)) {
-    return rejectProblem(422, 'Objavljen oglas mora imati bar jedan kontakt.', 'Unprocessable Entity')
-  }
-
-  jobStore.set(id, updated)
-  return updated
+  const { data } = await api.put<JobDetailDto>(`/jobs/${id}`, payload)
+  return data
 }
 
-/**
- * MOCK - would be: const { data } = await api.put(`/jobs/${id}/status`, { status })
- * The whole lifecycle: DRAFT -> OPEN, and OPEN <-> CLOSED. There is no
- * un-publish, so the ladder never walks back to DRAFT.
- */
+/** DRAFT -> OPEN, and OPEN <-> CLOSED. */
 export const setJobStatus = async (id: string, status: JobStatus): Promise<JobDetailDto> => {
-  await delay(450)
-
-  const held = jobStore.get(id)
-  if (!held) return rejectProblem(404, 'Traženi oglas ne postoji.', 'Not Found')
-  if (refuses(id)) {
-    return rejectProblem(409, 'Status oglasa nije promenjen. Pokušajte ponovo.', 'Conflict')
-  }
-  if (status === 'OPEN' && !publishable(held)) {
-    return rejectProblem(422, 'Oglas nije potpun i ne može biti objavljen.', 'Unprocessable Entity')
-  }
-
-  // A status change is a write to the row, so it stamps `updatedAt` - the column
-  // the owner's postings pane sorts "recently touched" on. It never reaches a DTO.
-  const updated: JobDetailDto = { ...held, status }
-  jobStore.set(id, updated)
-  return updated
+  const { data } = await api.put<JobDetailDto>(`/jobs/${id}/status`, { status })
+  return data
 }
 
-/**
- * MOCK - would be: await api.delete(`/jobs/${id}`)
- * `JobApplication.jobId` is ON DELETE CASCADE, so the applications go with the
- * posting - which is why the dialog names their count before the fact.
- */
+/** The posting's applications go with it. */
 export const deleteJob = async (id: string): Promise<void> => {
-  await delay(500)
-  if (refuses(id)) {
-    return rejectProblem(409, 'Oglas nije obrisan. Pokušajte ponovo.', 'Conflict')
-  }
-  jobStore.delete(id)
+  await api.delete(`/jobs/${id}`)
 }
 
 /**
@@ -629,11 +482,8 @@ export const fetchJobApplications = async (
   size = 10,
 ): Promise<PagedResponse<JobApplicationDto>> => {
   await delay(420)
-  if (refuses(id)) {
-    return rejectProblem(500, 'Prijave nisu učitane. Pokušajte ponovo.', 'Server Error')
-  }
 
-  const totalElements = jobStore.get(id)?.applicationCount ?? 0
+  const totalElements = applicationCountFor(id)
   const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size)
   const last = page >= totalPages
   const offset = (page - 1) * size
@@ -681,10 +531,6 @@ export const submitApplication = async (
 ): Promise<JobApplicationDto> => {
   await delay(600)
 
-  const held = jobStore.get(jobId)
-  if (held && held.status !== 'OPEN') {
-    return rejectProblem(409, 'Ovaj oglas ne prima prijave.', 'Conflict')
-  }
   if (file.name.toLowerCase().includes('fail')) {
     return rejectProblem(413, 'Fajl je odbijen. Pokušajte sa manjim PDF-om.', 'Payload Too Large')
   }

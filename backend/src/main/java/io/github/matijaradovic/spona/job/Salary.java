@@ -69,16 +69,32 @@ public class Salary {
         return min;
     }
 
+    public void setMin(BigDecimal min) {
+        this.min = min;
+    }
+
     public BigDecimal getMax() {
         return max;
+    }
+
+    public void setMax(BigDecimal max) {
+        this.max = max;
     }
 
     public String getCurrency() {
         return currency;
     }
 
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
     public SalaryPeriod getPeriod() {
         return period;
+    }
+
+    public void setPeriod(SalaryPeriod period) {
+        this.period = period;
     }
 
     public String getDisplayText() {

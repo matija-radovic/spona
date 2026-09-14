@@ -16,6 +16,11 @@ public interface JobRepository extends JpaRepository<Job, UUID> {
     @Query("select j from Job j join fetch j.createdFor left join fetch j.salary where j.slug = :slug")
     Optional<Job> findBySlugWithCreatedFor(String slug);
 
+    @Query("select j from Job j join fetch j.createdFor left join fetch j.salary where j.id = :id")
+    Optional<Job> findWithCreatedFor(UUID id);
+
+    boolean existsBySlug(String slug);
+
     @Query("select j from Job j join fetch j.createdFor left join fetch j.salary where j.id in :ids")
     List<Job> findAllWithCreatedFor(Collection<UUID> ids);
 
