@@ -69,7 +69,7 @@ public class FollowService {
 
     private Page<FollowActorDto> rows(Page<? extends Actor> page, User viewer) {
         Set<UUID> followed = viewer == null ? Set.of()
-                : follows.followeesAmong(viewer.getId(), page.map(Actor::getId).getContent());
+                : follows.followeesAmong(viewer.getId(), page.map(row -> row.getId()).getContent());
         return page.map(row -> FollowActorDto.from(ActorRefDto.from(row),
                 viewer == null ? null : followed.contains(row.getId())));
     }

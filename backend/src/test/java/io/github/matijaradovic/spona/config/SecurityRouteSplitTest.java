@@ -110,6 +110,6 @@ class SecurityRouteSplitTest {
         users.save(user);
 
         mvc.perform(get("/feed").header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtService.sign(user)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 }

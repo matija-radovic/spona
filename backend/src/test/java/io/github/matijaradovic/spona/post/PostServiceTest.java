@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -175,7 +176,7 @@ class PostServiceTest {
         author.setBio("Backend developer");
         Post post = stored(new Post(author, author, "Zdravo"));
         when(posts.findWithCreatedFor(POST_ID)).thenReturn(Optional.of(post));
-        when(follows.existsByFollower_IdAndFollowee_Id(STRANGER_ID, AUTHOR_ID)).thenReturn(true);
+        when(follows.followeesAmong(STRANGER_ID, List.of(AUTHOR_ID))).thenReturn(Set.of(AUTHOR_ID));
 
         PostDto dto = service.post(POST_ID, stranger);
 

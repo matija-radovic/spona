@@ -2,17 +2,13 @@
 // Posts and their comment threads are served by the backend. DTOs are separate
 // from the DB model: `responseCount`, `siblingIndex`, `siblingTotal` and the
 // `viewerCan*` pair are DERIVED, not columns.
-//
-// `mockPostRow` is the one mock left in this file: the feed mock borrows its
-// rows from the seeded post store below.
 // -----------------------------------------------------------------------------
 
 import api from '@utils/api'
 
 import type { PagedResponse } from './types'
 import type { ActorRefDto } from './profiles'
-import { summaryFor, type ReactionSummaryDto } from './reactions'
-import { ORGANIZATIONS, PEOPLE, orgRef, personRef, viewerManagesContentOf } from './mockActors'
+import type { ReactionSummaryDto } from './reactions'
 
 // ── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -94,75 +90,6 @@ export interface DeleteCommentResultDto {
   deletedCount: number
 }
 
-// ── Mock plumbing ────────────────────────────────────────────────────────────
-
-const MAGIC_OWN_POST = 'post-mine'
-
-const iso = (minutesAgo: number): string =>
-  new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
-
-// Mock actors, drawn from the shared fixture so a byline links to a profile that
-// exists and carries the same name. `my-account` is the editable "own" identity.
-const AUTHORS: readonly ActorRefDto[] = [
-  personRef('my-account'),
-  personRef('marko'),
-  personRef('jelena'),
-  orgRef('moja-kompanija'),
-  orgRef('nordeus'),
-]
-
-const AUTHOR_BIOS: Readonly<Record<string, string>> = Object.fromEntries([
-  ...PEOPLE.filter((row) => row.bio).map((row) => [row.id, row.bio as string]),
-  ...ORGANIZATIONS.map((row) => [row.id, row.description]),
-])
-
-const POST_BODIES = [
-  'Danas smo objavili novu verziju - hvala celom timu na trudu!\n\nNajveća promena je novi sistem za komentare: sada možete da odgovarate direktno u niti, sa reakcijama na svakom nivou.',
-  'Tražimo saradnike za zanimljiv projekat. Javite se ako vas zanima frontend.',
-  'Nekoliko misli o pristupačnosti na webu i zašto je važna od prvog dana.\n\nNije stvar u tome da naknadno dodate ARIA atribute - stvar je u tome da struktura stranice od početka opisuje šta se na njoj nalazi.',
-  'Odlična konferencija ovog vikenda. Puno novih ideja za naredni kvartal.',
-  'Podelili bismo iskustvo sa migracijom na nov sistem - AMA u komentarima.',
-]
-
-/** Cheap stable hash so a given id always renders the same shape. */
-const hashString = (value: string): number => {
-  let hash = 0
-  for (let i = 0; i < value.length; i += 1) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
-  return hash
-}
-
-const posts = new Map<string, PostDto>()
-
-const buildPost = (postId: string): PostDto => {
-  const seed = hashString(postId)
-  const own = postId === MAGIC_OWN_POST
-  const author = own ? AUTHORS[0] : AUTHORS[seed % AUTHORS.length]
-  return {
-    id: postId,
-    author,
-    content: POST_BODIES[seed % POST_BODIES.length],
-    createdAt: iso(60 * 8 + (seed % 400)),
-    commentCount: seed % 40,
-    reactions: summaryFor('post', postId), // re-stamped from the roster on every read
-    authorBio: AUTHOR_BIOS[author.id] ?? null,
-    authorFollowedByViewer: seed % 3 === 0,
-    ...(own || viewerManagesContentOf(author.id) ? { viewerCanEdit: true, viewerCanDelete: true } : {}),
-  }
-}
-
-const seedPost = (postId: string): PostDto => {
-  const existing = posts.get(postId)
-  if (existing) return existing
-  const built = buildPost(postId)
-  posts.set(postId, built)
-  return built
-}
-
-const projectPost = (post: PostDto): PostDto => ({
-  ...post,
-  reactions: summaryFor('post', post.id),
-})
-
 // ── Posts ────────────────────────────────────────────────────────────────────
 
 export const fetchPost = async (postId: string): Promise<PostDto> => {
@@ -184,9 +111,6 @@ export const updatePost = async (postId: string, content: string): Promise<PostD
 export const deletePost = async (postId: string): Promise<void> => {
   await api.delete(`/posts/${postId}`)
 }
-
-/** MOCK ONLY - the feed mock's rows, drawn from this file's post store. */
-export const mockPostRow = (postId: string): PostDto => projectPost(seedPost(postId))
 
 // ── Comments ─────────────────────────────────────────────────────────────────
 

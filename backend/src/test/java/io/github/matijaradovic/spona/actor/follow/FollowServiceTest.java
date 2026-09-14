@@ -116,7 +116,7 @@ class FollowServiceTest {
 
         List<FollowActorDto> rows = service.followers(SUBJECT_ID, null, FIRST, caller).getContent();
 
-        assertThat(rows).singleElement().extracting(FollowActorDto::isFollowedByViewer).isEqualTo(true);
+        assertThat(rows).singleElement().extracting(row -> row.isFollowedByViewer()).isEqualTo(true);
     }
 
     @Test

@@ -1,7 +1,11 @@
 package io.github.matijaradovic.spona.post;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,10 +53,26 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto post(UUID postId, User viewer) {
-        Post post = load(postId);
-        Boolean canManage = viewer == null ? null : authority.canManage(post.getCreatedFor(), viewer);
-        return dto(post, commentCount(postId), reactions.summary(ReactionTargetType.POST, postId, viewer), viewer,
-                canManage);
+        return dtos(List.of(load(postId)), viewer).getFirst();
+    }
+
+    /** Rows must carry a fetched {@code createdFor}. */
+    @Transactional(readOnly = true)
+    public List<PostDto> dtos(List<Post> rows, User viewer) {
+        List<UUID> ids = rows.stream().map(post -> post.getId()).toList();
+        Map<UUID, Long> commentCounts = comments.commentCounts(ids);
+        Map<UUID, ReactionSummaryDto> summaries = reactions.summaries(ReactionTargetType.POST, ids, viewer);
+        Set<UUID> followed = viewer == null
+                ? Set.of()
+                : follows.followeesAmong(viewer.getId(),
+                        rows.stream().map(post -> post.getCreatedFor().getId()).distinct().toList());
+        Function<Post, Boolean> canManage = managerCheck(viewer);
+        return rows.stream()
+                .map(post -> PostDto.from(post, commentCounts.getOrDefault(post.getId(), 0L),
+                        summaries.get(post.getId()),
+                        viewer == null ? null : followed.contains(post.getCreatedFor().getId()),
+                        canManage.apply(post)))
+                .toList();
     }
 
     @Transactional
@@ -101,6 +121,16 @@ public class PostService {
                 ? null
                 : follows.existsByFollower_IdAndFollowee_Id(viewer.getId(), post.getCreatedFor().getId());
         return PostDto.from(post, commentCount, summary, followed, canManage);
+    }
+
+    private Function<Post, Boolean> managerCheck(User viewer) {
+        if (viewer == null) {
+            return post -> null;
+        }
+        Map<UUID, Boolean> answers = new HashMap<>();
+        return post -> answers.computeIfAbsent(
+                post.getCreatedFor().getId(),
+                id -> authority.canManage(post.getCreatedFor(), viewer));
     }
 
     private static String checkedContent(String content) {

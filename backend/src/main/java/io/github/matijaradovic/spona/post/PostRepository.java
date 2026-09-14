@@ -17,6 +17,14 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Query("select p from Post p where p.createdFor.id = :actorId order by p.createdAt desc, p.id desc")
     Page<Post> findByCreatedFor(UUID actorId, Pageable pageable);
 
+    @Query(value = "select p from Post p join fetch p.createdFor"
+            + " where p.createdFor.id = :callerId"
+            + " or p.createdFor.id in (select f.followee.id from Follow f where f.follower.id = :callerId)"
+            + " order by p.createdAt desc, p.id desc",
+            countQuery = "select count(p) from Post p where p.createdFor.id = :callerId"
+            + " or p.createdFor.id in (select f.followee.id from Follow f where f.follower.id = :callerId)")
+    Page<Post> findFeed(UUID callerId, Pageable pageable);
+
     @Query(value = "select id, kind from ("
             + "select id, created_at, 'post' as kind from post where created_for_id = :actorId "
             + "union all "
