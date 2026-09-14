@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { intlLocale } from '@utils/i18n/locales'
 import { formatDate, formatNumber, type DatePreset } from '@utils/format'
 
-/** `useTranslation` subscribes to `languageChanged`, so output re-renders alongside the copy. */
 const useFormat = () => {
   const { i18n } = useTranslation()
   const locale = intlLocale(i18n.resolvedLanguage ?? i18n.language)

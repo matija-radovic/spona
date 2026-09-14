@@ -14,19 +14,24 @@ i18n
         interpolation: {
             escapeValue: false,
         },
+        react: {
+            bindI18n: false,
+            bindI18nStore: false,
+        },
     })
 
 i18n.services.formatter?.add('date', (value, lng, options) =>
     formatDate(value, intlLocale(lng), options.preset as DatePreset | undefined),
 )
 
-if (import.meta.hot) {
-    import.meta.hot.accept('@shared/lang/sr.json', (mod) => {
-        if (!mod) return
-        i18n.removeResourceBundle('sr', 'translation')
-        i18n.addResourceBundle('sr', 'translation', mod.default, true, true)
-        i18n.emit('languageChanged', i18n.language)
-    })
-}
+// TODO: fix over subscribing to translations
+// if (import.meta.hot) {
+//     import.meta.hot.accept('@shared/lang/sr.json', (mod) => {
+//         if (!mod) return
+//         i18n.removeResourceBundle('sr', 'translation')
+//         i18n.addResourceBundle('sr', 'translation', mod.default, true, true)
+//         i18n.emit('languageChanged', i18n.language)
+//     })
+// }
 
 export default i18n
