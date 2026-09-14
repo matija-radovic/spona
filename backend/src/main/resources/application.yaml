@@ -86,6 +86,8 @@ spring:
       lifecycle-management: start-only
 
 app:
+  seed:
+    enabled: ${SPONA_SEED:true}   # demo data from db/seed, written once into an empty database
   storage:
     endpoint: ${SPONA_S3_ENDPOINT:http://localhost:9000}                # what the backend calls
     public-endpoint: ${SPONA_S3_PUBLIC_ENDPOINT:http://localhost:9000}  # what a browser is given
