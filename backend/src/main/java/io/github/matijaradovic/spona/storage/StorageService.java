@@ -17,6 +17,9 @@ public interface StorageService {
     /** returns a cv key */
     String putCv(byte[] content, String contentType);
 
+    /** deletes what putCv stored under that key */
+    void deleteCv(String objectKey);
+
     /** GET req on a CV key, signed for the public endpoint and valid for {@link #CV_URL_TTL}. */
     String presignCv(String objectKey);
 }

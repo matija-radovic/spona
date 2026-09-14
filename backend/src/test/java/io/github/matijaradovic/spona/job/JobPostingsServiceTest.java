@@ -37,6 +37,7 @@ import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.PageMapper;
+import io.github.matijaradovic.spona.job.application.JobApplicationRepository;
 import io.github.matijaradovic.spona.job.dto.JobPosterDto;
 import io.github.matijaradovic.spona.job.dto.SavedJobItemDto;
 import io.github.matijaradovic.spona.organization.Organization;
@@ -60,7 +61,8 @@ class JobPostingsServiceTest {
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
     private final PrivacyService privacy = mock(PrivacyService.class);
     private final JobService service = new JobService(jobs, mock(JobSearch.class), actors,
-            mock(UserRepository.class), mock(FollowRepository.class), new ContentAuthority(roles), privacy);
+            mock(UserRepository.class), mock(FollowRepository.class), new ContentAuthority(roles), privacy,
+            mock(JobApplicationRepository.class));
 
     private final Pageable firstPage = PageMapper.toPageable(1, 20);
     private final User poster = TestFixtures.userWithId("poster", POSTER_ID);

@@ -152,7 +152,7 @@ class JobControllerTest {
     void aPersonsPostingSerialisesActorTypeAloneWithNoBioOrFollowEdge() throws Exception {
         JobDetailDto posting = new JobDetailDto.PersonPosting(JOB_ID, "kuvar-1000", "Kuvar", PERSON, "Beograd", null,
                 CREATED, List.of(), JobCategory.HOSPITALITY_FOOD, JobType.PERMANENT, WorkplaceType.ONSITE, null,
-                null, JobStatus.OPEN, ApplicationType.CV_DROP, null, null, "Opis", null, null);
+                null, JobStatus.OPEN, ApplicationType.CV_DROP, null, null, "Opis", null, null, null);
         when(jobService.job("kuvar-1000", null)).thenReturn(posting);
 
         String body = mvc.perform(get("/jobs/kuvar-1000")).andExpect(status().isOk())
@@ -252,7 +252,8 @@ class JobControllerTest {
 
     private static JobDetailDto personPosting(JobStatus status) {
         return new JobDetailDto.PersonPosting(JOB_ID, "kuvar-1000", "Kuvar", PERSON, "Beograd", null, CREATED,
-                List.of(), null, null, null, null, null, status, ApplicationType.CV_DROP, null, null, "", true, true);
+                List.of(), null, null, null, null, null, status, ApplicationType.CV_DROP, null, null, "", true, true,
+                4L);
     }
 
     private static JobDetailDto organizationPosting(Boolean followed, Boolean canEdit) {
@@ -260,6 +261,6 @@ class JobControllerTest {
         return new JobDetailDto.OrganizationPosting(JOB_ID, "kuvar-1000", "Kuvar", organization, "Beograd", null,
                 CREATED, List.of("kuhinja"), JobCategory.HOSPITALITY_FOOD, JobType.PERMANENT, WorkplaceType.ONSITE,
                 null, ExperienceLevel.NONE, JobStatus.CLOSED, ApplicationType.CONTACT_ONLY, null, null, "Opis",
-                null, followed, canEdit, canEdit);
+                null, followed, canEdit, canEdit, null);
     }
 }

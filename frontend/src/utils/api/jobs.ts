@@ -1,14 +1,10 @@
 // -----------------------------------------------------------------------------
-// Jobs service. The four reads and the four posting writes hit the backend;
-// `fetchJobApplications` and `submitApplication` are mocks that fake a delayed
-// response, the real axios call commented above each body. DTO shapes are
-// separate from the DB model (new_docx/types.ts): user-facing DTOs OMIT
-// `createdBy` and ship a stripped, discriminated `createdFor`. Transport
-// envelopes come from `./types`.
+// Jobs service. Every call hits the backend. DTO shapes are separate from the DB
+// model (new_docx/types.ts): user-facing DTOs OMIT `createdBy` and ship a
+// stripped, discriminated `createdFor`. Transport envelopes come from `./types`.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
-// uniformly. A magic input makes the mock's failure path reachable:
-//   - submitApplication : filename contains "fail" -> 413 rejection
+// uniformly.
 //
 // Saved jobs no longer live here (new_docx/types.ts, end of the Jobs block —
 // there is no FavoriteJob table); they are browser
@@ -19,10 +15,9 @@ import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
 import type { ActorRefDto } from './profiles'
-import type { PagedResponse, ProblemDetail } from './types'
+import type { PagedResponse } from './types'
 import type { JobQuery } from '@pages/jobs/lib/filters'
 import { filtersToSearchParams } from '@pages/jobs/lib/filters'
-import { personRef } from './mockActors'
 
 // ── Local enum mirrors (the project mirrors backend enums as local unions) ─────
 
@@ -265,46 +260,6 @@ export interface UpdateJobPayload {
   externalUrl: string | null
 }
 
-// ── Mock plumbing ──────────────────────────────────────────────────────────────
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const makeProblem = (status: number, detail: string, title = ''): ProblemDetail => ({
-  type: 'about:blank',
-  title,
-  status,
-  detail,
-  instance: '/api/jobs',
-})
-
-const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
-  Promise.reject(makeProblem(status, detail, title))
-
-/** Always people: `JobApplication` has no `createdForId`, so nobody applies in
- *  an organization's name. One id per person, so an applicant row and the
- *  profile it links to are the same human. */
-const APPLICANTS: readonly ActorRefDto[] = [
-  personRef('mila'),
-  personRef('stefan'),
-  personRef('ana'),
-  personRef('marko'),
-  personRef('jelena'),
-]
-
-const slugify = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[čć ]/g, (c) => (c === ' ' ? '-' : c === 'č' || c === 'ć' ? 'c' : c))
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-
-/** Cheap stable hash so a given posting always mocks the same applications. */
-const hashString = (value: string): number => {
-  let hash = 0
-  for (let i = 0; i < value.length; i += 1) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
-  return hash
-}
-
 /** The public list with nothing selected: `GET /jobs` with no parameters. */
 export const NO_JOB_FILTERS: JobQuery = {
   q: '',
@@ -329,10 +284,6 @@ export const fetchJobs = async (
   const { data } = await api.get<PagedResponse<JobListItemDto>>('/jobs', { params })
   return data
 }
-
-/** How many applications the mocked inbox holds, pinned above a page so its
- *  "load more" is reachable. */
-const applicationCountFor = (id: string): number => 11 + (hashString(id) % 9)
 
 export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
   const { data } = await api.get<JobDetailDto>(`/jobs/${slug}`)
@@ -363,8 +314,6 @@ export const deleteJob = async (id: string): Promise<void> => {
 }
 
 /**
- * MOCK - would be:
- *   const { data } = await api.get(`/jobs/${id}/applications`, { params: { page, size } })
  * Poster-only, and CV_DROP only: contact and external applications happen
  * outside the system and leave no row. Newest first, per the
  * `(jobId, submittedAt DESC)` index.
@@ -374,65 +323,28 @@ export const fetchJobApplications = async (
   page = 1,
   size = 10,
 ): Promise<PagedResponse<JobApplicationDto>> => {
-  await delay(420)
-
-  const totalElements = applicationCountFor(id)
-  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size)
-  const last = page >= totalPages
-  const offset = (page - 1) * size
-  const count = Math.max(0, Math.min(size, totalElements - offset))
-
-  const content: JobApplicationDto[] = Array.from({ length: count }, (_, i) => {
-    const index = offset + i
-    const seed = hashString(`${id}-${index}`)
-    return {
-      id: `${id}-application-${index}`,
-      applicant: APPLICANTS[seed % APPLICANTS.length],
-      cvUrl: `https://primer.rs/cv/${seed}.pdf`,
-      submittedAt: new Date(Date.now() - index * 19 * 60 * 60 * 1000).toISOString(),
-    }
+  const { data } = await api.get<PagedResponse<JobApplicationDto>>(`/jobs/${id}/applications`, {
+    params: { page, size },
   })
-
-  const href = (target: number) => `/api/jobs/${id}/applications?page=${target}&size=${size}`
-
-  return {
-    _links: {
-      self: { href: href(page) },
-      ...(page > 1 ? { prev: { href: href(page - 1) } } : {}),
-      ...(last ? {} : { next: { href: href(page + 1) } }),
-    },
-    content,
-    page,
-    size,
-    totalElements,
-    totalPages,
-    last,
-  }
+  return data
 }
 
 /**
- * MOCK - would be: const { data } = await api.post(`/jobs/${jobId}/applications`, form)
  * Only an OPEN posting takes applications (backend-contract.md §8 rule 20): a
- * DRAFT has not been published and a CLOSED one has stopped asking. The real
- * route answers 404 rather than 409 for a draft the caller may not edit, which is
- * a response the mock cannot produce - it owns every draft it serves.
- * A filename containing "fail" is rejected so the error UI is testable.
+ * DRAFT has not been published and a CLOSED one has stopped asking, and a draft
+ * the caller may not edit answers 404 rather than 409.
+ *
+ * No headers: axios leaves a `FormData`'s content type to the browser, which is
+ * what adds the boundary. Naming a JSON content type would serialise the form.
  */
 export const submitApplication = async (
   jobId: string,
   file: File,
 ): Promise<JobApplicationDto> => {
-  await delay(600)
-
-  if (file.name.toLowerCase().includes('fail')) {
-    return rejectProblem(413, 'Fajl je odbijen. Pokušajte sa manjim PDF-om.', 'Payload Too Large')
-  }
-  return {
-    id: crypto.randomUUID?.() ?? `mock-${Math.floor(Math.random() * 10000000)}`,
-    applicant: APPLICANTS[hashString(jobId) % APPLICANTS.length],
-    cvUrl: `https://primer.rs/cv/${slugify(file.name)}.pdf`,
-    submittedAt: new Date().toISOString(),
-  }
+  const form = new FormData()
+  form.append('cv', file)
+  const { data } = await api.post<JobApplicationDto>(`/jobs/${jobId}/applications`, form)
+  return data
 }
 
 /** Both lists go comma-joined: axios would write an array as `id[]=`, which the backend does not read. */

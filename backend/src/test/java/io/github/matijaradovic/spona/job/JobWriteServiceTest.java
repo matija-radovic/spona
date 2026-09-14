@@ -32,6 +32,7 @@ import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
+import io.github.matijaradovic.spona.job.application.JobApplicationRepository;
 import io.github.matijaradovic.spona.job.dto.CreateJobRequest;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto.OrganizationPosting;
@@ -57,8 +58,9 @@ class JobWriteServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final FollowRepository follows = mock(FollowRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
+    private final JobApplicationRepository applications = mock(JobApplicationRepository.class);
     private final JobService service = new JobService(jobs, mock(JobSearch.class), actors, users, follows,
-            new ContentAuthority(roles), mock(PrivacyService.class));
+            new ContentAuthority(roles), mock(PrivacyService.class), applications);
 
     private final User caller = TestFixtures.userWithId("caller", CALLER_ID);
     private final Organization organization = organization();
@@ -84,6 +86,22 @@ class JobWriteServiceTest {
         });
         verify(jobs).saveAndFlush(any(Job.class));
         verifyNoInteractions(roles, follows);
+    }
+
+    @Test
+    void aCreateServesNoApplicationsWithNoQueryAndTheOtherTwoWritesCount() {
+        when(applications.countByJob_Id(JOB_ID)).thenReturn(3L);
+
+        JobDetailDto created = service.create(caller, create(CALLER_ID, JobStatus.OPEN));
+        assertThat(((PersonPosting) created).applicationCount()).isZero();
+        verifyNoInteractions(applications);
+
+        serve(caller, JobStatus.OPEN);
+        JobDetailDto updated = service.update(JOB_ID, caller, update("Kuvar", ApplicationType.CV_DROP, null, null));
+        JobDetailDto closed = service.setStatus(JOB_ID, caller, JobStatus.CLOSED);
+
+        assertThat(((PersonPosting) updated).applicationCount()).isEqualTo(3L);
+        assertThat(((PersonPosting) closed).applicationCount()).isEqualTo(3L);
     }
 
     @Test

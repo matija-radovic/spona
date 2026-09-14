@@ -71,6 +71,14 @@ public class S3StorageService implements StorageService {
     }
 
     @Override
+    public void deleteCv(String objectKey) {
+        client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(storage.cvBucket())
+                .key(objectKey)
+                .build());
+    }
+
+    @Override
     public String presignCv(String objectKey) {
         return presigner.presignGetObject(GetObjectPresignRequest.builder()
                 .signatureDuration(CV_URL_TTL)

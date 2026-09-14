@@ -29,6 +29,7 @@ import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
+import io.github.matijaradovic.spona.job.application.JobApplicationRepository;
 import io.github.matijaradovic.spona.job.dto.CreateJobRequest;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto;
 import io.github.matijaradovic.spona.job.dto.JobListItemDto;
@@ -54,9 +55,11 @@ public class JobService {
     private final FollowRepository follows;
     private final ContentAuthority authority;
     private final PrivacyService privacy;
+    private final JobApplicationRepository applications;
 
     public JobService(JobRepository jobs, JobSearch search, ActorRepository actors, UserRepository users,
-            FollowRepository follows, ContentAuthority authority, PrivacyService privacy) {
+            FollowRepository follows, ContentAuthority authority, PrivacyService privacy,
+            JobApplicationRepository applications) {
         this.jobs = jobs;
         this.search = search;
         this.actors = actors;
@@ -64,6 +67,7 @@ public class JobService {
         this.follows = follows;
         this.authority = authority;
         this.privacy = privacy;
+        this.applications = applications;
     }
 
     @Transactional(readOnly = true)
@@ -82,7 +86,8 @@ public class JobService {
         Boolean followed = viewer == null || poster.getActorType() != ActorType.ORG
                 ? null
                 : follows.existsByFollower_IdAndFollowee_Id(viewer.getId(), poster.getId());
-        return JobDetailDto.from(job, followed, canEdit);
+        Long applicationCount = Boolean.TRUE.equals(canEdit) ? applications.countByJob_Id(job.getId()) : null;
+        return JobDetailDto.from(job, followed, canEdit, applicationCount);
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +140,7 @@ public class JobService {
         if (job.getStatus() == JobStatus.OPEN) {
             JobForm.checkPublishable(job);
         }
-        return dto(jobs.saveAndFlush(job), caller);
+        return dto(jobs.saveAndFlush(job), caller, 0L);
     }
 
     @Transactional
@@ -151,7 +156,7 @@ public class JobService {
             JobForm.checkPublishable(job);
         }
         job.touch();
-        return dto(job, caller);
+        return dto(job, caller, applications.countByJob_Id(jobId));
     }
 
     @Transactional
@@ -164,7 +169,7 @@ public class JobService {
             JobForm.checkPublishable(job);
         }
         job.setStatus(status);
-        return dto(job, caller);
+        return dto(job, caller, applications.countByJob_Id(jobId));
     }
 
     @Transactional
@@ -173,7 +178,7 @@ public class JobService {
     }
 
     /** A DRAFT the caller may not edit is the same 404 as a missing posting. */
-    private Job editable(UUID jobId, User caller, String refusal) {
+    public Job editable(UUID jobId, User caller, String refusal) {
         Job job = jobs.findWithCreatedFor(jobId).orElseThrow(() -> notFound());
         if (!authority.canManageJobPostings(job.getCreatedFor(), caller)) {
             throw job.getStatus() == JobStatus.DRAFT ? notFound() : new ForbiddenException(refusal);
@@ -181,12 +186,12 @@ public class JobService {
         return job;
     }
 
-    private JobDetailDto dto(Job job, User caller) {
+    private JobDetailDto dto(Job job, User caller, long applicationCount) {
         Actor poster = job.getCreatedFor();
         Boolean followed = poster.getActorType() == ActorType.ORG
                 ? follows.existsByFollower_IdAndFollowee_Id(caller.getId(), poster.getId())
                 : null;
-        return JobDetailDto.from(job, followed, true);
+        return JobDetailDto.from(job, followed, true, applicationCount);
     }
 
     /** Every order ends on the id, so tied rows page without repeats or gaps. */

@@ -34,6 +34,7 @@ import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.PageMapper;
+import io.github.matijaradovic.spona.job.application.JobApplicationRepository;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto.OrganizationPosting;
 import io.github.matijaradovic.spona.job.dto.JobDetailDto.PersonPosting;
 import io.github.matijaradovic.spona.job.dto.JobListItemDto;
@@ -60,8 +61,10 @@ class JobServiceTest {
     private final JobSearch search = mock(JobSearch.class);
     private final FollowRepository follows = mock(FollowRepository.class);
     private final RoleAssignmentRepository roles = mock(RoleAssignmentRepository.class);
+    private final JobApplicationRepository applications = mock(JobApplicationRepository.class);
     private final JobService service = new JobService(jobs, search, mock(ActorRepository.class),
-            mock(UserRepository.class), follows, new ContentAuthority(roles), mock(PrivacyService.class));
+            mock(UserRepository.class), follows, new ContentAuthority(roles), mock(PrivacyService.class),
+            applications);
 
     private final Pageable firstPage = PageMapper.toPageable(1, 20);
     private final User poster = TestFixtures.userWithId("poster", POSTER_ID);
@@ -257,6 +260,22 @@ class JobServiceTest {
         assertThat(posting.viewerCanEdit()).isNull();
         assertThat(posting.viewerCanDelete()).isNull();
         verifyNoInteractions(roles, follows);
+    }
+
+    @Test
+    void applicationCountIsServedToAnEditorAndIsNeitherCountedNorServedToAnyoneElse() {
+        serve(job(organization, JobStatus.OPEN));
+        when(applications.countByJob_Id(JOB_ID)).thenReturn(7L);
+
+        OrganizationPosting guest = (OrganizationPosting) service.job(SLUG, null);
+        OrganizationPosting stranger = (OrganizationPosting) service.job(SLUG, caller);
+        when(roles.findLiveRole(ORG_ID, CALLER_ID)).thenReturn(Optional.of(OrganizationRole.RECRUITER));
+        OrganizationPosting editor = (OrganizationPosting) service.job(SLUG, caller);
+
+        assertThat(guest.applicationCount()).isNull();
+        assertThat(stranger.applicationCount()).isNull();
+        assertThat(editor.applicationCount()).isEqualTo(7L);
+        verify(applications, times(1)).countByJob_Id(JOB_ID);
     }
 
     @Test

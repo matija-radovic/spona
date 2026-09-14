@@ -48,7 +48,10 @@ public sealed interface JobDetailDto {
             Boolean viewerCanEdit,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            Boolean viewerCanDelete) implements JobDetailDto {
+            Boolean viewerCanDelete,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            Long applicationCount) implements JobDetailDto {
     }
 
     /** No bio and no follow edge, since either would identify the person. */
@@ -76,11 +79,17 @@ public sealed interface JobDetailDto {
             Boolean viewerCanEdit,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            Boolean viewerCanDelete) implements JobDetailDto {
+            Boolean viewerCanDelete,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            Long applicationCount) implements JobDetailDto {
     }
 
-    /** Whoever may not edit a CLOSED posting gets its contact entries and external URL as null. */
-    static JobDetailDto from(Job job, Boolean followedByViewer, Boolean canEdit) {
+    /**
+     * Whoever may not edit a CLOSED posting gets its contact entries and external URL as null, and
+     * {@code applicationCount} is null for anyone who may not edit the posting at all.
+     */
+    static JobDetailDto from(Job job, Boolean followedByViewer, Boolean canEdit, Long applicationCount) {
         boolean withheld = job.getStatus() == JobStatus.CLOSED && !Boolean.TRUE.equals(canEdit);
         List<ContactEntry> contactInformation = withheld ? null : job.getContactInformation();
         String externalUrl = withheld ? null : job.getExternalUrl();
@@ -91,12 +100,12 @@ public sealed interface JobDetailDto {
                     createdFor, job.getLocation(), salary, job.getCreatedAt(), job.getKeywords(), job.getCategory(),
                     job.getJobType(), job.getWorkplaceType(), job.getWorkingHours(), job.getExperienceLevel(),
                     job.getStatus(), job.getApplicationType(), contactInformation, externalUrl, job.getDescription(),
-                    organization.getDescription(), followedByViewer, canEdit, canEdit);
+                    organization.getDescription(), followedByViewer, canEdit, canEdit, applicationCount);
             case User _ -> new PersonPosting(job.getId(), job.getSlug(), job.getTitle(), createdFor,
                     job.getLocation(), salary, job.getCreatedAt(), job.getKeywords(), job.getCategory(),
                     job.getJobType(), job.getWorkplaceType(), job.getWorkingHours(), job.getExperienceLevel(),
                     job.getStatus(), job.getApplicationType(), contactInformation, externalUrl, job.getDescription(),
-                    canEdit, canEdit);
+                    canEdit, canEdit, applicationCount);
             default -> throw new IllegalArgumentException("Unknown actor subtype " + job.getCreatedFor().getClass());
         };
     }

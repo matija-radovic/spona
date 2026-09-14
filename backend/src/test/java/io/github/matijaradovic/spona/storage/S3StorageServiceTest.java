@@ -132,6 +132,17 @@ class S3StorageServiceTest {
     }
 
     @Test
+    void aDeletedCvIsGone() throws Exception {
+        String key = storage.putCv(CV, "application/pdf");
+        String url = storage.presignCv(key);
+        assertThat(get(url).statusCode()).isEqualTo(200);
+
+        storage.deleteCv(key);
+
+        assertThat(get(storage.presignCv(key)).statusCode()).isEqualTo(404);
+    }
+
+    @Test
     void aPresignedUrlForAMissingKeyDoesNotResolve() throws Exception {
         String url = storage.presignCv("no-such-object.pdf");
 
