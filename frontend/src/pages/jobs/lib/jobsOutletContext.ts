@@ -8,6 +8,8 @@ export interface JobsOutletContext {
   activeSlug: string | undefined
   /** Mobile: slide back to the (intact) list. */
   onBack: () => void
+  /** Phone: the detail pane is still sliding in, so a loaded job waits to render. */
+  isSlidingIn: boolean
 }
 
 export const useJobsOutletContext = () => useOutletContext<JobsOutletContext>()

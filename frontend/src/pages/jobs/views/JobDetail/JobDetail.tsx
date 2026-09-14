@@ -17,7 +17,7 @@ import JobDetailContent from './JobDetailContent'
 const JobDetail = () => {
   const { t } = useTranslation()
   const { slug } = useParams()
-  const { isMobile, detailOnly, onBack } = useJobsOutletContext()
+  const { isMobile, detailOnly, onBack, isSlidingIn } = useJobsOutletContext()
 
   const [job, setJob] = useState<JobDetailDto | null>(null)
   const [problem, setProblem] = useState<ProblemDetail | null>(null)
@@ -47,7 +47,8 @@ const JobDetail = () => {
     }
   }, [slug, reloadKey])
 
-  const loading = loadedSlug !== slug
+  // A job that loads while its pane is still sliding in waits for the pane to land.
+  const loading = loadedSlug !== slug || isSlidingIn
 
   if (loading || problem || !job) {
     const isNotFound = problem?.status === 404

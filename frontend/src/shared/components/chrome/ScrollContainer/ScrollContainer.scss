@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
 
 .scroll-container {
     overflow-y: auto;
@@ -6,9 +7,8 @@
 
     scrollbar-gutter: stable both-edges;
 
-    scrollbar-width: thin; 
+    scrollbar-width: thin;
     scrollbar-color: transparent transparent;
-    transition: scrollbar-color 0.3s ease;
 
     &::-webkit-scrollbar {
         width: 5px;
@@ -21,18 +21,25 @@
     &::-webkit-scrollbar-thumb {
         background-color: transparent;
         border-radius: 10px;
-        transition: background-color 0.3s ease;
     }
 
     &::-webkit-scrollbar-corner {
         background: transparent;
     }
 
-    &:hover {
-        scrollbar-color: c.$scrollbar-thumb transparent;
+    @media #{mq.$can-hover} {
+        transition: scrollbar-color 0.3s ease;
 
         &::-webkit-scrollbar-thumb {
-            background-color: c.$scrollbar-thumb;
+            transition: background-color 0.3s ease;
+        }
+
+        &:hover {
+            scrollbar-color: c.$scrollbar-thumb transparent;
+
+            &::-webkit-scrollbar-thumb {
+                background-color: c.$scrollbar-thumb;
+            }
         }
     }
 

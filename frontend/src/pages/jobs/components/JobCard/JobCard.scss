@@ -1,4 +1,5 @@
 @use '@css/colors' as c;
+@use '@css/mediaqueries' as mq;
 @use '@css/mixins' as m;
 
 .job-card {
@@ -13,14 +14,17 @@
   text-align: left;
   color: c.$text-primary;
   cursor: pointer;
-  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.06s ease;
 
-  &:hover {
-    border-color: c.$accent-muted;
-  }
+  @media #{mq.$can-hover} {
+    transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.06s ease;
 
-  &:active {
-    transform: translateY(1px);
+    &:hover {
+      border-color: c.$accent-muted;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
   }
 
   &.is-active {

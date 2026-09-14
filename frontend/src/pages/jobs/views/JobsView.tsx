@@ -1,6 +1,6 @@
 import './JobsView.scss'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type TransitionEvent } from 'react'
+import { useLocation, useNavigate, useOutlet, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MQ } from '@shared/css/mediaqueries'
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
@@ -16,7 +16,16 @@ import { JobCard } from '@pages/jobs/components/JobCard'
 
 const PAGE_SIZE = 20
 
+const SLIDE_FALLBACK_MS = 600
+
 type ListState = 'loading' | 'error' | 'ready'
+
+interface PaneSlide {
+  slug: string | undefined
+  sliding: boolean
+  /** The last job's panel, kept on screen while it slides away. */
+  detail: ReactElement | null
+}
 
 interface JobsViewProps {
   filters: FilterState
@@ -168,7 +177,32 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
     navigate({ pathname: '/jobs', search: location.search })
   }, [navigate, location.search])
 
-  const outletContext: JobsOutletContext = { isMobile, detailOnly, activeSlug: slug, onBack }
+  const [slide, setSlide] = useState<PaneSlide>({ slug, sliding: false, detail: null })
+  const isSlidingIn = slide.sliding && !!slug && slide.slug === slug
+
+  const outletContext: JobsOutletContext = { isMobile, detailOnly, activeSlug: slug, onBack, isSlidingIn }
+  const outlet = useOutlet(outletContext)
+
+  if (slide.slug !== slug) {
+    const panesMove = isMobile && !detailOnly && !slide.slug !== !slug
+    setSlide({ slug, sliding: slide.sliding || panesMove, detail: slug ? outlet : slide.detail })
+  }
+
+  const endSlide = useCallback(() => {
+    setSlide((s) => ({ ...s, sliding: false, detail: s.slug ? s.detail : null }))
+  }, [])
+
+  useEffect(() => {
+    if (!slide.sliding) return
+    const timer = window.setTimeout(endSlide, SLIDE_FALLBACK_MS)
+    return () => clearTimeout(timer)
+  }, [slide.sliding, slide.slug, endSlide])
+
+  const onSlideEnd = (e: TransitionEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget && e.propertyName === 'transform') endSlide()
+  }
+
+  const panel = slide.sliding && !slug && slide.detail ? slide.detail : outlet
 
   const bodyClass = ['jobs-body', detailOnly ? 'is-detail-only' : '', slug && !detailOnly ? 'is-detail' : '']
     .filter(Boolean)
@@ -179,7 +213,7 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
       <div className="jobs-inner container">
         <SearchFilterBar filters={filters} onSearch={onSearch} isMobile={isMobile} />
 
-        <div className={bodyClass}>
+        <div className={bodyClass} onTransitionEnd={onSlideEnd}>
           {!detailOnly && (
             <div
               ref={listRef}
@@ -240,7 +274,7 @@ const JobsView = ({ filters, queryKey, detailOnly }: JobsViewProps) => {
           )}
 
           <div ref={panelRef} className="jobs-panel scroll-container">
-            <Outlet context={outletContext} />
+            {panel}
           </div>
         </div>
       </div>

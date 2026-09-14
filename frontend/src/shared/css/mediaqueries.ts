@@ -19,6 +19,7 @@ export const MQ = {
   mDesktop: 'only screen and (min-width: 1201px) and (max-width: 1400px)',
   lDesktop: 'only screen and (min-width: 1401px)',
   xlDesktop: 'only screen and (max-width: 1500px)',
+  canHover: 'only screen and (hover: hover) and (pointer: fine)',
 } as const
 
 export type MediaQueryName = keyof typeof MQ
