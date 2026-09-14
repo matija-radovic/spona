@@ -1,19 +1,12 @@
 // -----------------------------------------------------------------------------
-// MOCK jobs service. The Spring Boot backend does not exist yet, so every call
-// fakes a delayed response instead of hitting the network. The real axios call
-// is left commented above each mock body. DTO shapes are separate from the DB
+// Jobs service. `fetchJobs`, `fetchJobBySlug` and `fetchJobsByIds` hit the
+// backend; the rest are mocks that fake a delayed response, the real axios
+// call commented above each body. DTO shapes are separate from the DB
 // model (new_docx/types.ts): user-facing DTOs OMIT `createdBy` and ship a stripped,
 // discriminated `createdFor`. Transport envelopes come from `./types`.
 //
 // All rejections are `ProblemDetail` shapes so callers can `parseProblem(err)`
-// uniformly. Magic inputs make the failure/empty paths reachable:
-//   - fetchJobs   : q === "prazno"            -> empty page (0 results)
-//   - fetchJobBySlug : slug === "nepostojeci" -> 404 Not Found
-//   - fetchJobBySlug : a posting for an org whose postings the viewer manages -> viewerCan* true
-//   - fetchJobBySlug : slug containing "zatvoren" -> CLOSED, "nacrt" -> DRAFT
-//                      (a DRAFT also forces viewerCan* true - see below)
-//   - fetchJobBySlug : slug containing "prijave" -> a CV_DROP posting the viewer
-//                      owns, with a full inbox; "bez-prijava" -> the same, empty
+// uniformly. Magic inputs make the mocks' failure/empty paths reachable:
 //   - submitApplication : filename contains "fail" -> 413 rejection
 //   - submitApplication : a posting that is not OPEN -> 409 rejection
 //   - fetchActorJobPostings : actorId ends with "-empty" -> [] (no/hidden postings)
@@ -33,7 +26,7 @@
 // localStorage (utils/savedJobs.ts). `fetchJobsByIds` only HYDRATES an id set.
 // -----------------------------------------------------------------------------
 
-// import api from '@utils/api'
+import api from '@utils/api'
 
 import type { ContactEntry } from '@shared/components'
 import type { ActorRefDto } from './profiles'
@@ -306,31 +299,16 @@ const makeProblem = (status: number, detail: string, title = ''): ProblemDetail 
 const rejectProblem = <T>(status: number, detail: string, title?: string): Promise<T> =>
   Promise.reject(makeProblem(status, detail, title))
 
-const MAGIC_EMPTY_QUERY = 'prazno'
-const MAGIC_NOT_FOUND_SLUG = 'nepostojeci'
-/** Substrings, not whole slugs: the public list only ever builds slugs from a
- *  title, so a CLOSED or DRAFT posting is reachable by direct link and by an
- *  actor's own postings, and never from a search result. Any slug carrying one
- *  works - `/jobs/frontend-programer-nacrt` reads as a real posting because
- *  `titleFromSlug` strips the marker back out. */
+/** Put in the slug of an actor's DRAFT or CLOSED posting. */
 const MAGIC_CLOSED_SLUG = 'zatvoren'
 const MAGIC_DRAFT_SLUG = 'nacrt'
-/** The two the applications inbox needs: a CV_DROP posting the viewer owns,
- *  once with rows and once without, since neither state is reachable through a
- *  hash the caller cannot aim. */
-const MAGIC_INBOX_SLUG = 'prijave'
+/** A posting created with this in its slug has an empty applications inbox. */
 const MAGIC_EMPTY_INBOX_SLUG = 'bez-prijava'
 /** Every id-addressed write refuses a posting whose title carries this, the way
  *  `createJob` already refuses one. */
 const MAGIC_FAIL_TITLE = 'greska'
 /** Carried on the id, because the writes are addressed by id and never see a slug. */
 const EMPTY_INBOX_MARK = '-empty'
-const SLUG_MARKERS: readonly string[] = [
-  MAGIC_EMPTY_INBOX_SLUG,
-  MAGIC_INBOX_SLUG,
-  MAGIC_CLOSED_SLUG,
-  MAGIC_DRAFT_SLUG,
-]
 /** Twelve statuses, so an owner's pane pages at all, and all three kinds so the
  *  capsule renders. */
 const OWNER_STATUSES: readonly JobStatus[] = [
@@ -356,7 +334,6 @@ const ownedStatusesFor = (actorId: string): readonly JobStatus[] | undefined => 
   if (actorId === VIEWER.id) return VIEWER_OWN_STATUSES
   return viewerManagesPostingsOf(actorId) ? OWNER_STATUSES : undefined
 }
-const MAX_MOCK_PAGES = 3
 
 const TITLES = [
   'Frontend programer',
@@ -390,33 +367,6 @@ const ORG_BIOS: Readonly<Record<string, string>> = Object.fromEntries(
 )
 
 const LOCATIONS: readonly string[] = ['Beograd', 'Novi Sad', 'Niš', 'Subotica', 'Kragujevac']
-/** Parallel to TITLES, so a mocked posting's occupational group matches its name. */
-const CATEGORIES: readonly JobCategory[] = [
-  'IT_SOFTWARE',
-  'IT_SOFTWARE',
-  'DESIGN_CREATIVE',
-  'IT_INFRASTRUCTURE',
-  'IT_SOFTWARE',
-  'DATA_AI',
-  'PROJECT_PRODUCT',
-  'IT_SOFTWARE',
-]
-const JOB_TYPES: readonly JobType[] = ['PERMANENT', 'FIXED_TERM', 'SEASONAL', 'FREELANCE', 'INTERNSHIP']
-const WORKPLACES: readonly WorkplaceType[] = ['REMOTE', 'HYBRID', 'ONSITE', 'FIELD']
-/** The nulls are load-bearing: without them no mocked posting leaves these two
- *  unstated, and the conditional detail pills are unreachable. */
-const WORKING_HOURS: readonly (WorkingHours | null)[] = ['FULL_TIME', 'PART_TIME', null]
-const LEVELS: readonly (ExperienceLevel | null)[] = [
-  'NONE',
-  'MONTHS_6',
-  'YEARS_1',
-  'YEARS_2',
-  'YEARS_3',
-  'YEARS_5',
-  'YEARS_10',
-  null,
-]
-const APPLICATION_TYPES: readonly ApplicationType[] = ['CONTACT_ONLY', 'EXTERNAL_URL', 'CV_DROP']
 /** Poster-authored, so deliberately unruly - mixed case and multi-word entries
  *  are what the detail page's plain-text rendering has to survive. */
 const KEYWORDS: readonly string[] = [
@@ -436,16 +386,6 @@ const slugify = (value: string): string =>
     .replace(/[čć ]/g, (c) => (c === ' ' ? '-' : c === 'č' || c === 'ć' ? 'c' : c))
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
-
-const titleFromSlug = (slug: string): string => {
-  const stripped = SLUG_MARKERS.reduce(
-    (acc, marker) => acc.split(marker).join('-'),
-    slug.replace(/-\d+$/, ''),
-  )
-  const words = stripped.split('-').filter(Boolean)
-  if (words.length === 0) return 'Oglas za posao'
-  return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-}
 
 /** Cheap stable hash so a given slug always renders the same detail shape. */
 const hashString = (value: string): number => {
@@ -472,25 +412,6 @@ const mockSalary = (seed: number): Salary => {
   }
 }
 
-const mockContact = (): ContactEntry[] => [
-  { type: 'email', description: 'Email za prijave', value: 'posao@primer.rs' },
-  { type: 'phone', description: 'Kontakt telefon', value: '+381 11 234 567' },
-  { type: 'linkedin', description: 'Profil kompanije', value: 'linkedin.com/company/primer' },
-]
-
-const mockDescription = (title: string): string =>
-  [
-    `Tražimo motivisanog kandidata za poziciju „${title}“.`,
-    'Radićete u timu koji gradi proizvode za korisnike širom regiona.',
-    '',
-    'Odgovornosti:',
-    '- Razvoj i održavanje ključnih funkcionalnosti',
-    '- Saradnja sa dizajnerima i backend timom',
-    '- Učešće u code review procesu',
-    '',
-    'Nudimo fleksibilno radno vreme, edukacije i prijatnu radnu atmosferu.',
-  ].join('\n')
-
 const buildListItem = (index: number): JobListItemDto => {
   const title = TITLES[index % TITLES.length]
   const isUser = index % 3 === 0
@@ -515,15 +436,6 @@ const buildListItem = (index: number): JobListItemDto => {
   }
 }
 
-/** Query string embedded in HAL hrefs, ordered `page`, `size`, then filters. */
-const hrefFor = (params: JobQuery, page: number, size: number): string => {
-  const sp = new URLSearchParams()
-  sp.set('page', String(page))
-  sp.set('size', String(size))
-  filtersToSearchParams(params).forEach((value, key) => sp.append(key, value))
-  return `/api/jobs?${sp.toString()}`
-}
-
 /** The public list with nothing selected: `GET /jobs` with no parameters. */
 export const NO_JOB_FILTERS: JobQuery = {
   q: '',
@@ -537,42 +449,16 @@ export const NO_JOB_FILTERS: JobQuery = {
   salary: false,
 }
 
-/**
- * MOCK - would be:
- *   const { data } = await api.get('/jobs', { params: { page, size, ...toParams(params) } })
- * Page/size pagination, 1-indexed. `totalElements` is fixed per query; results
- * are capped at MAX_MOCK_PAGES so infinite scroll terminates.
- */
 export const fetchJobs = async (
-  params: JobQuery = NO_JOB_FILTERS,
+  query: JobQuery = NO_JOB_FILTERS,
   page = 1,
   size = 20,
 ): Promise<PagedResponse<JobListItemDto>> => {
-  await delay(450)
-
-  const empty = params.q.trim().toLowerCase() === MAGIC_EMPTY_QUERY
-  const totalElements = empty ? 0 : 55
-  const totalPages = totalElements === 0 ? 0 : Math.min(Math.ceil(totalElements / size), MAX_MOCK_PAGES)
-  const last = page >= totalPages
-  const count = totalElements === 0 || page > totalPages ? 0 : last ? totalElements - (page - 1) * size : size
-
-  const content: JobListItemDto[] = Array.from({ length: count }, (_, i) =>
-    buildListItem((page - 1) * size + i),
-  )
-
-  return {
-    _links: {
-      self: { href: hrefFor(params, page, size) },
-      ...(page > 1 ? { prev: { href: hrefFor(params, page - 1, size) } } : {}),
-      ...(last ? {} : { next: { href: hrefFor(params, page + 1, size) } }),
-    },
-    content,
-    page,
-    size,
-    totalElements,
-    totalPages,
-    last,
-  }
+  const params = filtersToSearchParams(query)
+  params.set('page', String(page))
+  params.set('size', String(size))
+  const { data } = await api.get<PagedResponse<JobListItemDto>>('/jobs', { params })
+  return data
 }
 
 /** How many applications a posting holds. CV_DROP only - the other two types
@@ -581,111 +467,18 @@ export const fetchJobs = async (
 const applicationCountFor = (id: string, applicationType: ApplicationType): number =>
   applicationType !== 'CV_DROP' || id.endsWith(EMPTY_INBOX_MARK) ? 0 : 11 + (hashString(id) % 9)
 
-const deriveJob = (slug: string): JobDetailDto => {
-  const seed = hashString(slug)
-  const id = jobIdFromSlug(slug)
-  const title = titleFromSlug(slug)
-  const isInbox = slug.includes(MAGIC_INBOX_SLUG) || slug.includes(MAGIC_EMPTY_INBOX_SLUG)
-  const applicationType: ApplicationType = isInbox
-    ? 'CV_DROP'
-    : APPLICATION_TYPES[seed % APPLICATION_TYPES.length]
-  const isUser = seed % 4 === 0
-  const createdFor: JobPosterDto = isUser ? { actorType: 'user' } : ORGS[seed % ORGS.length]
-  const isOrg = createdFor.actorType === 'org'
-  const status: JobStatus = slug.includes(MAGIC_CLOSED_SLUG)
-    ? 'CLOSED'
-    : slug.includes(MAGIC_DRAFT_SLUG)
-      ? 'DRAFT'
-      : 'OPEN'
-  const viewerOwns =
-    isInbox || status === 'DRAFT' || (isOrg && viewerManagesPostingsOf(createdFor.id))
-
-  return {
-    id,
-    slug,
-    title,
-    createdFor,
-    location: LOCATIONS[seed % LOCATIONS.length],
-    salary: seed % 2 === 0 ? mockSalary(seed) : null,
-    createdAt: new Date(Date.now() - (seed % 30) * 24 * 60 * 60 * 1000).toISOString(),
-    category: CATEGORIES[seed % CATEGORIES.length],
-    jobType: JOB_TYPES[seed % JOB_TYPES.length],
-    workplaceType: WORKPLACES[seed % WORKPLACES.length],
-    workingHours: WORKING_HOURS[seed % WORKING_HOURS.length],
-    experienceLevel: LEVELS[seed % LEVELS.length],
-    status,
-    applicationType,
-    contactInformation: applicationType === 'CONTACT_ONLY' ? mockContact() : null,
-    externalUrl: applicationType === 'EXTERNAL_URL' ? 'https://primer.rs/karijera/oglas' : null,
-    description: mockDescription(title),
-    keywords: KEYWORDS.slice(seed % 4, (seed % 4) + 3 + (seed % 3)),
-    ...(isOrg
-      ? {
-          createdForBio: ORG_BIOS[createdFor.id] ?? null,
-          createdForFollowedByViewer: seed % 3 === 0,
-        }
-      : {}),
-    ...(viewerOwns
-      ? {
-          viewerCanEdit: true,
-          viewerCanDelete: true,
-          applicationCount: applicationCountFor(id, applicationType),
-        }
-      : {}),
-  }
-}
-
-/**
- * The mock's only mutable state. A posting is derived the first time it is asked
- * for and kept here, so the four writes below have a row to merge onto and the
- * lifecycle is demonstrable without a backend. A reload starts over from the
- * derivation.
- */
+/** The mock's only mutable state: the postings `createJob` made, which the
+ *  mocked writes merge onto. A reload empties it. */
 const jobStore = new Map<string, JobDetailDto>()
-
-const storedJob = (slug: string): JobDetailDto => {
-  const held = jobStore.get(jobIdFromSlug(slug))
-  if (held) return held
-  const derived = deriveJob(slug)
-  jobStore.set(derived.id, derived)
-  return derived
-}
 
 /** Every id-addressed write refuses the same posting, the way `createJob`
  *  refuses the same title. */
 const refuses = (id: string): boolean =>
   (jobStore.get(id)?.title ?? '').toLowerCase().includes(MAGIC_FAIL_TITLE)
 
-/**
- * A CLOSED posting exposes no application path to a caller who cannot edit it -
- * the contact entries are the poster's phone number, and "not rendered" is not
- * the same as "not sent" (backend-contract.md §7). The poster keeps the full
- * record, which is what the manage page is for.
- */
-const withoutClosedApplyPath = (job: JobDetailDto): JobDetailDto =>
-  job.status === 'CLOSED' && !job.viewerCanEdit
-    ? { ...job, contactInformation: null, externalUrl: null }
-    : job
-
-/**
- * MOCK - would be: const { data } = await api.get(`/jobs/${slug}`)
- * Single-entry: resolves the bare DTO (no wrapper). Unknown slug -> 404.
- * A posting for an organization whose postings the viewer manages (every role but
- * EDITOR) comes back with both authority flags set - the real API reads them
- * off the JWT.
- *
- * A DRAFT always comes back with them too, and that is not a shortcut: the real
- * route answers 404 for a draft to any caller who cannot edit it, so "a draft
- * the viewer has no authority over" is a response the backend never produces
- * and the client must never be shaped around.
- */
 export const fetchJobBySlug = async (slug: string): Promise<JobDetailDto> => {
-  await delay(400)
-  if (slug === MAGIC_NOT_FOUND_SLUG) {
-    return rejectProblem(404, 'Traženi oglas ne postoji.', 'Not Found')
-  }
-
-  return withoutClosedApplyPath(storedJob(slug))
+  const { data } = await api.get<JobDetailDto>(`/jobs/${slug}`)
+  return data
 }
 
 /**
@@ -903,30 +696,15 @@ export const submitApplication = async (
   }
 }
 
-/**
- * MOCK - would be: const { data } = await api.get('/jobs', { params: { id: ids, status: statuses } })
- * Hydrates a set of saved-job ids (from localStorage) into list items, filtered
- * by status. The whole id set resolves in one request (a saved set is bounded).
- * ~20% of ids are intentionally omitted to model deleted jobs the pane must
- * tolerate. Each id deterministically maps to exactly one status.
- */
+/** Both lists go comma-joined: axios would write an array as `id[]=`, which the backend does not read. */
 export const fetchJobsByIds = async (
   ids: string[],
   statuses: JobStatus[],
 ): Promise<SavedJobItemDto[]> => {
-  await delay(360)
-
-  const wanted = new Set(statuses)
-  return ids
-    .map((id, index): SavedJobItemDto | null => {
-      const seed = hashString(id)
-      if (seed % 5 === 0) return null // ~20% "deleted" - not returned
-      const status: JobStatus = seed % 3 === 0 ? 'CLOSED' : 'OPEN'
-      if (!wanted.has(status)) return null
-      const base = buildListItem(seed % TITLES.length)
-      return { ...base, id, status, slug: `${slugify(base.title)}-${(seed % 9000) + 1000 + index}` }
-    })
-    .filter((item): item is SavedJobItemDto => item !== null)
+  const { data } = await api.get<SavedJobItemDto[]>('/jobs', {
+    params: { id: ids.join(','), status: statuses.join(',') },
+  })
+  return data
 }
 
 /** An actor's own postings were published by that actor, so the poster is
@@ -940,8 +718,7 @@ const postingPoster = (actorId: string): JobPosterDto | null => {
   return actorId.startsWith('user-') ? { actorType: 'user' } : null
 }
 
-/** A DRAFT or CLOSED row carries its marker in the slug, so opening it from the
- *  pane lands on a detail page in the same status. */
+/** A DRAFT or CLOSED row carries its status marker in the slug. */
 const buildPosting = (
   index: number,
   status: JobStatus,

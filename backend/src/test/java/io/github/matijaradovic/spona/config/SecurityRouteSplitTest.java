@@ -51,7 +51,7 @@ class SecurityRouteSplitTest {
     void aPublicReadIsReachableWithoutAToken() throws Exception {
         mvc.perform(get("/users/matija")).andExpect(status().isNotFound());
         mvc.perform(get("/organizations/spona")).andExpect(status().isNotFound());
-        mvc.perform(get("/jobs")).andExpect(status().isNotFound());
+        mvc.perform(get("/jobs")).andExpect(status().isOk());
         mvc.perform(get("/posts/00000000-0000-4000-8000-000000000001/comments")).andExpect(status().isNotFound());
         mvc.perform(get("/reactions/post/00000000-0000-4000-8000-000000000001")).andExpect(status().isNotFound());
     }

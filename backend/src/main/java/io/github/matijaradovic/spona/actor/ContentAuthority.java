@@ -25,4 +25,12 @@ public class ContentAuthority {
         OrganizationRole role = roles.findLiveRole(owner.getId(), caller.getId()).orElse(null);
         return PublishAuthority.canPublishContent(role);
     }
+
+    public boolean canManageJobPostings(Actor owner, User caller) {
+        if (owner.getActorType() == ActorType.USER) {
+            return owner.getId().equals(caller.getId());
+        }
+        OrganizationRole role = roles.findLiveRole(owner.getId(), caller.getId()).orElse(null);
+        return PublishAuthority.canManageJobPostings(role);
+    }
 }

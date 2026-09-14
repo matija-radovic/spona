@@ -9,8 +9,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
 import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
+import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
+import io.github.matijaradovic.spona.job.ApplicationType;
+import io.github.matijaradovic.spona.job.Job;
+import io.github.matijaradovic.spona.job.JobCategory;
+import io.github.matijaradovic.spona.job.JobStatus;
+import io.github.matijaradovic.spona.job.JobType;
+import io.github.matijaradovic.spona.job.WorkplaceType;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.invitation.OrganizationInvitation;
 import io.github.matijaradovic.spona.organization.member.OrganizationMember;
@@ -74,6 +81,17 @@ public final class TestFixtures {
     public static OrganizationInvitation addressInvitation(Organization organization, String email, User inviter,
             OrganizationRole role) {
         return new OrganizationInvitation(organization, role, null, email, inviter);
+    }
+
+    /** A CV_DROP posting with the three pickers set, which every status's CHECKs accept. */
+    public static Job job(User createdBy, Actor createdFor, String slug, JobStatus status) {
+        Job job = new Job(createdBy, createdFor, slug, "Oglas za posao",
+                "Opis radnog mesta, dovoljno dugacak da prodje svaku proveru duzine.", "Beograd", status,
+                ApplicationType.CV_DROP);
+        job.setCategory(JobCategory.IT_SOFTWARE);
+        job.setJobType(JobType.PERMANENT);
+        job.setWorkplaceType(WorkplaceType.ONSITE);
+        return job;
     }
 
     /** Two entries, one of them carrying the empty description the bound allows. */

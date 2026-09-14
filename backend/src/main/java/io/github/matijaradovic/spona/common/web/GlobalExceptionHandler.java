@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
@@ -67,6 +68,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "user_username_key", ProblemTypes.USERNAME_TAKEN,
             "user_email_key", ProblemTypes.EMAIL_TAKEN,
             "organization_slug_key", ProblemTypes.SLUG_TAKEN);
+
+    @ExceptionHandler(BadRequestException.class)
+    ProblemDetail onBadRequest(BadRequestException ex, HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, ex.getMessage(), null, request);
+    }
 
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail onNotFound(NotFoundException ex, HttpServletRequest request) {

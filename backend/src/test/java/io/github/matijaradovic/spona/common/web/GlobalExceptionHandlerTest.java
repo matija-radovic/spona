@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.ConflictException;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
@@ -41,6 +42,11 @@ class GlobalExceptionHandlerTest {
     @RequestMapping("/api")
     @RestController
     static class ThrowingController {
+
+        @GetMapping("/bad-request")
+        void badRequest() {
+            throw new BadRequestException("A search is at most 200 characters.");
+        }
 
         @GetMapping("/not-found")
         void notFound() {
@@ -103,6 +109,17 @@ class GlobalExceptionHandlerTest {
                     "could not execute statement",
                     new ConstraintViolationException("could not execute statement", sql, kind, constraint));
         }
+    }
+
+    @Test
+    void badRequestIs400WithNoFieldErrors() throws Exception {
+        mvc.perform(get("/api/bad-request"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.detail").value("A search is at most 200 characters."))
+                .andExpect(jsonPath("$.instance").value("/api/bad-request"))
+                .andExpect(jsonPath("$.errors").doesNotExist());
     }
 
     @Test
