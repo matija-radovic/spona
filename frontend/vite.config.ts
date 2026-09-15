@@ -31,6 +31,11 @@ export default defineConfig({
           proxy.on('proxyReq', (proxyReq) => proxyReq.removeHeader('origin'))
         },
       },
+      '^/storage/': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/storage/, ''),
+      },
     },
   },
 })
