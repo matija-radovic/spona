@@ -2,6 +2,7 @@ import './Logo.scss'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LogoSize } from './logoSize'
+import catExplode from '@assets/common/cat-explodegif.gif'
 
 interface LogoProps {
   size?: LogoSize
@@ -16,7 +17,7 @@ const Logo = ({ size = LogoSize.SMALL, asLink = true }: LogoProps) => {
   const content = (
     <>
       <div className="logo-mark">
-        <img src="" alt={t('brand.name')} />
+        <img src={catExplode} alt={t('brand.name')} />
       </div>
       <span className="logo-name">{t('brand.name')}</span>
     </>

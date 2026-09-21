@@ -70,7 +70,7 @@
     "registerCta": "Registrujte se",
     "loginSubmit": "Prijavi se",
     "usernameHelper": "Od {{min}} do {{max}} karaktera. Dozvoljena su mala slova, brojevi, '-' i '_'.",
-    "passwordHelper": "Od {{min}} do {{max}} karaktera. \nDozvoljena su slova, brojevi i specijalni znaci: ~!@#$%^&*()_+={}|[]:;\"'<,>.?/",
+    "passwordHelper": "Od {{min}} do {{max}} karaktera. \nDozvoljena su slova, brojevi i specijalni znakovi: ~!@#$%^&*()_+={}|[]:;\"'<,>.?/",
     "steps": {
       "account": "Nalog",
       "personal": "Lični podaci",
@@ -824,7 +824,7 @@
     },
     "results": {
       "count": "{{count}} oglasa pronađeno",
-      "empty": "Nema rezultata za vašu pretragu.",
+      "empty": "Nema rezultata",
       "emptyHint": "Pokušajte sa drugim ključnim rečima ili izmenite filtere.",
       "loadMoreError": "Greška pri učitavanju.",
       "retry": "Pokušaj ponovo"
@@ -914,7 +914,7 @@
     "search": {
       "placeholder": "Pretražite po imenu...",
       "hint": "Počnite da kucate da biste pretražili.",
-      "empty": "Nema rezultata za vašu pretragu.",
+      "empty": "Nema rezultata",
       "modeCompanies": "Kompanije",
       "modeUsers": "Korisnici"
     }
@@ -1065,8 +1065,8 @@
     }
   },
   "home": {
-    "heroTitle": "Dobrodošli u vašu profesionalnu zajednicu",
-    "heroSubtitle": "Spona povezuje ljude, poslove i organizacije na jednom mestu - pronađite priliku, izgradite tim i negujte veze koje traju.",
+    "heroTitle": "Dobrodošli u Vašu profesionalnu zajednicu",
+    "heroSubtitle": "Spona povezuje ljude, poslove i organizacije na jednom mestu - pronađite priliku, izgradite tim i negujte poslovne veze koje traju.",
     "heroPrimaryCta": "Registrujte se besplatno",
     "heroSecondaryCta": "Pridružite se kao kompanija",
     "rolesTitle": "Istražite poslove po oblasti",
@@ -1074,11 +1074,11 @@
     "rolesAll": "Pogledajte sve poslove",
     "employersTitle": "Za poslodavce i organizacije",
     "employersSubtitle": "Objavite oglas, upravljajte timom i dođite do pravih kandidata u tri koraka.",
-    "employersStep1Title": "Napravite organizaciju",
+    "employersStep1Title": "Registrujte organizaciju",
     "employersStep1Desc": "Registrujte kompaniju, dodajte članove i dodelite uloge - vlasnik, administrator, urednik ili regruter.",
-    "employersStep2Title": "Objavite oglas",
+    "employersStep2Title": "Objavite oglas za posao",
     "employersStep2Desc": "Postavite poziciju, izaberite tip posla i način rada, i odredite kako kandidati apliciraju.",
-    "employersStep3Title": "Primajte prijave",
+    "employersStep3Title": "Primajte prijave za posao",
     "employersStep3Desc": "Pratite prijave, komunicirajte sa kandidatima i gradite svoj tim na jednom mestu.",
     "employersCta": "Otvorite nalog organizacije",
     "communityTitle": "Više od oglasa za posao",
@@ -1122,6 +1122,7 @@
     "invalidUrl": "Nevažeća adresa veb sajta.",
     "loginFailed": "Pogrešno korisničko ime ili lozinka.",
     "serverError": "Greška servera. Pokušajte ponovo.",
+    "invalidInput": "Jedan ili više od unetih podataka nije ispravan. Proverite polja i pokušajte ponovo.",
     "notFound": "Stranica nije pronađena.",
     "unauthorized": "Nemate pristup ovom sadržaju.",
     "fileTooLarge": "Fajl je prevelik.",

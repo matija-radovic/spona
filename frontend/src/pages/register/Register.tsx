@@ -13,6 +13,7 @@ import {
   resendVerification,
   type CreateUserPayload,
 } from '@utils/api/auth'
+import { parseProblem } from '@utils/api/types'
 import { rememberAfterAuth } from '@utils/afterAuth'
 import { buildRegisterSchema, REGISTER_DEFAULTS, type RegisterData } from './schema'
 import StageAccount from './stages/StageAccount'
@@ -108,8 +109,10 @@ const Register = () => {
       const values = userForm.getValues()
       await registerUser(toUserPayload(values))
       setSentTo(values.email)
-    } catch {
-      setSubmitError(t('errors.serverError'))
+    } catch (caught) {
+      // A taken email or a rejected field; which one is not revealed
+      const { status } = parseProblem(caught)
+      setSubmitError(t(status === 409 || status === 422 ? 'errors.invalidInput' : 'errors.serverError'))
     } finally {
       setBusy(false)
     }
