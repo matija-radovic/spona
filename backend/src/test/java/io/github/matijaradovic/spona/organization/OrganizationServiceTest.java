@@ -26,11 +26,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
@@ -118,7 +118,7 @@ class OrganizationServiceTest {
     void aReservedSlugIsRefusedWithoutALookup() {
         assertThatThrownBy(() -> service.create(marko, create("settings", null)))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.HANDLE_RESERVED));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SLUG_RESERVED));
 
         verify(organizations, never()).existsBySlug(anyString());
         verify(organizations, never()).saveAndFlush(any());
@@ -130,7 +130,7 @@ class OrganizationServiceTest {
 
         assertThatThrownBy(() -> service.create(marko, create("zauzeto", AVATAR)))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.SLUG_TAKEN));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SLUG_TAKEN));
 
         verify(avatars, never()).store(any());
         verify(organizations, never()).saveAndFlush(any());
@@ -262,7 +262,7 @@ class OrganizationServiceTest {
 
         assertThatThrownBy(() -> service.changeSlug("spona", marko, "companies"))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.HANDLE_RESERVED));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SLUG_RESERVED));
 
         assertThat(spona.getSlug()).isEqualTo("spona");
         verify(organizations, never()).existsBySlug(anyString());
@@ -275,7 +275,7 @@ class OrganizationServiceTest {
 
         assertThatThrownBy(() -> service.changeSlug("spona", marko, "zauzeto"))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.SLUG_TAKEN));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.SLUG_TAKEN));
 
         assertThat(spona.getSlug()).isEqualTo("spona");
     }

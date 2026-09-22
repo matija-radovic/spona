@@ -5,6 +5,7 @@ import { IconRefresh } from '@tabler/icons-react'
 import { SectionPanel } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import {
   cancelInvitation,
   createInvitation,
@@ -41,7 +42,7 @@ const MembersSection = () => {
   const [busyInvitationId, setBusyInvitationId] = useState<string | null>(null)
 
   const message = useCallback(
-    (caught: unknown) => parseProblem(caught).detail || t('errors.serverError'),
+    (caught: unknown) => problemMessage(parseProblem(caught), t),
     [t],
   )
 

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { AvatarPicker, ContactInfoWidget, FieldShell, Input } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { createOrganization } from '@utils/api/organizations'
 import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { SLUG_MIN, SLUG_MAX } from '@utils/constants/validation'
@@ -40,7 +41,7 @@ const CreateOrganization = () => {
       const org = await createOrganization(toCreateOrgPayload(values))
       navigate(`/companies/${org.slug}`, { replace: true })
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
     }
   })
 

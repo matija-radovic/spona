@@ -20,6 +20,7 @@ import {
 } from '@shared/components'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { updateOrgProfile } from '@utils/api/organizations'
 import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { canEditOrgProfile } from '../../../lib/permissions'
@@ -65,7 +66,7 @@ const OrgProfileSection = () => {
       await refetch()
       return true
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       return false
     }
   }

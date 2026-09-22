@@ -19,6 +19,7 @@ import io.github.matijaradovic.spona.comment.Comment;
 import io.github.matijaradovic.spona.comment.CommentRepository;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.post.Post;
@@ -48,7 +49,7 @@ public class ActivityService {
 
     @Transactional(readOnly = true)
     public Page<ActivityItemDto> activity(UUID actorId, String kind, Pageable pageable, User viewer) {
-        Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException("Actor not found."));
+        Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         ActorRefDto author = ActorRefDto.from(owner);
         Boolean canManage = viewer == null ? null : authority.canManage(owner, viewer);
 
@@ -56,7 +57,7 @@ public class ActivityService {
             case "all" -> allPage(actorId, pageable, author, canManage, viewer);
             case "posts" -> postsPage(actorId, pageable, author, canManage, viewer);
             case "comments" -> commentsPage(actorId, pageable, author, canManage, viewer);
-            default -> throw UnprocessableException.on("kind", "Kind must be all, posts or comments.");
+            default -> throw UnprocessableException.on("kind", ErrorCode.UNKNOWN_ACTIVITY_KIND);
         };
     }
 

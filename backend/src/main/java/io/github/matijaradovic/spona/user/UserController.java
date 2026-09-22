@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.auth.jwt.CurrentUser;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.organization.dto.MyInvitationDto;
 import io.github.matijaradovic.spona.organization.dto.MyOrganizationDto;
@@ -114,7 +115,7 @@ public class UserController {
 
     private static User self(String username, User caller) {
         if (caller == null || !caller.getUsername().equals(username)) {
-            throw new ForbiddenException("This is not your account.");
+            throw new ForbiddenException(ErrorCode.NOT_YOUR_ACCOUNT);
         }
         return caller;
     }

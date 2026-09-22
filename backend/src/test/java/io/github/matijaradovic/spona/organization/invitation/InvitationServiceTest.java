@@ -27,10 +27,10 @@ import org.mockito.InOrder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationGate;
 import io.github.matijaradovic.spona.organization.OrganizationRepository;
@@ -182,7 +182,7 @@ class InvitationServiceTest {
 
         assertThatThrownBy(() -> service.create("spona", marko, "jelena", OrganizationRole.EDITOR))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.ALREADY_MEMBER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ALREADY_MEMBER));
 
         verify(invitations, never()).saveAndFlush(any());
         verifyNoInteractions(mailer);
@@ -196,7 +196,8 @@ class InvitationServiceTest {
                 .thenReturn(true);
 
         assertThatThrownBy(() -> service.create("spona", marko, "jelena", OrganizationRole.EDITOR))
-                .isInstanceOfSatisfying(ConflictException.class, ex -> assertThat(ex.getType()).isNull());
+                .isInstanceOfSatisfying(ConflictException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVITATION_ALREADY_WAITING));
 
         verify(invitations, never()).saveAndFlush(any());
     }
@@ -367,7 +368,7 @@ class InvitationServiceTest {
 
         assertThatThrownBy(() -> service.accept(INVITATION_ID, marko))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.ALREADY_MEMBER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ALREADY_MEMBER_SELF));
 
         verify(canceler).cancel(INVITATION_ID);
         verify(members, never()).save(any());
@@ -388,9 +389,9 @@ class InvitationServiceTest {
         declined.decline(EARLY);
 
         assertThatThrownBy(() -> service.accept(INVITATION_ID, marko)).isInstanceOfSatisfying(
-                ForbiddenException.class, ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.INVITATION_NOT_YOURS));
+                ForbiddenException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVITATION_NOT_YOURS));
         assertThatThrownBy(() -> service.decline(INVITATION_ID, marko)).isInstanceOfSatisfying(
-                ForbiddenException.class, ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.INVITATION_NOT_YOURS));
+                ForbiddenException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVITATION_NOT_YOURS));
 
         verifyNoInteractions(members, canceler);
     }
@@ -400,7 +401,7 @@ class InvitationServiceTest {
         found(TestFixtures.addressInvitation(spona, "neko.drugi@primer.rs", jelena, OrganizationRole.EDITOR));
 
         assertThatThrownBy(() -> service.accept(INVITATION_ID, marko)).isInstanceOfSatisfying(
-                ForbiddenException.class, ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.INVITATION_NOT_YOURS));
+                ForbiddenException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVITATION_NOT_YOURS));
     }
 
     @Test

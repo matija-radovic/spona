@@ -12,6 +12,7 @@ import {
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { setJobStatus, updateJob } from '@utils/api/jobs'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { PostingFields } from '@pages/jobs/components/PostingFields'
 import { DeleteJobDialog } from '@pages/jobs/components/DeleteJobDialog'
 import {
@@ -69,7 +70,7 @@ const PostingSection = () => {
       await refetch()
       return true
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       return false
     }
   }

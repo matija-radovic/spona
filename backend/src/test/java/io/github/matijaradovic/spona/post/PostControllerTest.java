@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
@@ -103,12 +104,12 @@ class PostControllerTest {
     void anOverlongPostIs422UnderContent() throws Exception {
         signIn();
         when(postService.create(eq(caller), any()))
-                .thenThrow(UnprocessableException.on("content", "At most 5000 characters."));
+                .thenThrow(UnprocessableException.on("content", ErrorCode.POST_CONTENT_TOO_LONG.with(5000)));
 
         mvc.perform(post("/posts").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"content\":\"x\",\"createdForId\":\"" + CALLER_ID + "\"}"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.content").value("At most 5000 characters."));
+                .andExpect(jsonPath("$.errors.content.detail").value("At most 5000 characters."));
     }
 
     @Test
@@ -126,7 +127,7 @@ class PostControllerTest {
     void aRefusedUpdateIs403() throws Exception {
         signIn();
         when(postService.update(eq(POST_ID), eq(caller), any()))
-                .thenThrow(new ForbiddenException("You may not edit this post."));
+                .thenThrow(new ForbiddenException(ErrorCode.POST_NOT_EDITABLE));
 
         mvc.perform(put("/posts/" + POST_ID).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"content\":\"Novo\"}"))

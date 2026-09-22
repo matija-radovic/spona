@@ -7,6 +7,7 @@ import { FieldShell, Input } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
+import { applyFieldErrors, problemMessage } from '@utils/api/problemMessage'
 import { changeUsername, type UserSettingsDto } from '@utils/api/settings'
 import { USERNAME_MAX, USERNAME_MIN } from '@utils/constants/validation'
 import { CredentialForm } from '../CredentialForm'
@@ -45,8 +46,8 @@ const UsernameForm = ({ settings, refetch }: UsernameFormProps) => {
       navigate(`/users/${updated.username}/settings/account`, { replace: true })
     } catch (caught) {
       const problem = parseProblem(caught)
-      const message = problem.detail || t('errors.serverError')
-      setError('username', { message })
+      const message = problemMessage(problem, t)
+      if (!applyFieldErrors(problem, setError, t)) setError('username', { message })
       setError('root', { message })
     }
   })

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.comment.CommentRepository;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.post.PostRepository;
@@ -110,12 +111,12 @@ public class ReactionService {
 
     private static ReactionTargetType targetType(String segment) {
         return ReactionTargetType.fromSegment(segment)
-                .orElseThrow(() -> new NotFoundException("Unknown reaction target type."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.UNKNOWN_REACTION_TARGET));
     }
 
     private static String checkedEmoji(String emoji) {
         if (emoji == null || !ReactionPalette.contains(emoji)) {
-            throw UnprocessableException.on("emoji", "Emoji must be one of the reaction palette.");
+            throw UnprocessableException.on("emoji", ErrorCode.EMOJI_NOT_IN_PALETTE);
         }
         return emoji;
     }
@@ -126,7 +127,8 @@ public class ReactionService {
             case COMMENT -> comments.existsById(targetId);
         };
         if (!exists) {
-            throw new NotFoundException(type == ReactionTargetType.POST ? "Post not found." : "Comment not found.");
+            throw new NotFoundException(
+                    type == ReactionTargetType.POST ? ErrorCode.POST_NOT_FOUND : ErrorCode.COMMENT_NOT_FOUND);
         }
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
@@ -90,7 +91,7 @@ class OrganizationControllerTest {
     @Test
     void answers404ForASlugThatIsNobody() throws Exception {
         when(actors.organizationProfile(eq("nepostojeci"), isNull()))
-                .thenThrow(new NotFoundException("Profile not found."));
+                .thenThrow(new NotFoundException(ErrorCode.PROFILE_NOT_FOUND));
 
         mvc.perform(get("/organizations/nepostojeci"))
                 .andExpect(status().isNotFound())

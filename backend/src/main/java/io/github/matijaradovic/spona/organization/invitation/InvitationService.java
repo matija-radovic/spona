@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.common.util.TransactionHooks;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationGate;
 import io.github.matijaradovic.spona.organization.OrganizationGate.Seat;
@@ -35,9 +35,6 @@ import io.github.matijaradovic.spona.user.UserRepository;
 
 @Service
 public class InvitationService {
-
-    private static final String NOT_AN_ADMIN = "Only the owner or an admin may manage invitations.";
-    private static final String NO_SUCH_INVITATION = "Invitation not found.";
 
     private static final List<InvitationStatus> LISTED = List.of(InvitationStatus.WAITING, InvitationStatus.DECLINED);
 
@@ -63,20 +60,20 @@ public class InvitationService {
 
     @Transactional(readOnly = true)
     public List<InvitationDto> list(String slug, User caller) {
-        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canManageInvitations, NOT_AN_ADMIN)
-                .organization().getId();
+        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canManageInvitations,
+                ErrorCode.INVITATION_NOT_AN_ADMIN).organization().getId();
         return invitations.findListed(organizationId, LISTED).stream().map(InvitationDto::from).toList();
     }
 
     /** An address is never looked up here - the mail it gets is chosen after the commit, off this thread */
     @Transactional
     public InvitationDto create(String slug, User caller, String identifier, OrganizationRole role) {
-        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageInvitations, NOT_AN_ADMIN);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageInvitations, ErrorCode.INVITATION_NOT_AN_ADMIN);
         if (role == OrganizationRole.OWNER) {
-            throw UnprocessableException.on("role", "Ownership moves only by transfer.");
+            throw UnprocessableException.on("role", ErrorCode.INVITATION_OWNER_BY_TRANSFER_ONLY);
         }
         if (!PublishAuthority.canManageRole(seat.role(), role)) {
-            throw new ForbiddenException("You may not invite someone at this role.");
+            throw new ForbiddenException(ErrorCode.INVITATION_ROLE_TOO_HIGH);
         }
 
         Organization organization = seat.organization();
@@ -91,13 +88,13 @@ public class InvitationService {
         }
 
         User invitee = users.findByUsername(typed.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> UnprocessableException.on("identifier", "No user has this username."));
+                .orElseThrow(() -> UnprocessableException.on("identifier", ErrorCode.NO_SUCH_USERNAME));
         if (members.existsById(new OrganizationMemberId(invitee.getId(), organization.getId()))) {
-            throw new ConflictException("This user is already a member.", ProblemTypes.ALREADY_MEMBER);
+            throw new ConflictException(ErrorCode.ALREADY_MEMBER);
         }
         if (invitations.existsByOrganization_IdAndInvitee_IdAndStatus(organization.getId(), invitee.getId(),
                 InvitationStatus.WAITING)) {
-            throw new ConflictException("This user already has a waiting invitation.");
+            throw new ConflictException(ErrorCode.INVITATION_ALREADY_WAITING);
         }
         String email = invitee.getEmail();
         String displayName = invitee.resolveDisplayName();
@@ -110,7 +107,7 @@ public class InvitationService {
     public void cancel(String slug, User caller, UUID id) {
         OrganizationInvitation invitation = ofOrganization(slug, caller, id);
         if (invitation.getStatus() != InvitationStatus.WAITING) {
-            throw new ConflictException("Only a waiting invitation can be canceled.");
+            throw new ConflictException(ErrorCode.INVITATION_NOT_WAITING);
         }
         invitation.cancel(Instant.now());
     }
@@ -119,7 +116,7 @@ public class InvitationService {
     public void dismiss(String slug, User caller, UUID id) {
         OrganizationInvitation invitation = ofOrganization(slug, caller, id);
         if (invitation.getStatus() != InvitationStatus.DECLINED) {
-            throw new ConflictException("Only a declined invitation can be dismissed.");
+            throw new ConflictException(ErrorCode.INVITATION_NOT_DECLINED);
         }
         invitation.dismiss(Instant.now());
     }
@@ -137,8 +134,7 @@ public class InvitationService {
         Organization organization = invitation.getOrganization();
         if (members.existsById(new OrganizationMemberId(caller.getId(), organization.getId()))) {
             canceler.cancel(invitation.getId());
-            throw new ConflictException("You are already a member of this organization.",
-                    ProblemTypes.ALREADY_MEMBER);
+            throw new ConflictException(ErrorCode.ALREADY_MEMBER_SELF);
         }
 
         User user = users.getReferenceById(caller.getId());
@@ -193,21 +189,20 @@ public class InvitationService {
     }
 
     private OrganizationInvitation ofOrganization(String slug, User caller, UUID id) {
-        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canManageInvitations, NOT_AN_ADMIN)
-                .organization().getId();
+        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canManageInvitations,
+                ErrorCode.INVITATION_NOT_AN_ADMIN).organization().getId();
         return invitations.findByIdAndOrganization_Id(id, organizationId)
-                .orElseThrow(() -> new NotFoundException(NO_SUCH_INVITATION));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.INVITATION_NOT_FOUND));
     }
 
     private OrganizationInvitation waitingFor(UUID id, User caller) {
         OrganizationInvitation invitation = invitations.findById(id)
-                .orElseThrow(() -> new NotFoundException(NO_SUCH_INVITATION));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.INVITATION_NOT_FOUND));
         if (!invitation.isAddressedTo(caller)) {
-            throw new ForbiddenException("This invitation is addressed to someone else.",
-                    ProblemTypes.INVITATION_NOT_YOURS);
+            throw new ForbiddenException(ErrorCode.INVITATION_NOT_YOURS);
         }
         if (invitation.getStatus() != InvitationStatus.WAITING) {
-            throw new ConflictException("This invitation is no longer waiting.");
+            throw new ConflictException(ErrorCode.INVITATION_NO_LONGER_WAITING);
         }
         return invitation;
     }

@@ -25,7 +25,7 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 
 import io.github.matijaradovic.spona.common.error.ConflictException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationRepository;
@@ -169,7 +169,7 @@ class InvitationMailTest {
         assertThat(smtp.waitForIncomingEmail(5_000, 1)).isTrue();
 
         assertThatThrownBy(() -> invitations.accept(id, member)).isInstanceOfSatisfying(ConflictException.class,
-                ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.ALREADY_MEMBER));
+                ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ALREADY_MEMBER_SELF));
 
         OrganizationInvitation row = rows.findById(id).orElseThrow();
         assertThat(row.getStatus()).isEqualTo(InvitationStatus.CANCELED);

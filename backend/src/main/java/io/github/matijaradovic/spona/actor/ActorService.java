@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.github.matijaradovic.spona.actor.dto.ActorSearchItemDto;
 import io.github.matijaradovic.spona.actor.dto.ProfileDto;
 import io.github.matijaradovic.spona.actor.follow.FollowRepository;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
@@ -43,7 +44,7 @@ public class ActorService {
     @Transactional(readOnly = true)
     public ProfileDto userProfile(String username, User viewer) {
         User subject = users.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("Profile not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.PROFILE_NOT_FOUND));
 
         return ProfileDto.from(subject,
                 follows.countByFollowee_Id(subject.getId()),
@@ -54,7 +55,7 @@ public class ActorService {
     @Transactional(readOnly = true)
     public ProfileDto organizationProfile(String slug, User viewer) {
         Organization subject = organizations.findBySlug(slug)
-                .orElseThrow(() -> new NotFoundException("Profile not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.PROFILE_NOT_FOUND));
 
         return ProfileDto.from(subject,
                 follows.countByFollowee_Id(subject.getId()),
@@ -86,7 +87,7 @@ public class ActorService {
                         followers.getOrDefault(row.getId(), 0L),
                         viewer == null ? null : followed.contains(row.getId())));
             }
-            default -> throw UnprocessableException.on("type", "Type must be user or org.");
+            default -> throw UnprocessableException.on("type", ErrorCode.UNKNOWN_ACTOR_TYPE);
         };
     }
 

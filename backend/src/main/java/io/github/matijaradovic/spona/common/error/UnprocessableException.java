@@ -4,24 +4,28 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class UnprocessableException extends RuntimeException {
+public class UnprocessableException extends ApiException {
 
-    private final Map<String, String> errors;
+    private final Map<String, ErrorCode.Formatted> errors;
 
-    public UnprocessableException(String detail) {
-        this(detail, Map.of());
+    public UnprocessableException(ErrorCode code) {
+        this(code.with(), Map.of());
     }
 
-    public UnprocessableException(String detail, Map<String, String> errors) {
-        super(detail);
+    public UnprocessableException(ErrorCode.Formatted error, Map<String, ErrorCode.Formatted> errors) {
+        super(error);
         this.errors = Collections.unmodifiableMap(new LinkedHashMap<>(errors));
     }
 
-    public static UnprocessableException on(String field, String message) {
-        return new UnprocessableException(message, Map.of(field, message));
+    public static UnprocessableException on(String field, ErrorCode code) {
+        return on(field, code.with());
     }
 
-    public Map<String, String> getErrors() {
+    public static UnprocessableException on(String field, ErrorCode.Formatted error) {
+        return new UnprocessableException(error, Map.of(field, error));
+    }
+
+    public Map<String, ErrorCode.Formatted> getErrors() {
         return errors;
     }
 }

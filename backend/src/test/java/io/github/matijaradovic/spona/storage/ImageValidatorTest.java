@@ -5,7 +5,7 @@ import static io.github.matijaradovic.spona.support.AvatarFixtures.dataUrl;
 import static io.github.matijaradovic.spona.support.AvatarFixtures.image;
 import static io.github.matijaradovic.spona.support.AvatarFixtures.pngDataUrl;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.assertj.core.api.Assertions.entry;
 
 import java.awt.image.BufferedImage;
@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 
 class ImageValidatorTest {
@@ -109,9 +110,24 @@ class ImageValidatorTest {
         assertRefused(pngDataUrl(png), "The avatar is not a valid PNG.");
     }
 
+    @Test
+    void theSizeRefusalsCarryTheirBoundsAsArguments() {
+        assertThat(refusal(pngDataUrl(image("png", 300, 200))))
+                .satisfies(error -> assertThat(error.errorCode()).isEqualTo(ErrorCode.AVATAR_WRONG_DIMENSIONS))
+                .satisfies(error -> assertThat(error.args()).containsExactly(entry("width", 256), entry("height", 256)));
+        assertThat(refusal(pngDataUrl(Arrays.copyOf(canvasPng(), HALF_A_MEGABYTE + 1))))
+                .satisfies(error -> assertThat(error.errorCode()).isEqualTo(ErrorCode.AVATAR_TOO_LARGE))
+                .satisfies(error -> assertThat(error.args()).containsExactly(entry("max", 512)));
+    }
+
     private static void assertRefused(String dataUrl, String message) {
-        assertThatThrownBy(() -> ImageValidator.avatar(dataUrl))
-                .isInstanceOfSatisfying(UnprocessableException.class,
-                        refusal -> assertThat(refusal.getErrors()).containsOnly(entry("avatar", message)));
+        assertThat(refusal(dataUrl).detail()).isEqualTo(message);
+    }
+
+    private static ErrorCode.Formatted refusal(String dataUrl) {
+        UnprocessableException refusal = catchThrowableOfType(UnprocessableException.class,
+                () -> ImageValidator.avatar(dataUrl));
+        assertThat(refusal.getErrors()).containsOnlyKeys("avatar");
+        return refusal.getErrors().get("avatar");
     }
 }

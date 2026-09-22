@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, ButtonVariant, FieldShell, Input } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
+import { applyFieldErrors, problemMessage } from '@utils/api/problemMessage'
 import { requestPasswordReset } from '@utils/api/auth'
 import { changePassword } from '@utils/api/settings'
 import { PASSWORD_MAX, PASSWORD_MIN } from '@utils/constants/validation'
@@ -51,8 +52,8 @@ const PasswordForm = ({ username, email }: PasswordFormProps) => {
       markSaved()
     } catch (caught) {
       const problem = parseProblem(caught)
-      const message = problem.detail || t('errors.serverError')
-      setError('currentPassword', { message })
+      const message = problemMessage(problem, t)
+      if (!applyFieldErrors(problem, setError, t)) setError('currentPassword', { message })
       setError('root', { message })
     }
   })
@@ -64,7 +65,7 @@ const PasswordForm = ({ username, email }: PasswordFormProps) => {
       await requestPasswordReset(email)
       setNotice({ ok: true, text: t('settings.account.password.resetSent', { email }) })
     } catch (caught) {
-      setNotice({ ok: false, text: parseProblem(caught).detail || t('errors.serverError') })
+      setNotice({ ok: false, text: problemMessage(parseProblem(caught), t) })
     } finally {
       setSendingReset(false)
     }

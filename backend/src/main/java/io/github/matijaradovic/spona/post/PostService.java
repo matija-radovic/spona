@@ -15,6 +15,7 @@ import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.actor.follow.FollowRepository;
 import io.github.matijaradovic.spona.comment.CommentRepository;
 import io.github.matijaradovic.spona.common.domain.Actor;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
@@ -79,9 +80,9 @@ public class PostService {
     public PostDto create(User caller, CreatePostRequest request) {
         String content = checkedContent(request.content());
         Actor author = actors.findById(request.createdForId())
-                .orElseThrow(() -> new NotFoundException("Actor not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         if (!authority.canManage(author, caller)) {
-            throw new ForbiddenException("You may not publish as this actor.");
+            throw new ForbiddenException(ErrorCode.NOT_PUBLISHABLE_AS);
         }
         Post post = posts.saveAndFlush(new Post(users.getReferenceById(caller.getId()), author, content));
         return dto(post, 0, ReactionSummaryDto.of(List.of(), List.of()), caller, true);
@@ -92,7 +93,7 @@ public class PostService {
         String content = checkedContent(request.content());
         Post post = load(postId);
         if (!authority.canManage(post.getCreatedFor(), caller)) {
-            throw new ForbiddenException("You may not edit this post.");
+            throw new ForbiddenException(ErrorCode.POST_NOT_EDITABLE);
         }
         post.setContent(content);
         return dto(post, commentCount(postId), reactions.summary(ReactionTargetType.POST, postId, caller), caller,
@@ -103,13 +104,13 @@ public class PostService {
     public void delete(UUID postId, User caller) {
         Post post = load(postId);
         if (!authority.canManage(post.getCreatedFor(), caller)) {
-            throw new ForbiddenException("You may not delete this post.");
+            throw new ForbiddenException(ErrorCode.POST_NOT_DELETABLE);
         }
         posts.delete(post);
     }
 
     private Post load(UUID postId) {
-        return posts.findWithCreatedFor(postId).orElseThrow(() -> new NotFoundException("Post not found."));
+        return posts.findWithCreatedFor(postId).orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
     }
 
     private long commentCount(UUID postId) {
@@ -136,10 +137,10 @@ public class PostService {
     private static String checkedContent(String content) {
         String trimmed = Strings.trimToEmpty(content);
         if (trimmed.isEmpty()) {
-            throw UnprocessableException.on("content", "Content is required.");
+            throw UnprocessableException.on("content", ErrorCode.POST_CONTENT_REQUIRED);
         }
         if (trimmed.length() > Post.CONTENT_MAX) {
-            throw UnprocessableException.on("content", "At most " + Post.CONTENT_MAX + " characters.");
+            throw UnprocessableException.on("content", ErrorCode.POST_CONTENT_TOO_LONG.with(Post.CONTENT_MAX));
         }
         return trimmed;
     }

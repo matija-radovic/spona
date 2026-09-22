@@ -6,7 +6,8 @@ import { ActorAvatar, ActorAvatarSize } from '@shared/components/actor/ActorAvat
 import { Modal } from '@shared/components/overlay/Modal'
 import { actorDisplayName } from '@utils/actorDisplayName'
 import { actorPath } from '@utils/actorPath'
-import { parseProblem } from '@utils/api/types'
+import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import {
   fetchReactionBreakdown,
   type ReactionBreakdownDto,
@@ -15,7 +16,7 @@ import {
 
 type BreakdownState =
   | { status: 'loading' }
-  | { status: 'error'; detail: string }
+  | { status: 'error'; problem: ProblemDetail }
   | { status: 'ready'; data: ReactionBreakdownDto }
 
 const LOADING: BreakdownState = { status: 'loading' }
@@ -60,7 +61,7 @@ const ReactionBreakdownModal = ({
         setSelected(data.entries[0]?.emoji ?? null)
       })
       .catch((caught) => {
-        if (alive) setState({ status: 'error', detail: parseProblem(caught).detail })
+        if (alive) setState({ status: 'error', problem: parseProblem(caught) })
       })
 
     return () => {
@@ -101,7 +102,7 @@ const ReactionBreakdownModal = ({
       )}
 
       {state.status === 'error' && (
-        <p className="reaction-breakdown-state">{state.detail || t('errors.serverError')}</p>
+        <p className="reaction-breakdown-state">{problemMessage(state.problem, t)}</p>
       )}
 
       {state.status === 'ready' && entries.length === 0 && (

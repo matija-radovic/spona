@@ -1,8 +1,12 @@
 package io.github.matijaradovic.spona.common.error;
 
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends ApiException {
 
-    public NotFoundException(String detail) {
-        super(detail);
+    public NotFoundException(ErrorCode code) {
+        super(code.with());
+    }
+
+    public NotFoundException(ErrorCode.Formatted error) {
+        super(error);
     }
 }

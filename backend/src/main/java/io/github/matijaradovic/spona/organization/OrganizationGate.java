@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 
 import org.springframework.stereotype.Component;
 
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
@@ -21,7 +22,7 @@ public class OrganizationGate {
         this.roles = roles;
     }
 
-    public Seat seat(String slug, User caller, Predicate<OrganizationRole> allowed, String refusal) {
+    public Seat seat(String slug, User caller, Predicate<OrganizationRole> allowed, ErrorCode refusal) {
         Seat seat = seat(slug, caller);
         if (!allowed.test(seat.role())) {
             throw new ForbiddenException(refusal);
@@ -32,7 +33,7 @@ public class OrganizationGate {
     /** The role is null when the caller holds no live role in the organization. */
     public Seat seat(String slug, User caller) {
         Organization organization = organizations.findBySlug(slug)
-                .orElseThrow(() -> new NotFoundException("Organization not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ORGANIZATION_NOT_FOUND));
         return new Seat(organization, roles.findLiveRole(organization.getId(), caller.getId()).orElse(null));
     }
 

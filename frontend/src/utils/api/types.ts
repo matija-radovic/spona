@@ -17,15 +17,28 @@ export interface PagedResponse<T> {
   last: boolean
 }
 
+/** One field's refusal inside a problem's `errors` */
+export interface ApiFieldError {
+  code: string
+  /** English, for logs and API consumers; never rendered */
+  detail: string
+  args?: Record<string, string | number>
+}
+
 /** Error body of a failed request */
 export interface ProblemDetail {
   /** Problem type URI */
   type: string
   title: string
   status: number
+  /** English, for logs and API consumers; never rendered */
   detail: string
   /** URI of the failed request */
   instance: string
+  /** Translation key under `errors.`, absent when no response arrived */
+  code?: string
+  args?: Record<string, string | number>
+  errors?: Record<string, ApiFieldError>
   [extension: string]: unknown
 }
 

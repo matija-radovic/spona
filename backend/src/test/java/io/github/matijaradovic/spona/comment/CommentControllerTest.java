@@ -38,6 +38,7 @@ import io.github.matijaradovic.spona.comment.dto.DeleteCommentResultDto;
 import io.github.matijaradovic.spona.comment.dto.UpdateCommentRequest;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.reaction.dto.ReactionSummaryDto;
@@ -163,13 +164,13 @@ class CommentControllerTest {
     void aReplyToAReplyIs422UnderParentId() throws Exception {
         signIn();
         when(commentService.create(eq(POST_ID), eq(caller), any()))
-                .thenThrow(UnprocessableException.on("parentId", "A reply cannot be replied to."));
+                .thenThrow(UnprocessableException.on("parentId", ErrorCode.COMMENT_REPLY_TO_REPLY));
 
         mvc.perform(post("/posts/" + POST_ID + "/comments").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"content\":\"Zdravo\",\"createdForId\":\"" + CALLER_ID
                                 + "\",\"parentId\":\"" + PARENT_ID + "\"}"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.parentId").value("A reply cannot be replied to."));
+                .andExpect(jsonPath("$.errors.parentId.detail").value("A reply cannot be replied to."));
     }
 
     @Test

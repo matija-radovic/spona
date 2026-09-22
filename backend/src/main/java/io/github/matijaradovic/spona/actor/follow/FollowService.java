@@ -13,6 +13,7 @@ import io.github.matijaradovic.spona.actor.dto.FollowActorDto;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
@@ -32,7 +33,7 @@ public class FollowService {
     @Transactional
     public void follow(UUID actorId, User caller) {
         if (actorId.equals(caller.getId())) {
-            throw new UnprocessableException("You cannot follow yourself.");
+            throw new UnprocessableException(ErrorCode.SELF_FOLLOW);
         }
         requireActor(actorId);
         follows.insertIfAbsent(caller.getId(), actorId);
@@ -54,16 +55,16 @@ public class FollowService {
     @Transactional(readOnly = true)
     public Page<FollowActorDto> following(UUID actorId, String q, Pageable pageable, User viewer) {
         Actor subject = actors.findById(actorId)
-                .orElseThrow(() -> new NotFoundException("Actor not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         if (subject.getActorType() != ActorType.USER) {
-            throw new NotFoundException("An organization follows nobody.");
+            throw new NotFoundException(ErrorCode.ORGANIZATION_FOLLOWS_NOBODY);
         }
         return rows(follows.findFollowing(actorId, Strings.trimToEmpty(q), pageable), viewer);
     }
 
     private void requireActor(UUID actorId) {
         if (!actors.existsById(actorId)) {
-            throw new NotFoundException("Actor not found.");
+            throw new NotFoundException(ErrorCode.ACTOR_NOT_FOUND);
         }
     }
 

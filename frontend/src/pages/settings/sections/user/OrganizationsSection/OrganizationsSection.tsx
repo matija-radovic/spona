@@ -14,6 +14,7 @@ import {
 import useFormat from '@shared/hooks/useFormat'
 import { actorPath } from '@utils/actorPath'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import {
   acceptInvitation,
   declineInvitation,
@@ -60,7 +61,7 @@ const OrganizationsSection = () => {
               : organizationsResult.status === 'rejected'
                 ? organizationsResult.reason
                 : null
-          setError(failure ? parseProblem(failure).detail || t('errors.serverError') : null)
+          setError(failure ? problemMessage(parseProblem(failure), t) : null)
           setLoaded(true)
         },
       ),
@@ -79,7 +80,7 @@ const OrganizationsSection = () => {
       await load()
       setHighlighted(invitation.organization.handle)
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusyId(null)
     }
@@ -93,7 +94,7 @@ const OrganizationsSection = () => {
       await declineInvitation(invitation.id)
       await load()
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusyId(null)
     }
@@ -108,7 +109,7 @@ const OrganizationsSection = () => {
       setLeaveTarget(null)
       await load()
     } catch (caught) {
-      setLeaveError(parseProblem(caught).detail || t('errors.serverError'))
+      setLeaveError(problemMessage(parseProblem(caught), t))
     } finally {
       setLeaveBusy(false)
     }

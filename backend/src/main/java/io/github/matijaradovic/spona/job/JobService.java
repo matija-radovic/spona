@@ -25,6 +25,7 @@ import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.error.BadRequestException;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
@@ -94,7 +95,7 @@ public class JobService {
     public List<SavedJobItemDto> saved(String ids, String statuses) {
         Set<JobStatus> wanted = listed("status", statuses, JobStatus.class);
         if (wanted.isEmpty()) {
-            throw UnprocessableException.on("status", "At least one status is required.");
+            throw UnprocessableException.on("status", ErrorCode.JOB_STATUS_REQUIRED);
         }
         wanted.remove(JobStatus.DRAFT);
         List<UUID> parsed = Arrays.stream(ids.split(","))
@@ -108,10 +109,10 @@ public class JobService {
     /** Whoever manages the actor's postings may filter and sort them, everone else reads OPEN ones and newest first */
     @Transactional(readOnly = true)
     public Page<SavedJobItemDto> postings(UUID actorId, String status, String sort, Pageable pageable, User viewer) {
-        Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException("Actor not found."));
+        Actor owner = actors.findById(actorId).orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         if (viewer == null || !authority.canManageJobPostings(owner, viewer)) {
             if (given(status) || given(sort)) {
-                throw new BadRequestException("Status and sort are only for whoever manages these postings.");
+                throw new BadRequestException(ErrorCode.JOB_MANAGER_ONLY_QUERY);
             }
             return privacy.of(actorId).showJobPostings()
                     ? postingsPage(actorId, EnumSet.of(JobStatus.OPEN), null, pageable)
@@ -126,13 +127,13 @@ public class JobService {
     @Transactional
     public JobDetailDto create(User caller, CreateJobRequest request) {
         if (request.status() == JobStatus.CLOSED) {
-            throw UnprocessableException.on("status", "A posting is created as a draft or open.");
+            throw UnprocessableException.on("status", ErrorCode.JOB_STATUS_NOT_CREATABLE);
         }
         JobForm form = JobForm.of(request);
         Actor poster = actors.findById(request.createdForId())
-                .orElseThrow(() -> new NotFoundException("Actor not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         if (!authority.canManageJobPostings(poster, caller)) {
-            throw new ForbiddenException("You may not publish job postings as this actor.");
+            throw new ForbiddenException(ErrorCode.JOB_NOT_PUBLISHABLE_AS);
         }
         Job job = new Job(users.getReferenceById(caller.getId()), poster, uniqueSlug(form.title()), form.title(),
                 form.description(), form.location(), request.status(), form.applicationType());
@@ -146,10 +147,10 @@ public class JobService {
     @Transactional
     public JobDetailDto update(UUID jobId, User caller, UpdateJobRequest request) {
         JobForm form = JobForm.of(request);
-        Job job = editable(jobId, caller, "You may not edit this posting.");
+        Job job = editable(jobId, caller, ErrorCode.JOB_NOT_EDITABLE);
         boolean published = job.getStatus() != JobStatus.DRAFT;
         if (published && form.applicationType() != job.getApplicationType()) {
-            throw new ConflictException("The way to apply is fixed once a posting is published.");
+            throw new ConflictException(ErrorCode.JOB_APPLICATION_TYPE_FIXED);
         }
         form.applyTo(job);
         if (published) {
@@ -161,9 +162,9 @@ public class JobService {
 
     @Transactional
     public JobDetailDto setStatus(UUID jobId, User caller, JobStatus status) {
-        Job job = editable(jobId, caller, "You may not change this posting's status.");
+        Job job = editable(jobId, caller, ErrorCode.JOB_STATUS_NOT_CHANGEABLE);
         if (!job.getStatus().canMoveTo(status)) {
-            throw new ConflictException("A posting cannot move from " + job.getStatus() + " to " + status + ".");
+            throw new ConflictException(ErrorCode.JOB_BAD_STATUS_TRANSITION.with(job.getStatus(), status));
         }
         if (status == JobStatus.OPEN) {
             JobForm.checkPublishable(job);
@@ -174,11 +175,11 @@ public class JobService {
 
     @Transactional
     public void delete(UUID jobId, User caller) {
-        jobs.delete(editable(jobId, caller, "You may not delete this posting."));
+        jobs.delete(editable(jobId, caller, ErrorCode.JOB_NOT_DELETABLE));
     }
 
     /** A DRAFT the caller may not edit is the same 404 as a missing posting. */
-    public Job editable(UUID jobId, User caller, String refusal) {
+    public Job editable(UUID jobId, User caller, ErrorCode refusal) {
         Job job = jobs.findWithCreatedFor(jobId).orElseThrow(() -> notFound());
         if (!authority.canManageJobPostings(job.getCreatedFor(), caller)) {
             throw job.getStatus() == JobStatus.DRAFT ? notFound() : new ForbiddenException(refusal);
@@ -202,8 +203,7 @@ public class JobService {
             case "created_asc" -> Sort.by(Sort.Direction.ASC, "createdAt", "id");
             case "updated_desc" -> Sort.by(Sort.Direction.DESC, "updatedAt", "id");
             case "updated_asc" -> Sort.by(Sort.Direction.ASC, "updatedAt", "id");
-            default -> throw UnprocessableException.on("sort",
-                    "Sort must be created_desc, created_asc, updated_desc or updated_asc.");
+            default -> throw UnprocessableException.on("sort", ErrorCode.UNKNOWN_POSTINGS_SORT);
         };
         return jobs.findByCreatedFor(actorId, statuses,
                 PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), order))
@@ -237,22 +237,22 @@ public class JobService {
     static JobFilter filter(JobListQuery query) {
         String q = Strings.trimToNull(query.q());
         if (q != null && q.length() > Q_MAX) {
-            throw new BadRequestException("A search is at most " + Q_MAX + " characters.");
+            throw new BadRequestException(ErrorCode.JOB_SEARCH_TOO_LONG.with(Q_MAX));
         }
         JobCategory category = given(query.role())
                 ? JobCategory.fromSlug(query.role())
-                        .orElseThrow(() -> UnprocessableException.on("role", "Unknown role."))
+                        .orElseThrow(() -> UnprocessableException.on("role", ErrorCode.UNKNOWN_JOB_ROLE))
                 : null;
         JobFilter.Posted posted = given(query.posted())
                 ? JobFilter.Posted.fromValue(query.posted())
-                        .orElseThrow(() -> UnprocessableException.on("posted", "Posted must be 24h, week or month."))
+                        .orElseThrow(() -> UnprocessableException.on("posted", ErrorCode.UNKNOWN_JOB_POSTED))
                 : null;
         JobFilter.Sort sort = given(query.sort())
                 ? JobFilter.Sort.fromValue(query.sort())
-                        .orElseThrow(() -> UnprocessableException.on("sort", "Sort must be date_desc or date_asc."))
+                        .orElseThrow(() -> UnprocessableException.on("sort", ErrorCode.UNKNOWN_JOB_SORT))
                 : q != null ? JobFilter.Sort.RELEVANCE : JobFilter.Sort.DATE_DESC;
         if (given(query.salary()) && !query.salary().equals("1")) {
-            throw UnprocessableException.on("salary", "Salary must be 1.");
+            throw UnprocessableException.on("salary", ErrorCode.JOB_SALARY_FILTER_INVALID);
         }
         return new JobFilter(q, category, posted, sort,
                 listed("workplace", query.workplace(), WorkplaceType.class),
@@ -271,7 +271,8 @@ public class JobService {
             values.add(Arrays.stream(type.getEnumConstants())
                     .filter(constant -> constant.name().equals(token))
                     .findFirst()
-                    .orElseThrow(() -> UnprocessableException.on(field, "Unknown " + field + " value.")));
+                    .orElseThrow(() -> UnprocessableException.on(field,
+                            ErrorCode.UNKNOWN_JOB_FILTER_VALUE.with(field))));
         }
         return values;
     }
@@ -281,6 +282,6 @@ public class JobService {
     }
 
     private static NotFoundException notFound() {
-        return new NotFoundException("Job not found.");
+        return new NotFoundException(ErrorCode.JOB_NOT_FOUND);
     }
 }

@@ -14,8 +14,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.web.ProblemDetailWriter;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
 
@@ -32,8 +32,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String DEAD_SESSION = "Session not valid. Sign in again.";
-    private static final String UNVERIFIED = "Verify your email address to continue.";
 
     private final JwtService jwtService;
     private final UserRepository users;
@@ -61,17 +59,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             user = users.findById(subjectId(jwt)).orElse(null);
         } catch (JwtException ex) {
             logger.debug("Rejected bearer token: " + ex.getMessage());
-            problems.write(request, response, HttpStatus.UNAUTHORIZED, DEAD_SESSION, null);
+            problems.write(request, response, HttpStatus.UNAUTHORIZED, ErrorCode.SESSION_EXPIRED);
             return;
         }
 
         // user deleted account - old token should be dismissed
         if (user == null) {
-            problems.write(request, response, HttpStatus.UNAUTHORIZED, DEAD_SESSION, null);
+            problems.write(request, response, HttpStatus.UNAUTHORIZED, ErrorCode.SESSION_EXPIRED);
             return;
         }
         if (user.getEmailVerifiedAt() == null) {
-            problems.write(request, response, HttpStatus.FORBIDDEN, UNVERIFIED, ProblemTypes.EMAIL_NOT_VERIFIED);
+            problems.write(request, response, HttpStatus.FORBIDDEN, ErrorCode.EMAIL_NOT_VERIFIED);
             return;
         }
 

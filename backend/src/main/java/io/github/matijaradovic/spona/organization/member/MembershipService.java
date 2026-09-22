@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.OrganizationGate;
 import io.github.matijaradovic.spona.organization.OrganizationGate.Seat;
 import io.github.matijaradovic.spona.organization.dto.MyOrganizationDto;
@@ -24,10 +24,6 @@ import io.github.matijaradovic.spona.user.UserRepository;
 
 @Service
 public class MembershipService {
-
-    private static final String NOT_A_MEMBER = "You are not a member of this organization.";
-    private static final String NOT_AN_ADMIN = "Only the owner or an admin may change members.";
-    private static final String NO_SUCH_MEMBER = "Member not found.";
 
     private final OrganizationGate gate;
     private final OrganizationMemberRepository members;
@@ -44,8 +40,8 @@ public class MembershipService {
 
     @Transactional(readOnly = true)
     public List<OrgMemberDto> roster(String slug, User caller) {
-        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canReadSettings, NOT_A_MEMBER)
-                .organization().getId();
+        UUID organizationId = gate.seat(slug, caller, PublishAuthority::canReadSettings,
+                ErrorCode.ORGANIZATION_NOT_A_MEMBER).organization().getId();
         Map<UUID, OrganizationRole> live = roles.findByOrganizationIdAndRevokedAtIsNull(organizationId).stream()
                 .collect(Collectors.toMap(row -> row.getUser().getId(), row -> row.getRole()));
         return members.findRoster(organizationId).stream()
@@ -56,16 +52,16 @@ public class MembershipService {
 
     @Transactional
     public void changeRole(String slug, User caller, UUID userId, OrganizationRole role) {
-        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageMembers, NOT_AN_ADMIN);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageMembers, ErrorCode.MEMBER_NOT_AN_ADMIN);
         if (role == OrganizationRole.OWNER) {
-            throw UnprocessableException.on("role", "Ownership moves only by transfer.");
+            throw UnprocessableException.on("role", ErrorCode.MEMBER_OWNER_BY_TRANSFER_ONLY);
         }
         RoleAssignment current = roles
                 .findByOrganizationIdAndUserIdAndRevokedAtIsNull(seat.organization().getId(), userId)
-                .orElseThrow(() -> new NotFoundException(NO_SUCH_MEMBER));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
         requireReach(seat, caller, userId, current.getRole());
         if (!PublishAuthority.canManageRole(seat.role(), role)) {
-            throw new ForbiddenException("You may not assign this role.");
+            throw new ForbiddenException(ErrorCode.ROLE_NOT_ASSIGNABLE);
         }
         if (current.getRole() == role) {
             return;
@@ -79,10 +75,10 @@ public class MembershipService {
 
     @Transactional
     public void remove(String slug, User caller, UUID userId) {
-        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageMembers, NOT_AN_ADMIN);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageMembers, ErrorCode.MEMBER_NOT_AN_ADMIN);
         UUID organizationId = seat.organization().getId();
         OrganizationRole held = roles.findLiveRole(organizationId, userId)
-                .orElseThrow(() -> new NotFoundException(NO_SUCH_MEMBER));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
         requireReach(seat, caller, userId, held);
         members.deleteById(new OrganizationMemberId(userId, organizationId));
     }
@@ -105,25 +101,23 @@ public class MembershipService {
     public void leave(String slug, User caller) {
         Seat seat = gate.seat(slug, caller);
         if (seat.role() == null) {
-            throw new NotFoundException(NOT_A_MEMBER);
+            throw new NotFoundException(ErrorCode.MEMBER_NOT_A_MEMBER);
         }
         if (seat.role() == OrganizationRole.OWNER) {
-            throw new ConflictException("Transfer ownership before leaving the organization.",
-                    ProblemTypes.LAST_OWNER);
+            throw new ConflictException(ErrorCode.LAST_OWNER_LEAVE);
         }
         members.deleteById(new OrganizationMemberId(caller.getId(), seat.organization().getId()));
     }
 
     private static void requireReach(Seat seat, User caller, UUID userId, OrganizationRole held) {
         if (held == OrganizationRole.OWNER) {
-            throw new ConflictException("The owner keeps their role until ownership is transferred.",
-                    ProblemTypes.LAST_OWNER);
+            throw new ConflictException(ErrorCode.LAST_OWNER_DEMOTE);
         }
         if (userId.equals(caller.getId())) {
-            throw new ForbiddenException("You cannot change or remove your own membership.");
+            throw new ForbiddenException(ErrorCode.OWN_MEMBERSHIP);
         }
         if (!PublishAuthority.canManageRole(seat.role(), held)) {
-            throw new ForbiddenException("You may not change a member with this role.");
+            throw new ForbiddenException(ErrorCode.ROLE_OUT_OF_REACH);
         }
     }
 

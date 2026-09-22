@@ -33,9 +33,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
 import io.github.matijaradovic.spona.support.TestFixtures;
@@ -188,7 +188,7 @@ class UserSettingsControllerTest {
     @Test
     void aTakenHandleCarriesItsProblemType() throws Exception {
         when(service.changeUsername(marko, "zauzeto"))
-                .thenThrow(new ConflictException("That username is taken.", ProblemTypes.USERNAME_TAKEN));
+                .thenThrow(new ConflictException(ErrorCode.USERNAME_TAKEN));
 
         mvc.perform(json(put("/users/marko/username"), "{\"username\":\"zauzeto\"}"))
                 .andExpect(status().isConflict())
@@ -215,7 +215,7 @@ class UserSettingsControllerTest {
 
     @Test
     void aWrongPasswordIs403AndNever401() throws Exception {
-        doThrow(new ForbiddenException("Wrong password."))
+        doThrow(new ForbiddenException(ErrorCode.WRONG_PASSWORD))
                 .when(service).requestEmailChange(eq(marko), any());
 
         mvc.perform(json(post("/users/marko/email"), "{\"email\":\"novi@primer.rs\",\"currentPassword\":\"pogresna\"}"))

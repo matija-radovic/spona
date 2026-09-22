@@ -16,6 +16,7 @@ import {
 } from '@shared/components'
 import { COMMENT_MAX } from '@utils/constants/validation'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { deleteComment, updateComment } from '@utils/api/posts'
 import type { ActivityCommentDto } from '@utils/api/activity'
 
@@ -62,7 +63,7 @@ const CommentActivityCard = ({ comment, onReact, onUpdated, onDeleted }: Comment
       onUpdated?.(updated.content)
       setDraft(null)
     } catch (err) {
-      setError(parseProblem(err).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(err), t))
     } finally {
       setBusy(false)
     }

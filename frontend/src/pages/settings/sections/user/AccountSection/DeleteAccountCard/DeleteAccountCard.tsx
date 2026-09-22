@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, ButtonVariant, FieldShell, Input } from '@shared/components'
 import { useUser } from '@shared/contexts'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { deleteAccount } from '@utils/api/settings'
 import { SettingsModal } from '../../../../components/SettingsModal'
 
@@ -36,7 +37,7 @@ const DeleteAccountCard = ({ username }: DeleteAccountCardProps) => {
       forgetSession()
       navigate('/')
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusy(false)
     }

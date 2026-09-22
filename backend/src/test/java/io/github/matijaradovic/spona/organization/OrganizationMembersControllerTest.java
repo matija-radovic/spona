@@ -29,11 +29,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.OrgMemberDto;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
@@ -89,14 +89,14 @@ class OrganizationMembersControllerTest {
     @Test
     void theRosterOfAnOrganizationTheCallerIsNotInIs403() throws Exception {
         when(memberships.roster("spona", marko))
-                .thenThrow(new ForbiddenException("You are not a member of this organization."));
+                .thenThrow(new ForbiddenException(ErrorCode.ORGANIZATION_NOT_A_MEMBER));
 
         mvc.perform(get("/organizations/spona/members")).andExpect(status().isForbidden());
     }
 
     @Test
     void theRosterOfASlugThatIsNobodyIs404() throws Exception {
-        when(memberships.roster("nepostojeci", marko)).thenThrow(new NotFoundException("Organization not found."));
+        when(memberships.roster("nepostojeci", marko)).thenThrow(new NotFoundException(ErrorCode.ORGANIZATION_NOT_FOUND));
 
         mvc.perform(get("/organizations/nepostojeci/members"))
                 .andExpect(status().isNotFound())
@@ -136,18 +136,17 @@ class OrganizationMembersControllerTest {
 
     @Test
     void makingSomebodyTheOwnerIs422UnderRoleWithItsMessage() throws Exception {
-        doThrow(UnprocessableException.on("role", "Ownership moves only by transfer."))
+        doThrow(UnprocessableException.on("role", ErrorCode.MEMBER_OWNER_BY_TRANSFER_ONLY))
                 .when(memberships).changeRole("spona", marko, MEMBER_ID, OrganizationRole.OWNER);
 
         mvc.perform(json(put(MEMBER_PATH), "{\"role\":\"OWNER\"}"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.role").value("Ownership moves only by transfer."));
+                .andExpect(jsonPath("$.errors.role.detail").value("Ownership moves only by transfer."));
     }
 
     @Test
     void aRoleChangeAimedAtTheOwnerCarriesTheLastOwnerType() throws Exception {
-        doThrow(new ConflictException("The owner keeps their role until ownership is transferred.",
-                ProblemTypes.LAST_OWNER))
+        doThrow(new ConflictException(ErrorCode.LAST_OWNER_DEMOTE))
                 .when(memberships).changeRole("spona", marko, MEMBER_ID, OrganizationRole.EDITOR);
 
         mvc.perform(json(put(MEMBER_PATH), "{\"role\":\"EDITOR\"}"))
@@ -157,7 +156,7 @@ class OrganizationMembersControllerTest {
 
     @Test
     void aRoleChangeByAMemberWhoMayNotIs403() throws Exception {
-        doThrow(new ForbiddenException("Only the owner or an admin may change members."))
+        doThrow(new ForbiddenException(ErrorCode.MEMBER_NOT_AN_ADMIN))
                 .when(memberships).changeRole("spona", marko, MEMBER_ID, OrganizationRole.EDITOR);
 
         mvc.perform(json(put(MEMBER_PATH), "{\"role\":\"EDITOR\"}")).andExpect(status().isForbidden());
@@ -172,8 +171,7 @@ class OrganizationMembersControllerTest {
 
     @Test
     void aRemovalOfTheOwnerCarriesTheLastOwnerType() throws Exception {
-        doThrow(new ConflictException("The owner keeps their role until ownership is transferred.",
-                ProblemTypes.LAST_OWNER))
+        doThrow(new ConflictException(ErrorCode.LAST_OWNER_DEMOTE))
                 .when(memberships).remove("spona", marko, MEMBER_ID);
 
         mvc.perform(delete(MEMBER_PATH))
@@ -183,7 +181,7 @@ class OrganizationMembersControllerTest {
 
     @Test
     void aRemovalOfSomebodyWhoIsNotAMemberIs404() throws Exception {
-        doThrow(new NotFoundException("Member not found.")).when(memberships).remove("spona", marko, MEMBER_ID);
+        doThrow(new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)).when(memberships).remove("spona", marko, MEMBER_ID);
 
         mvc.perform(delete(MEMBER_PATH))
                 .andExpect(status().isNotFound())

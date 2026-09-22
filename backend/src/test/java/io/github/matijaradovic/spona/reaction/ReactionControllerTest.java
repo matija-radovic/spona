@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
 import io.github.matijaradovic.spona.reaction.dto.ReactionBreakdownDto;
@@ -75,7 +76,7 @@ class ReactionControllerTest {
     @Test
     void anEmojiOutsideThePaletteIsA422UnderEmoji() throws Exception {
         signIn();
-        doThrow(UnprocessableException.on("emoji", "Emoji must be one of the reaction palette."))
+        doThrow(UnprocessableException.on("emoji", ErrorCode.EMOJI_NOT_IN_PALETTE))
                 .when(reactionService).react("post", TARGET_ID, caller, "🦄");
 
         mvc.perform(put("/reactions/post/" + TARGET_ID).contentType(MediaType.APPLICATION_JSON)

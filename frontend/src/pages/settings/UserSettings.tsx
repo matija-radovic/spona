@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { SectionLayout } from '@shared/components'
 import { useAuthenticatedUser } from '@shared/contexts'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { fetchUserSettings, type UserSettingsDto } from '@utils/api/settings'
 import { USER_SECTIONS } from './lib/sections'
 import type { UserSettingsOutletContext } from './lib/settingsOutletContext'
@@ -53,7 +54,7 @@ const UserSettings = () => {
   if (problem || !settings) {
     return (
       <div className="settings-layout container">
-        <p className="settings-status">{problem?.detail || t('errors.serverError')}</p>
+        <p className="settings-status">{problemMessage(problem, t)}</p>
       </div>
     )
   }

@@ -16,6 +16,7 @@ import {
 import { useUser } from '@shared/contexts'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { updateProfile } from '@utils/api/settings'
 import { resizeImageToSquare } from '@utils/image/resizeImage'
 import { useUserSettingsContext } from '../../../lib/settingsOutletContext'
@@ -63,7 +64,7 @@ const UserProfileSection = () => {
       await refetch()
       return true
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       return false
     }
   }

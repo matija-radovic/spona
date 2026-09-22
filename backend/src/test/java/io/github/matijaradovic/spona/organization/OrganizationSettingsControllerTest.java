@@ -35,11 +35,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
 import io.github.matijaradovic.spona.organization.dto.OrganizationDto;
@@ -168,7 +168,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void aReservedSlugCarriesItsProblemType() throws Exception {
         when(service.create(eq(marko), any()))
-                .thenThrow(new ConflictException("That slug is reserved.", ProblemTypes.HANDLE_RESERVED));
+                .thenThrow(new ConflictException(ErrorCode.SLUG_RESERVED));
 
         mvc.perform(json(post("/organizations"), CREATE_BODY))
                 .andExpect(status().isConflict())
@@ -178,7 +178,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void aTakenSlugCarriesItsProblemType() throws Exception {
         when(service.create(eq(marko), any()))
-                .thenThrow(new ConflictException("That slug is taken.", ProblemTypes.SLUG_TAKEN));
+                .thenThrow(new ConflictException(ErrorCode.SLUG_TAKEN));
 
         mvc.perform(json(post("/organizations"), CREATE_BODY))
                 .andExpect(status().isConflict())
@@ -203,7 +203,7 @@ class OrganizationSettingsControllerTest {
 
     @Test
     void theSettingsOfASlugThatIsNobodyAre404() throws Exception {
-        when(service.settings("nepostojeci", marko)).thenThrow(new NotFoundException("Organization not found."));
+        when(service.settings("nepostojeci", marko)).thenThrow(new NotFoundException(ErrorCode.ORGANIZATION_NOT_FOUND));
 
         mvc.perform(get("/organizations/nepostojeci/settings"))
                 .andExpect(status().isNotFound())
@@ -213,7 +213,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void theSettingsOfAnOrganizationTheCallerIsNotInAre403() throws Exception {
         when(service.settings("spona", marko))
-                .thenThrow(new ForbiddenException("You are not a member of this organization."));
+                .thenThrow(new ForbiddenException(ErrorCode.ORGANIZATION_NOT_A_MEMBER));
 
         mvc.perform(get("/organizations/spona/settings")).andExpect(status().isForbidden());
     }
@@ -233,7 +233,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void aProfileUpdateByAMemberWhoMayNotEditIs403() throws Exception {
         when(service.updateProfile(eq("spona"), eq(marko), any()))
-                .thenThrow(new ForbiddenException("Only the owner or an admin may change this organization."));
+                .thenThrow(new ForbiddenException(ErrorCode.ORGANIZATION_NOT_AN_ADMIN));
 
         mvc.perform(json(put("/organizations/spona"), PROFILE_BODY)).andExpect(status().isForbidden());
     }
@@ -270,7 +270,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void aSlugChangeToATakenSlugCarriesItsProblemType() throws Exception {
         when(service.changeSlug("spona", marko, "zauzeto"))
-                .thenThrow(new ConflictException("That slug is taken.", ProblemTypes.SLUG_TAKEN));
+                .thenThrow(new ConflictException(ErrorCode.SLUG_TAKEN));
 
         mvc.perform(json(put("/organizations/spona/slug"), "{\"slug\":\"zauzeto\"}"))
                 .andExpect(status().isConflict())
@@ -289,7 +289,7 @@ class OrganizationSettingsControllerTest {
     @Test
     void aSlugChangeByAnAdminIs403() throws Exception {
         when(service.changeSlug("spona", marko, "spona-nova"))
-                .thenThrow(new ForbiddenException("Only the owner may do this."));
+                .thenThrow(new ForbiddenException(ErrorCode.NOT_THE_OWNER));
 
         mvc.perform(json(put("/organizations/spona/slug"), "{\"slug\":\"spona-nova\"}"))
                 .andExpect(status().isForbidden());
@@ -315,7 +315,7 @@ class OrganizationSettingsControllerTest {
 
     @Test
     void aTransferWithAMismatchedConfirmationIs422WithTheDetail() throws Exception {
-        doThrow(UnprocessableException.on("confirmSlug", "The slug you typed does not match."))
+        doThrow(UnprocessableException.on("confirmSlug", ErrorCode.SLUG_CONFIRM_MISMATCH))
                 .when(service).transferOwnership(eq("spona"), eq(marko), any());
 
         mvc.perform(json(post("/organizations/spona/transfer-ownership"),
@@ -350,7 +350,7 @@ class OrganizationSettingsControllerTest {
 
     @Test
     void aDeleteByAnAdminIs403() throws Exception {
-        doThrow(new ForbiddenException("Only the owner may do this."))
+        doThrow(new ForbiddenException(ErrorCode.NOT_THE_OWNER))
                 .when(service).delete("spona", marko, "spona");
 
         mvc.perform(json(delete("/organizations/spona"), "{\"confirmSlug\":\"spona\"}"))

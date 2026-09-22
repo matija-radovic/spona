@@ -7,6 +7,7 @@ import { useUser } from '@shared/contexts'
 import { actorPath } from '@utils/actorPath'
 import { deleteJob, type JobDetailDto } from '@utils/api/jobs'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 
 const publisherProfile = (job: JobDetailDto, username: string | undefined): string => {
   if (job.createdFor.actorType === 'org') return actorPath(job.createdFor)
@@ -45,7 +46,7 @@ const DeleteJobDialog = ({ job, isOpen, onClose }: DeleteJobDialogProps) => {
         state: { tab: 'jobPostings' },
       })
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       setBusy(false)
     }
   }

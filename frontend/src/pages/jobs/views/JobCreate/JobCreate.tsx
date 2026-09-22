@@ -21,6 +21,7 @@ import { createJob, type CreateJobStatus } from '@utils/api/jobs'
 import { fetchOrgSettings } from '@utils/api/organizations'
 import { fetchUserSettings } from '@utils/api/settings'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { canPublishAs } from '@utils/postAs'
 import { ApplyFields } from '@pages/jobs/components/ApplyFields'
 import { PostingFields } from '@pages/jobs/components/PostingFields'
@@ -97,7 +98,7 @@ const JobCreate = () => {
     } catch (caught) {
       const problem = parseProblem(caught)
       if (problem.status === 403) refresh()
-      setError(problem.detail || t('errors.serverError'))
+      setError(problemMessage(problem, t))
       return false
     }
   }

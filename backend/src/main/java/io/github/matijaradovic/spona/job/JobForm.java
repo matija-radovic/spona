@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.matijaradovic.spona.common.dto.ContactEntry;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.Strings;
 import io.github.matijaradovic.spona.job.dto.JobFields;
@@ -40,7 +41,7 @@ record JobForm(
     static final int KEYWORD_MAX = 32;
 
     static JobForm of(JobFields fields) {
-        Map<String, String> errors = new LinkedHashMap<>();
+        Map<String, ErrorCode.Formatted> errors = new LinkedHashMap<>();
 
         String title = Strings.trimToEmpty(fields.title());
         blankOrBetween(errors, "title", title, TITLE_MIN, TITLE_MAX);
@@ -48,21 +49,21 @@ record JobForm(
         blankOrBetween(errors, "description", description, DESCRIPTION_MIN, DESCRIPTION_MAX);
         String location = Strings.trimToEmpty(fields.location());
         if (length(location) > LOCATION_MAX) {
-            errors.put("location", "At most " + LOCATION_MAX + " characters.");
+            errors.put("location", ErrorCode.JOB_LOCATION_TOO_LONG.with(LOCATION_MAX));
         }
 
         List<String> keywords = fields.keywords() == null
                 ? List.of()
                 : fields.keywords().stream().map(keyword -> Strings.trimToEmpty(keyword)).toList();
         if (keywords.size() > KEYWORDS_MAX) {
-            errors.put("keywords", "At most " + KEYWORDS_MAX + " keywords.");
+            errors.put("keywords", ErrorCode.JOB_KEYWORDS_TOO_MANY.with(KEYWORDS_MAX));
         } else if (keywords.stream().anyMatch(keyword -> keyword.isEmpty() || length(keyword) > KEYWORD_MAX)) {
-            errors.put("keywords", "Each keyword is 1 to " + KEYWORD_MAX + " characters.");
+            errors.put("keywords", ErrorCode.JOB_KEYWORD_LENGTH.with(KEYWORD_MAX));
         }
 
         SalaryRequest salary = fields.salary();
         if (salary != null && salary.min() != null && salary.max() != null && salary.max().compareTo(salary.min()) < 0) {
-            errors.put("salary.max", "Must not be below the minimum.");
+            errors.put("salary.max", ErrorCode.JOB_SALARY_MAX_BELOW_MIN.with());
         }
 
         ApplicationType type = fields.applicationType();
@@ -71,9 +72,9 @@ record JobForm(
                 : fields.contactInformation() == null ? List.of() : fields.contactInformation();
         String externalUrl = type == ApplicationType.EXTERNAL_URL ? Strings.trimToEmpty(fields.externalUrl()) : null;
         if (externalUrl != null && length(externalUrl) > EXTERNAL_URL_MAX) {
-            errors.put("externalUrl", "At most " + EXTERNAL_URL_MAX + " characters.");
+            errors.put("externalUrl", ErrorCode.JOB_EXTERNAL_URL_TOO_LONG.with(EXTERNAL_URL_MAX));
         } else if (externalUrl != null && !externalUrl.isEmpty() && !isWebAddress(externalUrl)) {
-            errors.put("externalUrl", "An http or https address is required.");
+            errors.put("externalUrl", ErrorCode.JOB_EXTERNAL_URL_NOT_WEB.with());
         }
 
         if (!errors.isEmpty()) {
@@ -115,44 +116,43 @@ record JobForm(
     }
 
     static void checkPublishable(Job job) {
-        Map<String, String> missing = new LinkedHashMap<>();
+        Map<String, ErrorCode.Formatted> missing = new LinkedHashMap<>();
         if (job.getTitle().isBlank()) {
-            missing.put("title", "A title is required to publish.");
+            missing.put("title", ErrorCode.JOB_TITLE_REQUIRED.with());
         }
         if (job.getDescription().isBlank()) {
-            missing.put("description", "A description is required to publish.");
+            missing.put("description", ErrorCode.JOB_DESCRIPTION_REQUIRED.with());
         }
         if (job.getCategory() == null) {
-            missing.put("category", "A category is required to publish.");
+            missing.put("category", ErrorCode.JOB_CATEGORY_REQUIRED.with());
         }
         if (job.getJobType() == null) {
-            missing.put("jobType", "A job type is required to publish.");
+            missing.put("jobType", ErrorCode.JOB_TYPE_REQUIRED.with());
         }
         if (job.getWorkplaceType() == null) {
-            missing.put("workplaceType", "A workplace type is required to publish.");
+            missing.put("workplaceType", ErrorCode.JOB_WORKPLACE_TYPE_REQUIRED.with());
         }
         if (job.getLocation().isBlank()) {
-            missing.put("location", "A location is required to publish.");
+            missing.put("location", ErrorCode.JOB_LOCATION_REQUIRED.with());
         }
         if (job.getApplicationType() == ApplicationType.CONTACT_ONLY
                 && (job.getContactInformation() == null || job.getContactInformation().isEmpty())) {
-            missing.put("contactInformation", "At least one contact is required to publish.");
+            missing.put("contactInformation", ErrorCode.JOB_CONTACT_REQUIRED.with());
         }
         if (job.getApplicationType() == ApplicationType.EXTERNAL_URL
                 && (job.getExternalUrl() == null || job.getExternalUrl().isBlank())) {
-            missing.put("externalUrl", "An address to apply at is required to publish.");
+            missing.put("externalUrl", ErrorCode.JOB_EXTERNAL_URL_REQUIRED.with());
         }
         if (!missing.isEmpty()) {
-            throw new UnprocessableException("The posting is not complete enough to publish.", missing);
+            throw new UnprocessableException(ErrorCode.JOB_INCOMPLETE.with(), missing);
         }
     }
 
-    private static void blankOrBetween(Map<String, String> errors, String field, String value, int min, int max) {
+    private static void blankOrBetween(Map<String, ErrorCode.Formatted> errors, String field, String value, int min,
+            int max) {
         int length = length(value);
-        if (length > 0 && length < min) {
-            errors.put(field, "At least " + min + " characters.");
-        } else if (length > max) {
-            errors.put(field, "At most " + max + " characters.");
+        if ((length > 0 && length < min) || length > max) {
+            errors.put(field, ErrorCode.VALIDATION_SIZE.with(min, max));
         }
     }
 

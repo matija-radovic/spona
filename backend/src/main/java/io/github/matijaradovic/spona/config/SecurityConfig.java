@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import io.github.matijaradovic.spona.auth.jwt.JwtAuthenticationFilter;
 import io.github.matijaradovic.spona.auth.jwt.JwtService;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.web.ProblemDetailWriter;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.user.UserRepository;
@@ -104,11 +105,11 @@ public class SecurityConfig {
 
     private static AuthenticationEntryPoint authenticationEntryPoint(ProblemDetailWriter problems) {
         return (request, response, ex) -> problems.write(
-                request, response, HttpStatus.UNAUTHORIZED, "Sign in to continue.", null);
+                request, response, HttpStatus.UNAUTHORIZED, ErrorCode.SIGN_IN_REQUIRED);
     }
 
     private static AccessDeniedHandler accessDeniedHandler(ProblemDetailWriter problems) {
         return (request, response, ex) -> problems.write(
-                request, response, HttpStatus.FORBIDDEN, "You do not have sufficient permissions.", null);
+                request, response, HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
     }
 }

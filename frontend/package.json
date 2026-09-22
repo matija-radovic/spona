@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "gen:mediaqueries": "node scripts/gen-mediaqueries.mjs",
-    "prebuild": "node scripts/gen-mediaqueries.mjs",
+    "check:error-codes": "node scripts/check-error-codes.mjs",
+    "prebuild": "node scripts/gen-mediaqueries.mjs && node scripts/check-error-codes.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

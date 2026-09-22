@@ -6,6 +6,7 @@ import { IconArrowLeft } from '@tabler/icons-react'
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { fetchJobBySlug, type JobDetailDto } from '@utils/api/jobs'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { useJobsOutletContext } from '@pages/jobs/lib/jobsOutletContext'
 import JobDetailContent from './JobDetailContent'
 
@@ -67,7 +68,7 @@ const JobDetail = () => {
             <p>{t('common.loading')}</p>
           ) : (
             <>
-              <p>{isNotFound ? t('jobs.panel.notFound') : problem?.detail || t('errors.serverError')}</p>
+              <p>{isNotFound ? t('jobs.panel.notFound') : problemMessage(problem, t)}</p>
               {!isNotFound && (
                 <Button
                   variant={ButtonVariant.TERTIARY}

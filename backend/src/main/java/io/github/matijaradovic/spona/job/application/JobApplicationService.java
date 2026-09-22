@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.github.matijaradovic.spona.actor.ContentAuthority;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.TransactionHooks;
@@ -60,13 +61,13 @@ public class JobApplicationService {
             if (!authority.canManageJobPostings(job.getCreatedFor(), caller)) {
                 throw notFound();
             }
-            throw new ConflictException("This posting is still a draft. Publish it before it can take applications.");
+            throw new ConflictException(ErrorCode.JOB_STILL_DRAFT);
         }
         if (job.getStatus() == JobStatus.CLOSED) {
-            throw new ConflictException("This posting is closed and takes no more applications.");
+            throw new ConflictException(ErrorCode.JOB_CLOSED);
         }
         if (job.getApplicationType() != ApplicationType.CV_DROP) {
-            throw new ConflictException("This posting is not applied to with a CV.");
+            throw new ConflictException(ErrorCode.JOB_NOT_CV_APPLY);
         }
         String key = storage.putCv(bytes, PDF);
         TransactionHooks.afterRollback(() -> delete(key));
@@ -77,27 +78,27 @@ public class JobApplicationService {
 
     @Transactional(readOnly = true)
     public Page<JobApplicationDto> inbox(UUID jobId, User caller, Pageable pageable) {
-        jobService.editable(jobId, caller, "You may not read this posting's applications.");
+        jobService.editable(jobId, caller, ErrorCode.APPLICATIONS_NOT_READABLE);
         return applications.findInbox(jobId, pageable)
                 .map(row -> JobApplicationDto.from(row, storage.presignCv(row.getCvObjectKey())));
     }
 
     private static byte[] pdf(MultipartFile cv) {
         if (cv == null || cv.isEmpty()) {
-            throw UnprocessableException.on("cv", "Attach your CV as a PDF file.");
+            throw UnprocessableException.on("cv", ErrorCode.CV_REQUIRED);
         }
         byte[] bytes;
         try {
             bytes = cv.getBytes();
         } catch (IOException ex) {
-            throw UnprocessableException.on("cv", "Your CV could not be read. Try sending it again.");
+            throw UnprocessableException.on("cv", ErrorCode.CV_UNREADABLE);
         }
         if (bytes.length < PDF_MAGIC.length) {
-            throw UnprocessableException.on("cv", "Your CV has to be a PDF file.");
+            throw UnprocessableException.on("cv", ErrorCode.CV_NOT_PDF);
         }
         for (int i = 0; i < PDF_MAGIC.length; i++) {
             if (bytes[i] != PDF_MAGIC[i]) {
-                throw UnprocessableException.on("cv", "Your CV has to be a PDF file.");
+                throw UnprocessableException.on("cv", ErrorCode.CV_NOT_PDF);
             }
         }
         return bytes;
@@ -112,6 +113,6 @@ public class JobApplicationService {
     }
 
     private static NotFoundException notFound() {
-        return new NotFoundException("Job not found.");
+        return new NotFoundException(ErrorCode.JOB_NOT_FOUND);
     }
 }

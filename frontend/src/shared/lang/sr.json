@@ -1129,6 +1129,160 @@
     "invalidFileType": "Nije podržan ovaj tip fajla.",
     "page": {
       "back": "Nazad na <home>početnu</home>?"
+    },
+    "auth": {
+      "badCredentials": "Pogrešno korisničko ime ili lozinka.",
+      "sessionExpired": "Sesija je istekla. Prijavite se ponovo.",
+      "signInRequired": "Prijavite se da biste nastavili.",
+      "emailNotVerified": "Potvrdite email adresu da biste nastavili.",
+      "forbidden": "Nemate dozvolu za ovu radnju.",
+      "deadToken": "Link je nevažeći ili je istekao."
+    },
+    "user": {
+      "usernameReserved": "Ovo korisničko ime je rezervisano.",
+      "usernameTaken": "Korisničko ime je već zauzeto.",
+      "emailTaken": "Ova email adresa je već registrovana.",
+      "emailUnchanged": "Ovo je već vaša email adresa.",
+      "notYourAccount": "Ovo nije vaš nalog.",
+      "wrongPassword": "Pogrešna lozinka."
+    },
+    "actor": {
+      "notFound": "Korisnik ili organizacija ne postoji.",
+      "profileNotFound": "Profil nije pronađen.",
+      "notPublishableAs": "Nemate pravo da objavljujete u ime ovog profila.",
+      "unknownType": "Nepoznat tip profila."
+    },
+    "organization": {
+      "notFound": "Organizacija nije pronađena.",
+      "notAMember": "Niste član ove organizacije.",
+      "notAnAdmin": "Samo vlasnik ili administrator može da menja ovu organizaciju.",
+      "notTheOwner": "Ovo može samo vlasnik organizacije.",
+      "slugReserved": "Ova adresa organizacije je rezervisana.",
+      "slugTaken": "Ova adresa organizacije je već zauzeta.",
+      "slugConfirmMismatch": "Uneta adresa se ne poklapa sa adresom organizacije.",
+      "newOwnerNotAdmin": "Vlasništvo se može preneti samo administratoru ove organizacije."
+    },
+    "member": {
+      "notFound": "Član nije pronađen.",
+      "notAMember": "Niste član ove organizacije.",
+      "notAnAdmin": "Samo vlasnik ili administrator može da menja članove.",
+      "roleNotAssignable": "Ne možete dodeliti ovu ulogu.",
+      "roleOutOfReach": "Ne možete menjati člana sa ovom ulogom.",
+      "notYourself": "Ne možete menjati niti ukloniti sopstveno članstvo.",
+      "ownerByTransferOnly": "Vlasništvo se menja samo prenosom.",
+      "alreadyMember": "Ovaj korisnik je već član.",
+      "alreadyMemberSelf": "Već ste član ove organizacije.",
+      "lastOwnerLeave": "Prenesite vlasništvo pre nego što napustite organizaciju.",
+      "lastOwnerDemote": "Vlasnik zadržava ulogu dok ne prenese vlasništvo."
+    },
+    "invitation": {
+      "notFound": "Pozivnica nije pronađena.",
+      "notAnAdmin": "Samo vlasnik ili administrator može da upravlja pozivnicama.",
+      "roleTooHigh": "Ne možete pozvati nekoga sa ovom ulogom.",
+      "ownerByTransferOnly": "Vlasništvo se menja samo prenosom.",
+      "noSuchUsername": "Nijedan korisnik nema ovo korisničko ime.",
+      "alreadyWaiting": "Ovaj korisnik već ima pozivnicu na čekanju.",
+      "notWaitingCancel": "Otkazati se može samo pozivnica na čekanju.",
+      "notDeclinedDismiss": "Sa liste se može ukloniti samo odbijena pozivnica.",
+      "notYours": "Ova pozivnica je upućena nekom drugom.",
+      "noLongerWaiting": "Ova pozivnica više nije na čekanju."
+    },
+    "post": {
+      "notFound": "Objava nije pronađena.",
+      "notEditable": "Ne možete uređivati ovu objavu.",
+      "notDeletable": "Ne možete obrisati ovu objavu.",
+      "contentRequired": "Sadržaj je obavezan.",
+      "contentTooLong": "Objava može imati najviše {{max}} karaktera."
+    },
+    "comment": {
+      "notFound": "Komentar nije pronađen.",
+      "notEditable": "Ne možete uređivati ovaj komentar.",
+      "notDeletable": "Ne možete obrisati ovaj komentar.",
+      "parentNotFound": "Komentar na koji odgovarate ne postoji na ovoj objavi.",
+      "replyToReply": "Na odgovor se ne može odgovoriti.",
+      "contentRequired": "Sadržaj je obavezan.",
+      "contentTooLong": "Komentar može imati najviše {{max}} karaktera.",
+      "unknownSort": "Nepoznat način sortiranja komentara."
+    },
+    "reaction": {
+      "unknownTargetType": "Nepoznata vrsta sadržaja za reakciju.",
+      "emojiNotInPalette": "Ova reakcija nije dostupna."
+    },
+    "follow": {
+      "notYourself": "Ne možete pratiti sami sebe.",
+      "organizationFollowsNobody": "Organizacija ne prati druge profile."
+    },
+    "privacy": {
+      "notYours": "Ne možete menjati ova podešavanja privatnosti."
+    },
+    "activity": {
+      "unknownKind": "Nepoznata vrsta aktivnosti."
+    },
+    "job": {
+      "notFound": "Oglas nije pronađen.",
+      "notPublishableAs": "Nemate pravo da objavljujete oglase u ime ovog profila.",
+      "notEditable": "Ne možete uređivati ovaj oglas.",
+      "statusNotChangeable": "Ne možete menjati status ovog oglasa.",
+      "notDeletable": "Ne možete obrisati ovaj oglas.",
+      "stillDraft": "Oglas je još u nacrtu. Objavite ga da bi mogao da prima prijave.",
+      "closed": "Oglas je zatvoren i više ne prima prijave.",
+      "notCvApply": "Na ovaj oglas se ne prijavljuje slanjem CV-ja.",
+      "applicationTypeFixed": "Način prijave se ne menja nakon objave oglasa.",
+      "badStatusTransition": "Oglas ne može da pređe iz statusa „$t(jobs.status.{{from}})“ u „$t(jobs.status.{{to}})“.",
+      "statusNotCreatable": "Oglas se pravi kao nacrt ili se odmah objavljuje.",
+      "statusRequired": "Izaberite bar jedan status.",
+      "managerOnlyQuery": "Status i sortiranje su dostupni samo onome ko upravlja ovim oglasima.",
+      "searchTooLong": "Pretraga može imati najviše {{max}} karaktera.",
+      "unknownRole": "Nepoznata oblast.",
+      "unknownPosted": "Nepoznat period objave.",
+      "unknownSort": "Nepoznat način sortiranja.",
+      "unknownPostingsSort": "Nepoznat način sortiranja oglasa.",
+      "salaryFilterInvalid": "Nepoznata vrednost filtera plate.",
+      "unknownFilterValue": "Filter sadrži nepoznatu vrednost.",
+      "locationTooLong": "Lokacija može imati najviše {{max}} karaktera.",
+      "keywordsTooMany": "Možete dodati najviše {{max}} ključnih reči.",
+      "keywordLength": "Svaka ključna reč ima od 1 do {{max}} karaktera.",
+      "salaryMaxBelowMin": "Gornji iznos ne može biti manji od donjeg.",
+      "externalUrlTooLong": "Link može imati najviše {{max}} karaktera.",
+      "externalUrlNotWeb": "Unesite adresu koja počinje sa http ili https.",
+      "incompleteToPublish": "Oglas nije dovoljno popunjen za objavu.",
+      "titleRequiredToPublish": "Naziv pozicije je obavezan za objavu.",
+      "descriptionRequiredToPublish": "Opis posla je obavezan za objavu.",
+      "categoryRequiredToPublish": "Oblast je obavezna za objavu.",
+      "jobTypeRequiredToPublish": "Tip zaposlenja je obavezan za objavu.",
+      "workplaceTypeRequiredToPublish": "Model rada je obavezan za objavu.",
+      "locationRequiredToPublish": "Lokacija je obavezna za objavu.",
+      "contactInformationRequiredToPublish": "Dodajte bar jedan kontakt pre objave.",
+      "externalUrlRequiredToPublish": "Link za prijavu je obavezan za objavu."
+    },
+    "application": {
+      "notReadable": "Ne možete pregledati prijave na ovaj oglas.",
+      "cvRequired": "Priložite CV kao PDF fajl.",
+      "cvUnreadable": "CV nije mogao da se pročita. Pokušajte ponovo.",
+      "cvNotPdf": "CV mora biti PDF fajl."
+    },
+    "avatar": {
+      "notPngDataUrl": "Slika mora biti u PNG formatu.",
+      "notBase64": "Slika nije ispravno kodirana.",
+      "notPng": "Slika nije PNG.",
+      "wrongDimensions": "Slika mora biti tačno {{width}} x {{height}} piksela.",
+      "corruptPng": "Slika je oštećena.",
+      "tooLarge": "Slika može imati najviše {{max}} KB."
+    },
+    "common": {
+      "valueTaken": "Ova vrednost je već zauzeta.",
+      "conflict": "Zahtev je u sukobu sa postojećim podacima."
+    },
+    "validation": {
+      "failed": "Jedan ili više od unetih podataka nije ispravan. Proverite polja i pokušajte ponovo.",
+      "invalid": "Neispravna vrednost.",
+      "notBlank": "Ovo polje je obavezno.",
+      "notNull": "Ovo polje je obavezno.",
+      "size": "Dozvoljena dužina je od {{min}} do {{max}}.",
+      "email": "Nevažeća email adresa.",
+      "pattern": "Vrednost nije u ispravnom formatu.",
+      "positiveOrZero": "Vrednost ne sme biti negativna.",
+      "decimalMax": "Iznos je prevelik."
     }
   }
 }

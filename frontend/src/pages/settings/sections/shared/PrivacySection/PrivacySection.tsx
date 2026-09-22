@@ -12,6 +12,7 @@ import {
 } from '@shared/components'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { updatePrivacy, type PrivacyDto } from '@utils/api/settings'
 import { canEditOrgProfile } from '../../../lib/permissions'
 import { useSettingsContext } from '../../../lib/settingsOutletContext'
@@ -40,7 +41,7 @@ const PrivacySection = () => {
       await context.refetch()
       return true
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       return false
     }
   }

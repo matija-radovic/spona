@@ -21,6 +21,7 @@ import io.github.matijaradovic.spona.comment.dto.CreateCommentRequest;
 import io.github.matijaradovic.spona.comment.dto.DeleteCommentResultDto;
 import io.github.matijaradovic.spona.comment.dto.UpdateCommentRequest;
 import io.github.matijaradovic.spona.common.domain.Actor;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
@@ -62,7 +63,7 @@ public class CommentService {
             case "top" -> comments.findTopRoots(postId, withheld(exclude), pageable);
             case "new" -> comments.findRoots(postId, withheld(exclude), byCreatedAt(pageable, Sort.Direction.DESC));
             case "old" -> comments.findRoots(postId, withheld(exclude), byCreatedAt(pageable, Sort.Direction.ASC));
-            default -> throw UnprocessableException.on("sort", "Sort must be top, new or old.");
+            default -> throw UnprocessableException.on("sort", ErrorCode.UNKNOWN_COMMENT_SORT);
         };
         List<UUID> rootIds = page.map(root -> root.getId()).getContent();
         Map<UUID, Long> replyCounts = comments.replyCounts(rootIds);
@@ -125,9 +126,9 @@ public class CommentService {
         requirePost(postId);
         Comment parent = request.parentId() == null ? null : checkedParent(request.parentId(), postId);
         Actor author = actors.findById(request.createdForId())
-                .orElseThrow(() -> new NotFoundException("Actor not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
         if (!authority.canManage(author, caller)) {
-            throw new ForbiddenException("You may not publish as this actor.");
+            throw new ForbiddenException(ErrorCode.NOT_PUBLISHABLE_AS);
         }
         Comment comment = comments.saveAndFlush(new Comment(posts.getReferenceById(postId), parent,
                 users.getReferenceById(caller.getId()), author, content));
@@ -139,7 +140,7 @@ public class CommentService {
         String content = checkedContent(request.content());
         Comment comment = load(commentId, null);
         if (!authority.canManage(comment.getCreatedFor(), caller)) {
-            throw new ForbiddenException("You may not edit this comment.");
+            throw new ForbiddenException(ErrorCode.COMMENT_NOT_EDITABLE);
         }
         comment.setContent(content);
         return CommentDto.from(comment, responseCount(comment),
@@ -150,7 +151,7 @@ public class CommentService {
     public DeleteCommentResultDto delete(UUID commentId, User caller) {
         Comment comment = load(commentId, null);
         if (!authority.canManage(comment.getCreatedFor(), caller)) {
-            throw new ForbiddenException("You may not delete this comment.");
+            throw new ForbiddenException(ErrorCode.COMMENT_NOT_DELETABLE);
         }
         long deletedCount = 1 + responseCount(comment);
         comments.delete(comment);
@@ -159,22 +160,22 @@ public class CommentService {
 
     private void requirePost(UUID postId) {
         if (!posts.existsById(postId)) {
-            throw new NotFoundException("Post not found.");
+            throw new NotFoundException(ErrorCode.POST_NOT_FOUND);
         }
     }
 
     private Comment load(UUID commentId, UUID postId) {
         return comments.findWithCreatedFor(commentId)
                 .filter(comment -> postId == null || comment.getPost().getId().equals(postId))
-                .orElseThrow(() -> new NotFoundException("Comment not found."));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.COMMENT_NOT_FOUND));
     }
 
     private Comment checkedParent(UUID parentId, UUID postId) {
         Comment parent = comments.findWithCreatedFor(parentId)
                 .filter(comment -> comment.getPost().getId().equals(postId))
-                .orElseThrow(() -> UnprocessableException.on("parentId", "No such comment on this post."));
+                .orElseThrow(() -> UnprocessableException.on("parentId", ErrorCode.COMMENT_PARENT_NOT_FOUND));
         if (parent.getResponseToComment() != null) {
-            throw UnprocessableException.on("parentId", "A reply cannot be replied to.");
+            throw UnprocessableException.on("parentId", ErrorCode.COMMENT_REPLY_TO_REPLY);
         }
         return parent;
     }
@@ -207,10 +208,10 @@ public class CommentService {
     private static String checkedContent(String content) {
         String trimmed = Strings.trimToEmpty(content);
         if (trimmed.isEmpty()) {
-            throw UnprocessableException.on("content", "Content is required.");
+            throw UnprocessableException.on("content", ErrorCode.COMMENT_CONTENT_REQUIRED);
         }
         if (trimmed.length() > Comment.CONTENT_MAX) {
-            throw UnprocessableException.on("content", "At most " + Comment.CONTENT_MAX + " characters.");
+            throw UnprocessableException.on("content", ErrorCode.COMMENT_CONTENT_TOO_LONG.with(Comment.CONTENT_MAX));
         }
         return trimmed;
     }

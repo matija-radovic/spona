@@ -16,6 +16,7 @@ import { updateJob } from '@utils/api/jobs'
 import { fetchOrgSettings } from '@utils/api/organizations'
 import { fetchUserSettings } from '@utils/api/settings'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { ApplyFields } from '@pages/jobs/components/ApplyFields'
 import {
   buildJobSchema,
@@ -86,7 +87,7 @@ const ApplicationsSection = () => {
       await refetch()
       return true
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
       return false
     }
   }

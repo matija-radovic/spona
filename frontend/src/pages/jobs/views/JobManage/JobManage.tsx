@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { SectionLayout } from '@shared/components'
 import { fetchJobBySlug, type JobDetailDto } from '@utils/api/jobs'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import JobManageHeader from './JobManageHeader'
 import { JOB_MANAGE_SECTIONS } from './sections'
 import type { JobManageOutletContext } from './jobManageContext'
@@ -48,7 +49,7 @@ const JobManage = () => {
     return (
       <div className="job-manage container">
         <p className="job-manage-status">
-          {isNotFound ? t('jobs.panel.notFound') : problem?.detail || t('errors.serverError')}
+          {isNotFound ? t('jobs.panel.notFound') : problemMessage(problem, t)}
         </p>
       </div>
     )

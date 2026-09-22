@@ -13,6 +13,7 @@ import usePostAs from '@shared/hooks/usePostAs'
 import { canPublishAs } from '@utils/postAs'
 import { COMMENT_MAX } from '@utils/constants/validation'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { createComment, type ThreadCommentDto } from '@utils/api/posts'
 
 interface CommentComposerProps {
@@ -57,7 +58,7 @@ const CommentComposer = ({ postId, parentId, onCreated, onCancel, autoFocus }: C
     } catch (err) {
       const problem = parseProblem(err)
       if (problem.status === 403) refresh()
-      setError(problem.detail || t('errors.serverError'))
+      setError(problemMessage(problem, t))
     } finally {
       setBusy(false)
     }

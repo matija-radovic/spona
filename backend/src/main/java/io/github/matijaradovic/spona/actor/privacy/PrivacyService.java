@@ -9,6 +9,7 @@ import io.github.matijaradovic.spona.actor.ActorRepository;
 import io.github.matijaradovic.spona.actor.dto.PrivacyDto;
 import io.github.matijaradovic.spona.common.domain.Actor;
 import io.github.matijaradovic.spona.common.domain.ActorType;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
@@ -42,9 +43,9 @@ public class PrivacyService {
     public void update(UUID actorId, User caller, PrivacyDto privacy) {
         if (!actorId.equals(caller.getId())) {
             Actor actor = actors.findById(actorId)
-                    .orElseThrow(() -> new NotFoundException("Actor not found."));
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
             if (actor.getActorType() != ActorType.ORG || !PublishAuthority.canEditProfile(roleOf(caller, actorId))) {
-                throw new ForbiddenException("You may not change these privacy settings.");
+                throw new ForbiddenException(ErrorCode.PRIVACY_NOT_YOURS);
             }
         }
 

@@ -12,12 +12,12 @@ import io.github.matijaradovic.spona.auth.VerificationService;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.ReservedHandles;
 import io.github.matijaradovic.spona.common.util.Strings;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationRepository;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
@@ -33,7 +33,6 @@ public class UserService {
 
     /** Mirrors the CHECK on `username`, so an unavailable answer covers a malformed handle too. */
     private static final String HANDLE_PATTERN = "^[a-z0-9_-]{3,30}$";
-    private static final String WRONG_PASSWORD = "Wrong password.";
 
     private final UserRepository users;
     private final OrganizationRepository organizations;
@@ -89,10 +88,10 @@ public class UserService {
         User user = managed(caller);
         if (!username.equals(user.getUsername())) {
             if (ReservedHandles.isReserved(username)) {
-                throw new ConflictException("That username is reserved.", ProblemTypes.HANDLE_RESERVED);
+                throw new ConflictException(ErrorCode.USERNAME_RESERVED);
             }
             if (users.existsByUsername(username)) {
-                throw new ConflictException("That username is taken.", ProblemTypes.USERNAME_TAKEN);
+                throw new ConflictException(ErrorCode.USERNAME_TAKEN);
             }
             user.setUsername(username);
         }
@@ -107,10 +106,10 @@ public class UserService {
 
         String email = Strings.normalizeEmail(request.email());
         if (email.equalsIgnoreCase(user.getEmail())) {
-            throw UnprocessableException.on("email", "That is already your email address.");
+            throw UnprocessableException.on("email", ErrorCode.EMAIL_UNCHANGED);
         }
         if (users.existsByEmailIgnoreCase(email)) {
-            throw new ConflictException("That email address is already registered.", ProblemTypes.EMAIL_TAKEN);
+            throw new ConflictException(ErrorCode.EMAIL_TAKEN);
         }
         verification.issue(user, EmailVerificationPurpose.CHANGE, email);
     }
@@ -141,12 +140,12 @@ public class UserService {
 
     private User managed(User caller) {
         return users.findById(caller.getId())
-                .orElseThrow(() -> new UnauthorizedException("Session not valid. Sign in again."));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.SESSION_EXPIRED));
     }
 
     private void requirePassword(User user, String presented) {
         if (!passwords.matches(presented, user.getPasswordDigest())) {
-            throw new ForbiddenException(WRONG_PASSWORD);
+            throw new ForbiddenException(ErrorCode.WRONG_PASSWORD);
         }
     }
 }

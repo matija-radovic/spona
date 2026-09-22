@@ -11,12 +11,12 @@ import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
 import io.github.matijaradovic.spona.auth.jwt.JwtService;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.util.ReservedHandles;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.common.util.Strings;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.storage.AvatarService;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.UserRepository;
@@ -24,9 +24,6 @@ import io.github.matijaradovic.spona.user.dto.UserDto;
 
 @Service
 public class AuthService {
-
-    private static final String BAD_CREDENTIALS = "Wrong username or password.";
-    private static final String UNVERIFIED = "Verify your email address to continue.";
 
     private final UserRepository users;
     private final VerificationService verification;
@@ -54,13 +51,13 @@ public class AuthService {
         String email = Strings.normalizeEmail(request.email());
 
         if (ReservedHandles.isReserved(username)) {
-            throw new ConflictException("That username is reserved.", ProblemTypes.HANDLE_RESERVED);
+            throw new ConflictException(ErrorCode.USERNAME_RESERVED);
         }
         if (users.existsByUsername(username)) {
-            throw new ConflictException("That username is taken.", ProblemTypes.USERNAME_TAKEN);
+            throw new ConflictException(ErrorCode.USERNAME_TAKEN);
         }
         if (users.existsByEmailIgnoreCase(email)) {
-            throw new ConflictException("That email address is already registered.", ProblemTypes.EMAIL_TAKEN);
+            throw new ConflictException(ErrorCode.EMAIL_TAKEN);
         }
 
         User user = new User(username, email, passwords.encode(request.password()));
@@ -87,11 +84,11 @@ public class AuthService {
         boolean correct = passwords.matches(request.password(),
                 user != null ? user.getPasswordDigest() : absentUserDigest);
         if (user == null || !correct) {
-            throw new UnauthorizedException(BAD_CREDENTIALS);
+            throw new UnauthorizedException(ErrorCode.BAD_CREDENTIALS);
         }
         if (user.getEmailVerifiedAt() == null) {
             verification.issue(user, EmailVerificationPurpose.SIGNUP, user.getEmail());
-            throw new ForbiddenException(UNVERIFIED, ProblemTypes.EMAIL_NOT_VERIFIED);
+            throw new ForbiddenException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 
         return new AuthResponse(jwt.sign(user), UserDto.from(user));

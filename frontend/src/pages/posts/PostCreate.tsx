@@ -18,6 +18,7 @@ import usePostAs from '@shared/hooks/usePostAs'
 import useUnsavedGuard from '@shared/hooks/useUnsavedGuard'
 import { createPost } from '@utils/api/posts'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { canPublishAs } from '@utils/postAs'
 import { POST_MAX } from '@utils/constants/validation'
 import {
@@ -68,7 +69,7 @@ const PostCreate = () => {
     } catch (caught) {
       const problem = parseProblem(caught)
       if (problem.status === 403) refresh()
-      setError(problem.detail || t('errors.serverError'))
+      setError(problemMessage(problem, t))
       return false
     }
   }

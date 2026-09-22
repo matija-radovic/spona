@@ -28,10 +28,10 @@ import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationRepository;
 import io.github.matijaradovic.spona.organization.member.OrganizationRole;
@@ -165,7 +165,7 @@ class UserServiceTest {
     void aReservedHandleIsRefusedWithoutALookup() {
         assertThatThrownBy(() -> service.changeUsername(marko, "settings"))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.HANDLE_RESERVED));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USERNAME_RESERVED));
 
         assertThat(marko.getUsername()).isEqualTo("marko");
         verify(users, never()).existsByUsername(anyString());
@@ -177,7 +177,7 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> service.changeUsername(marko, "petar"))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.USERNAME_TAKEN));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USERNAME_TAKEN));
 
         assertThat(marko.getUsername()).isEqualTo("marko");
     }
@@ -215,7 +215,7 @@ class UserServiceTest {
         assertThatThrownBy(() -> service.requestEmailChange(marko,
                 new ChangeEmailRequest("zauzeto@primer.rs", PASSWORD)))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.EMAIL_TAKEN));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_TAKEN));
 
         verify(verification, never()).issue(any(), any(), any());
     }

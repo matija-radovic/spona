@@ -14,10 +14,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.json.ProblemDetailJacksonMixin;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.jayway.jsonpath.JsonPath;
 
 import io.github.matijaradovic.spona.common.web.ProblemDetailWriter;
 import io.github.matijaradovic.spona.config.props.JwtProperties;
@@ -33,8 +37,10 @@ class JwtAuthenticationFilterTest {
 
     private final JwtService jwtService = new JwtService(new JwtProperties(SECRET, Duration.ofDays(7)));
     private final UserRepository users = mock(UserRepository.class);
-    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(
-            jwtService, users, new ProblemDetailWriter(JsonMapper.builder().build()));
+    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, users,
+            new ProblemDetailWriter(JsonMapper.builder()
+                    .addMixIn(ProblemDetail.class, ProblemDetailJacksonMixin.class)
+                    .build()));
 
     private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final MockFilterChain chain = new MockFilterChain();
@@ -74,6 +80,9 @@ class JwtAuthenticationFilterTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(response.getContentType()).contains("application/problem+json");
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        assertThat(JsonPath.<String>read(response.getContentAsString(), "$.code")).isEqualTo("auth.sessionExpired");
+        assertThat(JsonPath.<String>read(response.getContentAsString(), "$.detail"))
+                .isEqualTo("Session not valid. Sign in again.");
     }
 
     /** A valid signature over a row that is gone answers exactly as a bad signature does. */
@@ -100,6 +109,7 @@ class JwtAuthenticationFilterTest {
         assertThat(chain.getRequest()).isNull();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(response.getContentAsString()).contains("/problems/email-not-verified");
+        assertThat(JsonPath.<String>read(response.getContentAsString(), "$.code")).isEqualTo("auth.emailNotVerified");
     }
 
     @Test

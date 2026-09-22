@@ -10,10 +10,10 @@ import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationToken;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationTokenRepository;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.common.util.TransactionHooks;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.config.props.AppProperties;
 import io.github.matijaradovic.spona.mail.MailService;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
@@ -68,7 +68,7 @@ public class VerificationService {
         Instant now = Instant.now();
         EmailVerificationToken token = tokens.findByTokenHash(SecureTokens.hash(presented))
                 .filter(row -> row.isLive(now))
-                .orElseThrow(() -> UnprocessableException.on("token", "Link is invalid or has expired."));
+                .orElseThrow(() -> UnprocessableException.on("token", ErrorCode.DEAD_TOKEN));
 
         token.consume(now);
         User user = token.getUser();
@@ -86,7 +86,7 @@ public class VerificationService {
     private void applyEmailChange(User user, String requested) {
         String previous = user.getEmail();
         if (!previous.equalsIgnoreCase(requested) && users.existsByEmailIgnoreCase(requested)) {
-            throw new ConflictException("That email address is already registered.", ProblemTypes.EMAIL_TAKEN);
+            throw new ConflictException(ErrorCode.EMAIL_TAKEN);
         }
 
         user.setEmail(requested);

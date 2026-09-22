@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { FieldShell, Input } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
+import { applyFieldErrors, problemMessage } from '@utils/api/problemMessage'
 import { changeEmail, type UserSettingsDto } from '@utils/api/settings'
 import { CredentialForm } from '../CredentialForm'
 import { buildEmailSchema, type EmailData } from '../schema'
@@ -41,8 +42,10 @@ const EmailForm = ({ settings }: EmailFormProps) => {
       markRequested()
     } catch (caught) {
       const problem = parseProblem(caught)
-      const message = problem.detail || t('errors.serverError')
-      setError(problem.status === 403 ? 'currentPassword' : 'email', { message })
+      const message = problemMessage(problem, t)
+      if (!applyFieldErrors(problem, setError, t)) {
+        setError(problem.status === 403 ? 'currentPassword' : 'email', { message })
+      }
       setError('root', { message })
     }
   })

@@ -28,9 +28,9 @@ import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.MyOrganizationDto;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.member.MembershipService;
@@ -124,7 +124,7 @@ class UserOrganizationsControllerTest {
 
     @Test
     void theOwnersLeaveCarriesTheLastOwnerType() throws Exception {
-        doThrow(new ConflictException("Transfer ownership before leaving the organization.", ProblemTypes.LAST_OWNER))
+        doThrow(new ConflictException(ErrorCode.LAST_OWNER_LEAVE))
                 .when(memberships).leave("spona", marko);
 
         mvc.perform(delete("/users/marko/organizations/spona"))
@@ -135,7 +135,7 @@ class UserOrganizationsControllerTest {
 
     @Test
     void leavingAnOrganizationTheCallerIsNotInIs404() throws Exception {
-        doThrow(new NotFoundException("You are not a member of this organization."))
+        doThrow(new NotFoundException(ErrorCode.MEMBER_NOT_A_MEMBER))
                 .when(memberships).leave("spona", marko);
 
         mvc.perform(delete("/users/marko/organizations/spona")).andExpect(status().isNotFound());

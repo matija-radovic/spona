@@ -29,11 +29,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.actor.ActorService;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.dto.InvitationDto;
 import io.github.matijaradovic.spona.organization.invitation.InvitationService;
 import io.github.matijaradovic.spona.organization.invitation.InvitationStatus;
@@ -107,7 +107,7 @@ class OrganizationInvitationsControllerTest {
     @Test
     void theListForARoleBelowAdminIs403() throws Exception {
         when(invitations.list("spona", marko))
-                .thenThrow(new ForbiddenException("Only the owner or an admin may manage invitations."));
+                .thenThrow(new ForbiddenException(ErrorCode.INVITATION_NOT_AN_ADMIN));
 
         mvc.perform(get(INVITATIONS_PATH)).andExpect(status().isForbidden());
     }
@@ -133,7 +133,7 @@ class OrganizationInvitationsControllerTest {
         mvc.perform(invite("a".repeat(242) + "@example.com", "EDITOR")).andExpect(status().isCreated());
         mvc.perform(invite("a".repeat(243) + "@example.com", "EDITOR"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.identifier").value("At most 254 characters."));
+                .andExpect(jsonPath("$.errors.identifier.detail").value("At most 254 characters."));
     }
 
     @Test
@@ -157,17 +157,17 @@ class OrganizationInvitationsControllerTest {
     @Test
     void aUsernameNobodyHoldsIs422UnderIdentifier() throws Exception {
         when(invitations.create("spona", marko, "nepostojeci", OrganizationRole.EDITOR))
-                .thenThrow(UnprocessableException.on("identifier", "No user has this username."));
+                .thenThrow(UnprocessableException.on("identifier", ErrorCode.NO_SUCH_USERNAME));
 
         mvc.perform(invite("nepostojeci", "EDITOR"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.identifier").value("No user has this username."));
+                .andExpect(jsonPath("$.errors.identifier.detail").value("No user has this username."));
     }
 
     @Test
     void aUsernameAlreadyInTheOrganizationIs409AlreadyMember() throws Exception {
         when(invitations.create("spona", marko, "jelena", OrganizationRole.EDITOR))
-                .thenThrow(new ConflictException("This user is already a member.", ProblemTypes.ALREADY_MEMBER));
+                .thenThrow(new ConflictException(ErrorCode.ALREADY_MEMBER));
 
         mvc.perform(invite("jelena", "EDITOR"))
                 .andExpect(status().isConflict())
@@ -183,7 +183,7 @@ class OrganizationInvitationsControllerTest {
 
     @Test
     void cancelOnARowThatIsNoLongerWaitingIs409() throws Exception {
-        doThrow(new ConflictException("Only a waiting invitation can be canceled."))
+        doThrow(new ConflictException(ErrorCode.INVITATION_NOT_WAITING))
                 .when(invitations).cancel("spona", marko, INVITATION_ID);
 
         mvc.perform(delete(INVITATION_PATH)).andExpect(status().isConflict());
@@ -198,7 +198,7 @@ class OrganizationInvitationsControllerTest {
 
     @Test
     void anIdThatIsNotThisOrganizationsIs404() throws Exception {
-        doThrow(new NotFoundException("Invitation not found."))
+        doThrow(new NotFoundException(ErrorCode.INVITATION_NOT_FOUND))
                 .when(invitations).dismiss("spona", marko, INVITATION_ID);
 
         mvc.perform(post(INVITATION_PATH + "/dismiss"))

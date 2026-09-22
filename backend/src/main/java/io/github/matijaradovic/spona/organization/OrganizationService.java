@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.ReservedHandles;
 import io.github.matijaradovic.spona.common.util.Strings;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.OrganizationGate.Seat;
 import io.github.matijaradovic.spona.organization.dto.CreateOrganizationRequest;
 import io.github.matijaradovic.spona.organization.dto.OrgSettingsDto;
@@ -33,10 +33,6 @@ import io.github.matijaradovic.spona.user.UserRepository;
 
 @Service
 public class OrganizationService {
-
-    private static final String NOT_A_MEMBER = "You are not a member of this organization.";
-    private static final String NOT_AN_ADMIN = "Only the owner or an admin may change this organization.";
-    private static final String NOT_THE_OWNER = "Only the owner may do this.";
 
     private final OrganizationRepository organizations;
     private final OrganizationMemberRepository members;
@@ -61,7 +57,7 @@ public class OrganizationService {
     @Transactional
     public OrganizationDto create(User caller, CreateOrganizationRequest request) {
         User founder = users.findById(caller.getId())
-                .orElseThrow(() -> new UnauthorizedException("Session not valid. Sign in again."));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.SESSION_EXPIRED));
         requireFreeSlug(request.slug());
 
         Organization organization = new Organization(request.slug(),
@@ -82,12 +78,13 @@ public class OrganizationService {
 
     @Transactional(readOnly = true)
     public OrgSettingsDto settings(String slug, User caller) {
-        return settingsOf(gate.seat(slug, caller, PublishAuthority::canReadSettings, NOT_A_MEMBER));
+        return settingsOf(gate.seat(slug, caller, PublishAuthority::canReadSettings,
+                ErrorCode.ORGANIZATION_NOT_A_MEMBER));
     }
 
     @Transactional
     public OrgSettingsDto updateProfile(String slug, User caller, UpdateOrganizationRequest request) {
-        Seat seat = gate.seat(slug, caller, PublishAuthority::canEditProfile, NOT_AN_ADMIN);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canEditProfile, ErrorCode.ORGANIZATION_NOT_AN_ADMIN);
         Organization organization = seat.organization();
         organization.setDisplayName(Strings.trimToEmpty(request.displayName()));
         organization.setLegalName(Strings.trimToEmpty(request.legalName()));
@@ -103,7 +100,7 @@ public class OrganizationService {
 
     @Transactional
     public OrgSettingsDto changeSlug(String slug, User caller, String nextSlug) {
-        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER);
+        Seat seat = gate.seat(slug, caller, PublishAuthority::canManageOrganization, ErrorCode.NOT_THE_OWNER);
         Organization organization = seat.organization();
         if (!nextSlug.equals(organization.getSlug())) {
             requireFreeSlug(nextSlug);
@@ -114,16 +111,15 @@ public class OrganizationService {
 
     @Transactional
     public void transferOwnership(String slug, User caller, TransferOwnershipRequest request) {
-        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
-                .organization();
+        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization,
+                ErrorCode.NOT_THE_OWNER).organization();
         requireConfirmation(organization, request.confirmSlug());
 
         RoleAssignment successor = liveAssignment(organization, request.userId())
                 .filter(row -> row.getRole() == OrganizationRole.ADMIN)
-                .orElseThrow(() -> UnprocessableException.on("userId",
-                        "Ownership passes only to an admin of this organization."));
+                .orElseThrow(() -> UnprocessableException.on("userId", ErrorCode.NEW_OWNER_NOT_ADMIN));
         RoleAssignment owner = liveAssignment(organization, caller.getId())
-                .orElseThrow(() -> new ForbiddenException(NOT_THE_OWNER));
+                .orElseThrow(() -> new ForbiddenException(ErrorCode.NOT_THE_OWNER));
 
         Instant now = Instant.now();
         owner.revoke(now);
@@ -137,8 +133,8 @@ public class OrganizationService {
 
     @Transactional
     public void delete(String slug, User caller, String confirmSlug) {
-        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization, NOT_THE_OWNER)
-                .organization();
+        Organization organization = gate.seat(slug, caller, PublishAuthority::canManageOrganization,
+                ErrorCode.NOT_THE_OWNER).organization();
         requireConfirmation(organization, confirmSlug);
 
         avatars.discard(organization.getAvatarUrl());
@@ -157,16 +153,16 @@ public class OrganizationService {
 
     private void requireFreeSlug(String slug) {
         if (ReservedHandles.isReserved(slug)) {
-            throw new ConflictException("That slug is reserved.", ProblemTypes.HANDLE_RESERVED);
+            throw new ConflictException(ErrorCode.SLUG_RESERVED);
         }
         if (organizations.existsBySlug(slug)) {
-            throw new ConflictException("That slug is taken.", ProblemTypes.SLUG_TAKEN);
+            throw new ConflictException(ErrorCode.SLUG_TAKEN);
         }
     }
 
     private static void requireConfirmation(Organization organization, String confirmSlug) {
         if (!organization.getSlug().equals(confirmSlug)) {
-            throw UnprocessableException.on("confirmSlug", "The slug you typed does not match.");
+            throw UnprocessableException.on("confirmSlug", ErrorCode.SLUG_CONFIRM_MISMATCH);
         }
     }
 }

@@ -16,6 +16,7 @@ import {
 } from '@shared/components'
 import useTimedFlag from '@shared/hooks/useTimedFlag'
 import { parseProblem } from '@utils/api/types'
+import { applyFieldErrors, problemMessage } from '@utils/api/problemMessage'
 import { SLUG_MIN, SLUG_MAX, SLUG_REGEX } from '@utils/constants/validation'
 import {
   changeOrgSlug,
@@ -80,7 +81,7 @@ const ManagementSection = () => {
       })
       .catch((caught: unknown) => {
         setAdmins([])
-        setAdminsError(parseProblem(caught).detail || t('errors.serverError'))
+        setAdminsError(problemMessage(parseProblem(caught), t))
       })
       .finally(() => setAdminsLoaded(true))
   }, [slug, owner, t])
@@ -113,7 +114,8 @@ const ManagementSection = () => {
       markSaved()
       navigate(`/companies/${updated.slug}/settings/management`, { replace: true })
     } catch (caught) {
-      setError('slug', { message: parseProblem(caught).detail || t('errors.serverError') })
+      const problem = parseProblem(caught)
+      if (!applyFieldErrors(problem, setError, t)) setError('slug', { message: problemMessage(problem, t) })
     }
   })
 
@@ -129,7 +131,7 @@ const ManagementSection = () => {
       await refetch()
       navigate('../profile', { replace: true })
     } catch (caught) {
-      setModalError(parseProblem(caught).detail || t('errors.serverError'))
+      setModalError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusy(false)
     }
@@ -142,7 +144,7 @@ const ManagementSection = () => {
       await deleteOrg(slug, confirmSlug)
       navigate('/companies')
     } catch (caught) {
-      setModalError(parseProblem(caught).detail || t('errors.serverError'))
+      setModalError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusy(false)
     }

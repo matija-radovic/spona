@@ -11,6 +11,7 @@ import {
 } from '@shared/components'
 import { setJobStatus, type JobDetailDto } from '@utils/api/jobs'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { JobStatusChip } from '@pages/jobs/components/JobStatusChip'
 
 interface JobManageHeaderProps {
@@ -34,7 +35,7 @@ const JobManageHeader = ({ job, refetch }: JobManageHeaderProps) => {
       await refetch()
       setConfirming(false)
     } catch (caught) {
-      setError(parseProblem(caught).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(caught), t))
     } finally {
       setBusy(false)
     }

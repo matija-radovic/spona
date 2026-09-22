@@ -12,6 +12,7 @@ import { applyReactionDelta } from '@utils/applyReactionDelta'
 import { cachePost, forgetPost, getCachedPost } from '@utils/postCache'
 import { setReaction } from '@utils/api/reactions'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import {
   deletePost,
   fetchCommentContext,
@@ -191,7 +192,7 @@ const Post = () => {
     const isNotFound = failed?.status === 404
     return (
       <div className="post-page-status">
-        <p>{isNotFound ? t('post.notFound') : failed?.detail || t('errors.serverError')}</p>
+        <p>{isNotFound ? t('post.notFound') : problemMessage(failed, t)}</p>
         {!isNotFound && (
           <Button
             variant={ButtonVariant.TERTIARY}

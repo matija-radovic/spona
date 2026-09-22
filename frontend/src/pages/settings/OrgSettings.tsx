@@ -4,6 +4,7 @@ import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SectionLayout } from '@shared/components'
 import { parseProblem, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { fetchOrgSettings, type OrgSettingsDto } from '@utils/api/organizations'
 import { ORG_SECTIONS, OWNER_ONLY_SECTION } from './lib/sections'
 import { isOwner } from './lib/permissions'
@@ -58,7 +59,7 @@ const OrgSettings = () => {
   if (problem || !settings) {
     return (
       <div className="settings-layout container">
-        <p className="settings-status">{problem?.detail || t('errors.serverError')}</p>
+        <p className="settings-status">{problemMessage(problem, t)}</p>
       </div>
     )
   }

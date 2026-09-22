@@ -25,9 +25,9 @@ import io.github.matijaradovic.spona.auth.dto.AuthResponse;
 import io.github.matijaradovic.spona.auth.dto.LoginRequest;
 import io.github.matijaradovic.spona.auth.jwt.JwtService;
 import io.github.matijaradovic.spona.auth.token.EmailVerificationPurpose;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.storage.AvatarService;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
@@ -105,8 +105,8 @@ class AuthServiceLoginTest {
 
         assertThatThrownBy(() -> auth.login(new LoginRequest("nepotvrdjen", PASSWORD)))
                 .isInstanceOf(ForbiddenException.class)
-                .satisfies(thrown -> assertThat(((ForbiddenException) thrown).getType())
-                        .isEqualTo(ProblemTypes.EMAIL_NOT_VERIFIED));
+                .satisfies(thrown -> assertThat(((ForbiddenException) thrown).getErrorCode())
+                        .isEqualTo(ErrorCode.EMAIL_NOT_VERIFIED));
     }
 
     @Test

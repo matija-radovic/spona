@@ -1,7 +1,6 @@
 package io.github.matijaradovic.spona.common.web;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.http.HttpStatus;
@@ -9,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
 
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tools.jackson.databind.ObjectMapper;
@@ -27,13 +27,8 @@ public class ProblemDetailWriter {
     }
 
     public void write(HttpServletRequest request, HttpServletResponse response,
-            HttpStatus status, String detail, URI type) throws IOException {
-        ProblemDetail body = ProblemDetail.forStatusAndDetail(status, detail);
-        body.setTitle(status.getReasonPhrase());
-        if (type != null) {
-            body.setType(type);
-        }
-        body.setInstance(URI.create(request.getRequestURI()));
+            HttpStatus status, ErrorCode code) throws IOException {
+        ProblemDetail body = GlobalExceptionHandler.problem(status, code.with(), request);
 
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

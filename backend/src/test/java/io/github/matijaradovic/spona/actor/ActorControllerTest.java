@@ -36,6 +36,7 @@ import io.github.matijaradovic.spona.actor.follow.FollowService;
 import io.github.matijaradovic.spona.actor.privacy.PrivacyService;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.BadRequestException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
@@ -129,7 +130,7 @@ class ActorControllerTest {
     @Test
     void followingOfAnOrganizationIsA404() throws Exception {
         when(followService.following(eq(ORG_ID), eq(""), any(), eq(caller)))
-                .thenThrow(new NotFoundException("An organization follows nobody."));
+                .thenThrow(new NotFoundException(ErrorCode.ORGANIZATION_FOLLOWS_NOBODY));
 
         mvc.perform(get("/actors/" + ORG_ID + "/following"))
                 .andExpect(status().isNotFound());
@@ -168,7 +169,7 @@ class ActorControllerTest {
 
     @Test
     void aRefusalIs403() throws Exception {
-        doThrow(new ForbiddenException("You may not change these privacy settings."))
+        doThrow(new ForbiddenException(ErrorCode.PRIVACY_NOT_YOURS))
                 .when(privacy).update(eq(ORG_ID), eq(caller), any());
 
         mvc.perform(put("/actors/" + ORG_ID + "/privacy")
@@ -179,7 +180,7 @@ class ActorControllerTest {
 
     @Test
     void anUnknownActorIs404() throws Exception {
-        doThrow(new NotFoundException("Actor not found."))
+        doThrow(new NotFoundException(ErrorCode.ACTOR_NOT_FOUND))
                 .when(privacy).update(eq(ORG_ID), eq(caller), any());
 
         mvc.perform(put("/actors/" + ORG_ID + "/privacy")
@@ -215,7 +216,7 @@ class ActorControllerTest {
     @Test
     void activityOfAnUnknownActorIs404() throws Exception {
         when(activityService.activity(eq(ORG_ID), any(), any(), eq(caller)))
-                .thenThrow(new NotFoundException("Actor not found."));
+                .thenThrow(new NotFoundException(ErrorCode.ACTOR_NOT_FOUND));
 
         mvc.perform(get("/actors/" + ORG_ID + "/activity")).andExpect(status().isNotFound());
     }
@@ -223,7 +224,7 @@ class ActorControllerTest {
     @Test
     void anInvalidKindIs422() throws Exception {
         when(activityService.activity(eq(ORG_ID), eq("bogus"), any(), eq(caller)))
-                .thenThrow(UnprocessableException.on("kind", "Kind must be all, posts or comments."));
+                .thenThrow(UnprocessableException.on("kind", ErrorCode.UNKNOWN_ACTIVITY_KIND));
 
         mvc.perform(get("/actors/" + ORG_ID + "/activity").param("kind", "bogus"))
                 .andExpect(status().isUnprocessableContent())
@@ -257,7 +258,7 @@ class ActorControllerTest {
     @Test
     void aRefusedPostingsParameterIs400WithNoFieldErrors() throws Exception {
         when(jobService.postings(eq(ORG_ID), eq("DRAFT"), any(), any(), eq(caller)))
-                .thenThrow(new BadRequestException("Status and sort are only for whoever manages these postings."));
+                .thenThrow(new BadRequestException(ErrorCode.JOB_MANAGER_ONLY_QUERY));
 
         mvc.perform(get("/actors/" + ORG_ID + "/jobs").param("status", "DRAFT"))
                 .andExpect(status().isBadRequest())

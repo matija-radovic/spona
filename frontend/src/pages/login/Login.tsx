@@ -13,7 +13,7 @@ import { loginRequest } from '@utils/api/auth'
 import type { AuthResponse } from '@utils/api/auth'
 import { parseProblem } from '@utils/api/types'
 
-const UNVERIFIED = '/problems/email-not-verified'
+const UNVERIFIED = 'auth.emailNotVerified'
 const RESEND_COOLDOWN = 5
 
 type ResendState = 'idle' | 'sending' | 'sent' | 'failed'
@@ -67,7 +67,7 @@ const Login = () => {
     try {
       enter(await loginRequest(values))
     } catch (caught) {
-      if (parseProblem(caught).type === UNVERIFIED) {
+      if (parseProblem(caught).code === UNVERIFIED) {
         setUnverified(values)
         setCooldown(RESEND_COOLDOWN)
       } else {
@@ -83,7 +83,7 @@ const Login = () => {
       enter(await loginRequest(unverified))
       return // verified in another tab between the two attempts, so this signs in
     } catch (caught) {
-      setResend(parseProblem(caught).type === UNVERIFIED ? 'sent' : 'failed')
+      setResend(parseProblem(caught).code === UNVERIFIED ? 'sent' : 'failed')
       setCooldown(RESEND_COOLDOWN)
     }
   }

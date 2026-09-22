@@ -120,7 +120,7 @@ class AuthFlowIntegrationTest {
 
         mvc.perform(registerWithAvatar("prevelik", avatar))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.avatar").value("The avatar must be exactly 256 by 256 pixels."));
+                .andExpect(jsonPath("$.errors.avatar.detail").value("The avatar must be exactly 256 by 256 pixels."));
 
         assertThat(users.findByUsername("prevelik")).isEmpty();
     }
@@ -185,7 +185,7 @@ class AuthFlowIntegrationTest {
     void verifyRefusesATokenNobodyIssued() throws Exception {
         mvc.perform(verify("izmisljen"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").isString());
+                .andExpect(jsonPath("$.errors.token.detail").isString());
     }
 
     @Test
@@ -215,7 +215,7 @@ class AuthFlowIntegrationTest {
 
         mvc.perform(verify("stari-token"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").isString());
+                .andExpect(jsonPath("$.errors.token.detail").isString());
 
         assertThat(users.findById(user.getId()).orElseThrow().getEmailVerifiedAt()).isNull();
     }
@@ -513,7 +513,7 @@ class AuthFlowIntegrationTest {
     void confirmRefusesAResetTokenNobodyIssued() throws Exception {
         mvc.perform(confirmReset("izmisljen", "NovaLozinka1"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").isString());
+                .andExpect(jsonPath("$.errors.token.detail").isString());
     }
 
     @Test

@@ -10,6 +10,7 @@ import java.util.Base64;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 
 final class ImageValidator {
@@ -28,7 +29,7 @@ final class ImageValidator {
 
     static byte[] avatar(String dataUrl) {
         if (dataUrl == null || !dataUrl.startsWith(DATA_URL_PREFIX)) {
-            throw refused("The avatar must be a PNG data URL.");
+            throw refused(ErrorCode.AVATAR_NOT_PNG_DATA_URL.with());
         }
         if (dataUrl.length() > MAX_DATA_URL_LENGTH) {
             throw tooLarge();
@@ -37,20 +38,20 @@ final class ImageValidator {
         try {
             bytes = Base64.getDecoder().decode(dataUrl.substring(DATA_URL_PREFIX.length()));
         } catch (IllegalArgumentException ex) {
-            throw refused("The avatar is not valid base64.");
+            throw refused(ErrorCode.AVATAR_NOT_BASE64.with());
         }
         if (bytes.length > AVATAR_MAX_BYTES) {
             throw tooLarge();
         }
         if (!hasPngHeader(bytes)) {
-            throw refused("The avatar is not a PNG.");
+            throw refused(ErrorCode.AVATAR_NOT_PNG.with());
         }
         ByteBuffer header = ByteBuffer.wrap(bytes);
         if (header.getInt(16) != AVATAR_SIDE || header.getInt(20) != AVATAR_SIDE) {
-            throw refused("The avatar must be exactly %d by %d pixels.".formatted(AVATAR_SIDE, AVATAR_SIDE));
+            throw refused(ErrorCode.AVATAR_WRONG_DIMENSIONS.with(AVATAR_SIDE, AVATAR_SIDE));
         }
         if (!decodes(bytes)) {
-            throw refused("The avatar is not a valid PNG.");
+            throw refused(ErrorCode.AVATAR_CORRUPT_PNG.with());
         }
         return bytes;
     }
@@ -70,10 +71,10 @@ final class ImageValidator {
     }
 
     private static UnprocessableException tooLarge() {
-        return refused("At most %d KB.".formatted(AVATAR_MAX_BYTES / 1024));
+        return refused(ErrorCode.AVATAR_TOO_LARGE.with(AVATAR_MAX_BYTES / 1024));
     }
 
-    private static UnprocessableException refused(String message) {
-        return UnprocessableException.on(FIELD, message);
+    private static UnprocessableException refused(ErrorCode.Formatted error) {
+        return UnprocessableException.on(FIELD, error);
     }
 }

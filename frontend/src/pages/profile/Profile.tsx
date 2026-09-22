@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useUser } from '@shared/contexts'
 import { loadMyOrganizations } from '@shared/hooks/useMyOrganizations'
 import { parseProblem, type PagedResponse, type ProblemDetail } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import {
   fetchProfile,
   type ActorRefDto,
@@ -187,7 +188,7 @@ const Profile = ({ actorType }: ProfileProps) => {
     return (
       <div className="profile container">
         <p className="profile-status">
-          {isNotFound ? t('profile.notFound') : problem?.detail || t('errors.serverError')}
+          {isNotFound ? t('profile.notFound') : problemMessage(problem, t)}
         </p>
       </div>
     )

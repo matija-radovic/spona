@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.matijaradovic.spona.auth.token.PasswordResetToken;
 import io.github.matijaradovic.spona.auth.token.PasswordResetTokenRepository;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.util.SecureTokens;
 import io.github.matijaradovic.spona.common.util.Strings;
@@ -23,7 +24,6 @@ public class PasswordResetService {
 
     private static final String TEMPLATE = "mail/password-reset";
     private static final String SUBJECT = "Reset your Spona password";
-    private static final String DEAD_TOKEN = "Link is invalid or has expired.";
 
     private final PasswordResetTokenRepository tokens;
     private final UserRepository users;
@@ -51,7 +51,7 @@ public class PasswordResetService {
         Instant now = Instant.now();
         PasswordResetToken token = tokens.findByTokenHash(SecureTokens.hash(presented))
                 .filter(row -> row.isLive(now))
-                .orElseThrow(() -> UnprocessableException.on("token", DEAD_TOKEN));
+                .orElseThrow(() -> UnprocessableException.on("token", ErrorCode.DEAD_TOKEN));
 
         User user = token.getUser();
         user.setPasswordDigest(passwords.encode(newPassword));

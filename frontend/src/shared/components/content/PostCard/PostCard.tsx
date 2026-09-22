@@ -12,6 +12,7 @@ import { ReactionPicker } from '@shared/components/content/ReactionPicker'
 import { ReactionSummary } from '@shared/components/content/ReactionSummary'
 import { COMMENT_MAX } from '@utils/constants/validation'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 import { deletePost, updatePost, type PostDto } from '@utils/api/posts'
 import { PostCardVariant } from './postCardVariant'
 
@@ -58,7 +59,7 @@ const PostCard = ({
       onUpdated?.(post.id, updated.content)
       setDraft(null)
     } catch (err) {
-      setError(parseProblem(err).detail || t('errors.serverError'))
+      setError(problemMessage(parseProblem(err), t))
     } finally {
       setBusy(false)
     }

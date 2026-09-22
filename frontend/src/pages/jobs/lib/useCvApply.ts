@@ -6,6 +6,7 @@ import { rememberAfterAuth } from '@utils/afterAuth'
 import { CV_ACCEPTED_EXT, CV_ACCEPTED_TYPES, CV_MAX_BYTES } from '@utils/constants/validation'
 import { submitApplication } from '@utils/api/jobs'
 import { parseProblem } from '@utils/api/types'
+import { problemMessage } from '@utils/api/problemMessage'
 
 export interface CvApply {
   file: File | null
@@ -91,7 +92,7 @@ export const useCvApply = (jobId: string): CvApply => {
       await submitApplication(jobId, file)
       setSuccess(true)
     } catch (err) {
-      setServerError(parseProblem(err).detail || t('errors.serverError'))
+      setServerError(problemMessage(parseProblem(err), t))
       setTooltipOpen(true)
     } finally {
       setSubmitting(false)

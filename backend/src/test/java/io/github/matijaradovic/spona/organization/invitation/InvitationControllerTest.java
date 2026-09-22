@@ -21,10 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 
@@ -72,8 +72,7 @@ class InvitationControllerTest {
 
     @Test
     void someoneElsesInvitationIs403InvitationNotYours() throws Exception {
-        doThrow(new ForbiddenException("This invitation is addressed to someone else.",
-                ProblemTypes.INVITATION_NOT_YOURS)).when(invitations).accept(INVITATION_ID, marko);
+        doThrow(new ForbiddenException(ErrorCode.INVITATION_NOT_YOURS)).when(invitations).accept(INVITATION_ID, marko);
 
         mvc.perform(post(ACCEPT_PATH))
                 .andExpect(status().isForbidden())
@@ -82,15 +81,14 @@ class InvitationControllerTest {
 
     @Test
     void anIdThatIsNobodyIs404() throws Exception {
-        doThrow(new NotFoundException("Invitation not found.")).when(invitations).decline(INVITATION_ID, marko);
+        doThrow(new NotFoundException(ErrorCode.INVITATION_NOT_FOUND)).when(invitations).decline(INVITATION_ID, marko);
 
         mvc.perform(post(DECLINE_PATH)).andExpect(status().isNotFound());
     }
 
     @Test
     void acceptingAsAMemberIs409AlreadyMember() throws Exception {
-        doThrow(new ConflictException("You are already a member of this organization.",
-                ProblemTypes.ALREADY_MEMBER)).when(invitations).accept(INVITATION_ID, marko);
+        doThrow(new ConflictException(ErrorCode.ALREADY_MEMBER_SELF)).when(invitations).accept(INVITATION_ID, marko);
 
         mvc.perform(post(ACCEPT_PATH))
                 .andExpect(status().isConflict())
@@ -99,7 +97,7 @@ class InvitationControllerTest {
 
     @Test
     void aRowThatIsNoLongerWaitingIs409WithNoType() throws Exception {
-        doThrow(new ConflictException("This invitation is no longer waiting."))
+        doThrow(new ConflictException(ErrorCode.INVITATION_NO_LONGER_WAITING))
                 .when(invitations).decline(INVITATION_ID, marko);
 
         mvc.perform(post(DECLINE_PATH))

@@ -27,10 +27,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import io.github.matijaradovic.spona.common.domain.ActorType;
 import io.github.matijaradovic.spona.common.dto.ActorRefDto;
 import io.github.matijaradovic.spona.common.error.ConflictException;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.NotFoundException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.organization.Organization;
 import io.github.matijaradovic.spona.organization.OrganizationGate;
 import io.github.matijaradovic.spona.organization.OrganizationRepository;
@@ -192,10 +192,10 @@ class MembershipServiceTest {
 
         assertThatThrownBy(() -> service.changeRole("spona", marko, MEMBER_ID, OrganizationRole.EDITOR))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.LAST_OWNER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.LAST_OWNER_DEMOTE));
         assertThatThrownBy(() -> service.remove("spona", marko, MEMBER_ID))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.LAST_OWNER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.LAST_OWNER_DEMOTE));
 
         assertThat(owner.getRevokedAt()).isNull();
         verify(roles, never()).flush();
@@ -209,10 +209,10 @@ class MembershipServiceTest {
 
         assertThatThrownBy(() -> service.changeRole("spona", marko, CALLER_ID, OrganizationRole.ADMIN))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.LAST_OWNER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.LAST_OWNER_DEMOTE));
         assertThatThrownBy(() -> service.remove("spona", marko, CALLER_ID))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.LAST_OWNER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.LAST_OWNER_DEMOTE));
 
         verify(members, never()).deleteById(any());
     }
@@ -224,11 +224,11 @@ class MembershipServiceTest {
         liveRow(CALLER_ID, own);
 
         assertThatThrownBy(() -> service.changeRole("spona", marko, CALLER_ID, OrganizationRole.EDITOR))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("your own");
+                .isInstanceOfSatisfying(ForbiddenException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.OWN_MEMBERSHIP));
         assertThatThrownBy(() -> service.remove("spona", marko, CALLER_ID))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("your own");
+                .isInstanceOfSatisfying(ForbiddenException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.OWN_MEMBERSHIP));
 
         assertThat(own.getRevokedAt()).isNull();
         verify(members, never()).deleteById(any());
@@ -347,7 +347,7 @@ class MembershipServiceTest {
 
         assertThatThrownBy(() -> service.leave("spona", marko))
                 .isInstanceOfSatisfying(ConflictException.class,
-                        ex -> assertThat(ex.getType()).isEqualTo(ProblemTypes.LAST_OWNER));
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.LAST_OWNER_LEAVE));
 
         verify(members, never()).deleteById(any());
     }

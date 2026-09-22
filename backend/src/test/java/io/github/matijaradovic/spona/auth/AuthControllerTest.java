@@ -33,11 +33,11 @@ import io.github.matijaradovic.spona.auth.dto.AuthResponse;
 import io.github.matijaradovic.spona.auth.dto.LoginRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterRequest;
 import io.github.matijaradovic.spona.auth.dto.RegisterResponse;
+import io.github.matijaradovic.spona.common.error.ErrorCode;
 import io.github.matijaradovic.spona.common.error.ForbiddenException;
 import io.github.matijaradovic.spona.common.error.UnauthorizedException;
 import io.github.matijaradovic.spona.common.error.UnprocessableException;
 import io.github.matijaradovic.spona.common.web.GlobalExceptionHandler;
-import io.github.matijaradovic.spona.common.web.ProblemTypes;
 import io.github.matijaradovic.spona.support.TestFixtures;
 import io.github.matijaradovic.spona.user.User;
 import io.github.matijaradovic.spona.user.dto.UserDto;
@@ -88,35 +88,35 @@ class AuthControllerTest {
         mvc.perform(register(body(q("ma"), q("marko@example.com"), q("Lozinka123"))))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.title").value("Unprocessable Content"))
-                .andExpect(jsonPath("$.errors.username").isString());
+                .andExpect(jsonPath("$.errors.username.detail").isString());
     }
 
     @Test
     void refusesAnUppercaseUsername() throws Exception {
         mvc.perform(register(body(q("Marko"), q("marko@example.com"), q("Lozinka123"))))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.username").isString());
+                .andExpect(jsonPath("$.errors.username.detail").isString());
     }
 
     @Test
     void refusesAPasswordShorterThanEight() throws Exception {
         mvc.perform(register(body(q("marko"), q("marko@example.com"), q("Loz1"))))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.password").isString());
+                .andExpect(jsonPath("$.errors.password.detail").isString());
     }
 
     @Test
     void refusesAPasswordCarryingACharacterOutsideTheSet() throws Exception {
         mvc.perform(register(body(q("marko"), q("marko@example.com"), q("Lozinka 123"))))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.password").isString());
+                .andExpect(jsonPath("$.errors.password.detail").isString());
     }
 
     @Test
     void refusesAMalformedEmail() throws Exception {
         mvc.perform(register(body(q("marko"), q("not-an-address"), q("Lozinka123"))))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.email").isString());
+                .andExpect(jsonPath("$.errors.email.detail").isString());
     }
 
     @Test
@@ -126,7 +126,7 @@ class AuthControllerTest {
 
         mvc.perform(register(body))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.bio").isString());
+                .andExpect(jsonPath("$.errors.bio.detail").isString());
     }
 
     @Test
@@ -138,7 +138,7 @@ class AuthControllerTest {
 
         mvc.perform(register(body))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors['otherContactInfo[0].value']").isString());
+                .andExpect(jsonPath("$.errors['otherContactInfo[0].value'].detail").isString());
     }
 
     @Test
@@ -160,7 +160,7 @@ class AuthControllerTest {
                 .content("""
                         {"token": "   "}"""))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").isString());
+                .andExpect(jsonPath("$.errors.token.detail").isString());
     }
 
     @Test
@@ -181,7 +181,7 @@ class AuthControllerTest {
     void resendRefusesAMalformedAddress() throws Exception {
         mvc.perform(resend("not-an-address"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.email").isString());
+                .andExpect(jsonPath("$.errors.email.detail").isString());
     }
 
     @Test
@@ -200,20 +200,20 @@ class AuthControllerTest {
     void loginRefusesABlankIdentifier() throws Exception {
         mvc.perform(login("   ", "Lozinka123"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.identifier").isString());
+                .andExpect(jsonPath("$.errors.identifier.detail").isString());
     }
 
     @Test
     void loginRefusesABlankPassword() throws Exception {
         mvc.perform(login("marko", ""))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.password").isString());
+                .andExpect(jsonPath("$.errors.password.detail").isString());
     }
 
     @Test
     void loginAnswers401WithNoProblemTypeOnBadCredentials() throws Exception {
         when(auth.login(any(LoginRequest.class)))
-                .thenThrow(new UnauthorizedException("Wrong username or password."));
+                .thenThrow(new UnauthorizedException(ErrorCode.BAD_CREDENTIALS));
 
         mvc.perform(login("marko", "Pogresna123"))
                 .andExpect(status().isUnauthorized())
@@ -225,8 +225,7 @@ class AuthControllerTest {
     @Test
     void loginAnswers403WithTheTypeTheFormBranchesOn() throws Exception {
         when(auth.login(any(LoginRequest.class)))
-                .thenThrow(new ForbiddenException("Verify your email address to continue.",
-                        ProblemTypes.EMAIL_NOT_VERIFIED));
+                .thenThrow(new ForbiddenException(ErrorCode.EMAIL_NOT_VERIFIED));
 
         mvc.perform(login("marko", "Lozinka123"))
                 .andExpect(status().isForbidden())
@@ -251,7 +250,7 @@ class AuthControllerTest {
     void passwordResetRefusesAMalformedAddress() throws Exception {
         mvc.perform(passwordReset("not-an-address"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.email").isString());
+                .andExpect(jsonPath("$.errors.email.detail").isString());
 
         verifyNoInteractions(reset);
     }
@@ -269,31 +268,31 @@ class AuthControllerTest {
     void confirmRefusesABlankToken() throws Exception {
         mvc.perform(confirmReset("   ", "NovaLozinka1"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").isString());
+                .andExpect(jsonPath("$.errors.token.detail").isString());
     }
 
     @Test
     void confirmRefusesAPasswordShorterThanEight() throws Exception {
         mvc.perform(confirmReset("a-token", "Loz1"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.newPassword").isString());
+                .andExpect(jsonPath("$.errors.newPassword.detail").isString());
     }
 
     @Test
     void confirmRefusesAPasswordCarryingACharacterOutsideTheSet() throws Exception {
         mvc.perform(confirmReset("a-token", "Nova Lozinka1"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.newPassword").isString());
+                .andExpect(jsonPath("$.errors.newPassword.detail").isString());
     }
 
     @Test
     void confirmAnswers422WithTheMessageUnderErrorsToken() throws Exception {
-        doThrow(UnprocessableException.on("token", "Link is invalid or has expired."))
+        doThrow(UnprocessableException.on("token", ErrorCode.DEAD_TOKEN))
                 .when(reset).confirm(anyString(), anyString());
 
         mvc.perform(confirmReset("mrtav-token", "NovaLozinka1"))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.errors.token").value("Link is invalid or has expired."))
+                .andExpect(jsonPath("$.errors.token.detail").value("Link is invalid or has expired."))
                 .andExpect(jsonPath("$.instance").value("/auth/password-reset/confirm"));
     }
 
