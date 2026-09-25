@@ -37,6 +37,9 @@ import Register from '@pages/register'
 import VerifyEmail from '@pages/verify'
 import { RequestPasswordReset, ConfirmPasswordReset } from '@pages/reset'
 import CreateOrganization from '@pages/organizations'
+import type { ScrollHandle } from '@shared/hooks/useScrollReset'
+
+const keepScroll: ScrollHandle = { keepScroll: true }
 
 const TestRoute = import.meta.env.DEV
   ? lazy(() => import('./pages/test'))
@@ -51,14 +54,14 @@ const router = createBrowserRouter(
 
           <Route path='jobs' element={<JobsLayout />}>
             <Route index element={<JobsHint />} />
-            <Route path=':slug' element={<JobDetail />} />
+            <Route path=':slug' element={<JobDetail />} handle={keepScroll} />
           </Route>
 
           <Route path='users'>
             <Route index element={<ActorSearch type='user' />} />
             <Route path=':username' element={<Profile actorType='user' />}>
-              <Route path='followers' element={null} />
-              <Route path='following' element={null} />
+              <Route path='followers' element={null} handle={keepScroll} />
+              <Route path='following' element={null} handle={keepScroll} />
             </Route>
             <Route element={<ProtectedRoute />}>
               <Route path=':username/settings' element={<UserSettings />}>
@@ -74,7 +77,7 @@ const router = createBrowserRouter(
           <Route path='companies'>
             <Route index element={<ActorSearch type='org' />} />
             <Route path=':slug' element={<Profile actorType='org' />}>
-              <Route path='followers' element={null} />
+              <Route path='followers' element={null} handle={keepScroll} />
             </Route>
             <Route element={<ProtectedRoute />}>
               <Route path='new' element={<CreateOrganization />} />
@@ -89,7 +92,7 @@ const router = createBrowserRouter(
           </Route>
 
           <Route path='posts/:postId' element={<Post />}>
-            <Route path='comments/:commentId' element={null} />
+            <Route path='comments/:commentId' element={null} handle={keepScroll} />
           </Route>
 
           <Route element={<ProtectedRoute />}>

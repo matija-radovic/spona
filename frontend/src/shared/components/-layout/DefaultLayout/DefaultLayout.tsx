@@ -6,11 +6,13 @@ import { Footer } from "@shared/components/chrome/Footer"
 import { markInitialLoadDone, useTrackLastSection } from "@shared/hooks/useLastSection"
 import useGhostScrollbar from '@shared/hooks/useGhostScrollbar'
 import useScrollbarGutter from '@shared/hooks/useScrollbarGutter'
+import useScrollReset from '@shared/hooks/useScrollReset'
 
 const DefaultLayout = () => {
     const mainRef = useRef<HTMLElement>(null)
     useGhostScrollbar(mainRef)
     useScrollbarGutter(mainRef)
+    useScrollReset(mainRef)
     useTrackLastSection()
 
     useEffect(() => {
