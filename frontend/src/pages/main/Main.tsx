@@ -4,6 +4,8 @@ import { motion } from 'motion/react'
 import { Section } from '@shared/components'
 import { Button, ButtonVariant } from '@shared/components/form/Button'
 import { POPULAR_JOB_ROLES, jobsFilterPath } from '@utils/constants/jobRoles'
+import emails from '@assets/main/emails.png'
+import project from '@assets/main/project.png'
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -49,7 +51,7 @@ const Main = () => {
         </div>
 
         <div className="home-hero-image">
-          <img src="" alt="" />
+          <img src={project} alt="" />
         </div>
       </Section>
 
@@ -119,9 +121,8 @@ const Main = () => {
           </div>
         </motion.div>
 
-        {/* Community visual - replace with a screenshot/illustration. */}
         <div className="home-community-image">
-          <img src="" alt="" />
+          <img src={emails} alt="" />
         </div>
       </Section>
 
