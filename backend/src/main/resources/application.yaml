@@ -83,7 +83,10 @@ spring:
   docker:
     compose:
       enabled: true
+      file: ../compose.yaml
       lifecycle-management: start-only
+      start:
+        skip: never
 
 app:
   seed:
@@ -108,6 +111,8 @@ spring:
       enabled: false      # it is already inside the stack it would start
 
 app:
+  seed:
+    enabled: ${SPONA_SEED:true}
   storage:
     endpoint: ${SPONA_S3_ENDPOINT:http://minio:9000}                    # container-to-container
     public-endpoint: ${SPONA_S3_PUBLIC_ENDPOINT:http://localhost:9000}  # the browser is outside the network

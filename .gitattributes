@@ -1,0 +1,7 @@
+# Text files are stored and checked out with LF on every OS, whatever core.autocrlf says,
+# so a script written on Windows still runs on macOS and Linux
+* text=auto eol=lf
+
+# cmd.exe wants CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf

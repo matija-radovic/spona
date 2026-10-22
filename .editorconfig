@@ -1,0 +1,13 @@
+# Editor defaults for new and edited files, so they match .gitattributes before git ever sees them.
+# IntelliJ reads this natively, VS Code through the EditorConfig extension.
+root = true
+
+[*]
+end_of_line = lf
+
+[*.{cmd,bat}]
+end_of_line = crlf
+
+# Windows PowerShell 5.1 reads a script without a BOM as ANSI, which garbles č, ć, š, ž, đ
+[*.ps1]
+charset = utf-8-bom

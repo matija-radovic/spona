@@ -3,10 +3,11 @@ WORKDIR /app
 
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw -B dependency:go-offline
+RUN chmod +x mvnw
 
 COPY src/ src/
-RUN ./mvnw -B clean package -DskipTests
+# The cache mount keeps Maven and the dependencies between builds, so a code change does not download them again
+RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -DskipTests
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app

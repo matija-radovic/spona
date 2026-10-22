@@ -28,10 +28,11 @@ import io.github.matijaradovic.spona.storage.StorageService;
 
 /**
  * Fills a dev database with demo actors, posts, jobs and applications, once. Every seeded
- * account is verified and signs in with {@link #PASSWORD}
+ * account is verified and signs in with {@link #PASSWORD}. Also runs in the compose stack's
+ * backend container, under the docker profile
  */
 @Component
-@Profile("dev")
+@Profile({"dev", "docker"})
 @ConditionalOnBooleanProperty("app.seed.enabled")
 class DevSeeder implements ApplicationRunner {
 

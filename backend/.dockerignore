@@ -9,6 +9,5 @@ target/
 .vscode/
 *.iml
 HELP.md
-compose.yaml
 Dockerfile
 .dockerignore

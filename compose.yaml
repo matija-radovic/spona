@@ -1,0 +1,105 @@
+# The whole stack. ./spona.ps1 (Windows) and ./spona.sh (macOS, Linux) start Docker
+# and pick the profiles, see the README.
+#
+#   no profile          postgres, minio, mailpit - what `./mvnw spring-boot:run` starts
+#   --profile backend   + the API, built from backend/
+#   --profile frontend  + the web app, built from frontend/ and served by nginx
+
+name: spona
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: spona
+      POSTGRES_USER: ${SPONA_DB_USER:-spona}
+      POSTGRES_PASSWORD: ${SPONA_DB_PASSWORD:-spona}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${SPONA_DB_USER:-spona} -d spona']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    # Community build of MinIO. MinIO itself no longer publishes images.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${SPONA_S3_ACCESS_KEY:-spona}
+      MINIO_ROOT_PASSWORD: ${SPONA_S3_SECRET_KEY:-spona-secret}
+    ports:
+      - '9000:9000'   # S3 API - the backend talks to this
+      - '9001:9001'   # web console - ui to open in browser
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.31
+    ports:
+      - '1025:1025'   # SMTP - the backend sends here
+      - '8025:8025'   # web inbox - read verification links here
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    profiles: ['backend']
+    build: ./backend
+    ports:
+      - '8080:8080'
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      # Addresses inside the compose network. These win over backend/.env.
+      SPRING_PROFILES_ACTIVE: docker
+      SPONA_PORT: 8080
+      SPONA_DB_URL: jdbc:postgresql://postgres:5432/spona
+      SPONA_DB_USER: ${SPONA_DB_USER:-spona}
+      SPONA_DB_PASSWORD: ${SPONA_DB_PASSWORD:-spona}
+      SPONA_S3_ENDPOINT: http://minio:9000
+      SPONA_S3_ACCESS_KEY: ${SPONA_S3_ACCESS_KEY:-spona}
+      SPONA_S3_SECRET_KEY: ${SPONA_S3_SECRET_KEY:-spona-secret}
+      SPONA_MAIL_HOST: mailpit
+      SPONA_MAIL_PORT: 1025
+    healthcheck:
+      # The JRE image has no curl or wget, so bash sends the request
+      test: ['CMD', 'bash', '-c', 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf "GET /api/ HTTP/1.0\r\n\r\n" >&3 && head -n1 <&3 | grep -q " 200"']
+      interval: 5s
+      timeout: 3s
+      start_period: 3m   # first boot runs the migrations and the seed
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+
+  frontend:
+    profiles: ['frontend']
+    build: ./frontend
+    ports:
+      - '5173:80'   # the same port as `npm run dev`, so SPONA_FRONTEND_URL holds either way
+    extra_hosts:
+      # nginx falls back to a backend started by hand on the host, see frontend/nginx.conf
+      - 'host.docker.internal:host-gateway'
+
+volumes:
+  pgdata:
+  miniodata:
