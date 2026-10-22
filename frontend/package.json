@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "gen:mediaqueries": "node scripts/gen-mediaqueries.mjs",
+    "check:mediaqueries": "node scripts/gen-mediaqueries.mjs --check",
     "check:error-codes": "node scripts/check-error-codes.mjs",
     "prebuild": "node scripts/gen-mediaqueries.mjs && node scripts/check-error-codes.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prepare": "husky",
+    "prepare": "cd .. && husky",
     "restore:test": "git restore src/pages/test"
   },
   "dependencies": {

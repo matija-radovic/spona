@@ -1,2 +1,10 @@
-echo "Running lint before pushing\n"
+cd frontend
+
+echo "Running lint before pushing"
 npm run lint
+
+echo "Checking error codes before pushing"
+npm run check:error-codes
+
+echo "Checking media queries before pushing"
+npm run check:mediaqueries

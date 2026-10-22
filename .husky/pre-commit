@@ -1,6 +1,6 @@
 PLAYGROUND="frontend/src/pages/test"
 
-staged=$(git diff --cached --name-only | grep "^$PLAYGROUND/")
+staged=$(git diff --cached --name-only -- "$PLAYGROUND")
 
 if [ -n "$staged" ]; then
   git restore --staged "$PLAYGROUND"
